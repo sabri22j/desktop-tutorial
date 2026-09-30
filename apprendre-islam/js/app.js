@@ -258,15 +258,80 @@ V.profile = () => {
   return `<h2>Profil</h2><div class="card"><div class="stats"><div><b>${n >= LEVELS.length ? "—" : n}</b>niveau</div><div><b>${S.xp}</b>XP</div><div><b>${pct(E.progress())} %</b>progression</div></div>
   <p>🔥 Série : <b>${E.streak()} jour(s)</b> · Quiz réussis : <b>${S.stats.total ? pct(S.stats.ok / S.stats.total) : 0} %</b></p><p class="muted">Niveau 100 = parcours de l'application terminé, pas « tout l'Islam ».</p></div>
   <div class="card"><h3>Maîtrise par matière</h3>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id); return `<div class="row"><span>${s.icon} ${esc(s.name)}</span><b>${m === null ? "à venir" : pct(m) + " %"}</b></div>${m === null ? "" : bar(m)}`; }).join("")}</div>
+  <div class="card"><h3>🔔 Rappel quotidien</h3><div class="row"><input type="time" id="ptime" value="${S.reminder.time}" style="width:auto;padding:8px"><b>${S.reminder.on ? "Activé" : "Désactivé"}</b></div>
+    <button class="btn sec" id="prem">🔔 Activer / mettre à jour</button><button class="btn sec" id="pics">📅 Ajouter à mon agenda</button><button class="btn sec" id="pintro">👋 Revoir l'introduction avec Sirâj</button></div>
   <div class="card"><h3>Objectif quotidien</h3><div class="chips">${[5, 10, 15, 20].map(m => `<button class="pill ${S.goal === m ? "on" : ""}" data-goal="${m}">${m} min</button>`).join("")}</div></div>
   <div class="card"><h3>🏆 Badges</h3>${E.BADGES.map(b => `<div>${S.badges[b[0]] ? b[1] : "🔒"} ${esc(b[2])}</div>`).join("")}</div>
   <button class="btn sec" id="rst">Réinitialiser ma progression</button>`;
 };
 
+
+/* ---------- Introduction avec Sirâj ---------- */
+const ONB = { step: 0, know: null, reacted: false, reasons: [], goal: 10, time: "19:00", remind: false };
+const KNOW = [["debut", "🌱 Je débute", "Wouah, c'est super de commencer ! On part de zéro, à ton rythme."], ["bases", "📗 J'ai quelques bases", "Wouah, c'est super ! On va consolider tout ça."], ["avance", "🎓 Je connais déjà pas mal", "Wouah, c'est super ! Les quiz vont tester tes connaissances."]];
+const REASONS = ["Mieux comprendre ma religion", "Je découvre l'Islam", "Mieux pratiquer (prière, jeûne…)", "Apprendre le Coran", "Connaître l'histoire et la vie du Prophète ﷺ", "Transmettre à mes enfants ou à mes proches", "Par curiosité", "Autre raison"];
+const GOALS = [[5, "🐢", "Tranquille"], [10, "🚶", "Normal"], [15, "🏃", "Intensif"], [20, "🚀", "Extrême"]];
+const durText = d => d < 60 ? `${d} jours` : `environ ${Math.round(d / 30)} mois`;
+function goalText(m) { const x = E.estimate(m); return `${m} min par jour = <b>${x.plan.lessons} leçon${x.plan.lessons > 1 ? "s" : ""}</b> + <b>${x.plan.questions} questions</b> par jour. Parcours terminé en <b>${durText(x.days)}</b> (estimation sur ~${x.total} leçons).`; }
+const say = (mood, text, anim, size = 130) => `<div class="hero-s">${siraj(mood, size, anim)}</div><div class="bubble c pop">${text}</div>`;
+const dots = n => `<div class="dots">${[0, 1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</div>`;
+
+function renderOnb() {
+  const s = ONB.step; let h = "";
+  if (s === 0) h = say("happy", "Salut ! Moi c'est <b>Sirâj</b> 🏮<br>Je suis ta lanterne-guide. Je vais t'accompagner, pas à pas, du niveau 0 au niveau 100.", "wave", 170) + `<button class="btn" data-o="next">Enchanté, Sirâj !</button>`;
+  else if (s === 1 && !ONB.reacted) h = say("think", "Petite question pour mieux te connaître : <b>tu as des bases en Islam ?</b>", "float") + KNOW.map(k => `<button class="opt" data-know="${k[0]}">${k[1]}</button>`).join("");
+  else if (s === 1) { const k = KNOW.find(x => x[0] === ONB.know); h = say("proud", k[2], "jump", 150) + `<button class="btn" data-o="next">Continuer</button>`; }
+  else if (s === 2) h = say("think", "<b>Pourquoi veux-tu apprendre l'Islam ?</b><br><span class='muted'>Coche tout ce qui te correspond.</span>", "float", 110) + REASONS.map((r, i) => `<button class="opt multi ${ONB.reasons.includes(i) ? "sel" : ""}" data-reason="${i}">${esc(r)}</button>`).join("") + `<button class="btn" data-o="next" ${ONB.reasons.length ? "" : "disabled"}>Continuer</button>`;
+  else if (s === 3) h = say("happy", `Merci ! On va te créer une <b>routine d'apprentissage</b>.<br><b>Quel est ton objectif ?</b>`, "float", 110) + GOALS.map(g => `<button class="opt ${ONB.goal === g[0] ? "sel" : ""}" data-goal="${g[0]}">${g[1]} ${g[2]} · ${g[0]} min/jour</button>`).join("") + `<div class="card pop" id="gtxt">${goalText(ONB.goal)}</div><button class="btn" data-o="next">Continuer</button>`;
+  else if (s === 4) h = say("proud", "<b>Avec moi, tu n'oublieras pas d'apprendre !</b><br>À quelle heure veux-tu que je te rappelle chaque jour ?", "jump", 130) + `<div class="card"><input type="time" id="rtime" value="${ONB.time}" style="width:100%;padding:11px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--text);font-size:1.1rem"></div>
+      <button class="btn" data-o="remind">🔔 Activer mon rappel</button><button class="btn sec" data-o="ics">📅 Ajouter à mon agenda</button><p class="muted" style="text-align:center">Pour un rappel garanti même application fermée, ajoute-le aussi à ton agenda.</p><button class="btn sec" data-o="next">${ONB.remind ? "Continuer" : "Plus tard"}</button>`;
+  else { const g = GOALS.find(x => x[0] === ONB.goal); h = say("proud", "Ta routine est prête ! 🎉", "jump", 150) + `<div class="card"><p>${g[1]} Objectif <b>${g[2]}</b> : ${goalText(ONB.goal)}</p><p>🔔 Rappel : <b>${ONB.remind ? ONB.time : "aucun pour l'instant"}</b></p></div><button class="btn" data-o="done">C'est parti !</button>`; }
+  $app.innerHTML = `<div class="onbw slide">${dots(s)}${h}</div>`;
+  if (s === 5) confetti();
+}
+
+/* ---------- Rappels ---------- */
+async function enableReminder(time) {
+  if (!("Notification" in window)) { toast("Les notifications ne sont pas disponibles ici. Utilise l'agenda."); return false; }
+  const p = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+  if (p !== "granted") { toast("Notifications refusées. Tu peux utiliser l'agenda à la place."); return false; }
+  E.S.reminder = { on: true, time, last: E.S.reminder.last }; E.save();
+  notify("Sirâj 🏮", "Super, je te rappellerai chaque jour à " + time + " !"); return true;
+}
+function notify(title, body) {
+  try { if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.ready.then(r => r.showNotification(title, { body, icon: "icon.svg" })); else new Notification(title, { body, icon: "icon.svg" }); } catch {}
+}
+function checkReminder() {
+  const r = E.S.reminder, t = E.dayStr(); if (!r || !r.on || !("Notification" in window) || Notification.permission !== "granted") return;
+  const now = new Date(), [h, m] = r.time.split(":").map(Number);
+  if (r.last !== t && E.S.streak.last !== t && (now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m))) { r.last = t; E.save(); notify("Sirâj 🏮", "C'est l'heure de ta leçon ! Ta routine t'attend."); }
+}
+function downloadICS(time) {
+  const [h, m] = time.split(":"), d = new Date(), ds = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`, st = `${ds}T${h}${m}00`;
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Sirat//FR", "BEGIN:VEVENT", "UID:sirat-rappel@sirat", `DTSTAMP:${ds}T000000`, `DTSTART:${st}`, "DURATION:PT10M", "RRULE:FREQ=DAILY", "SUMMARY:Ma leçon avec Sirâj 🏮", "DESCRIPTION:C'est l'heure d'apprendre !", "BEGIN:VALARM", "TRIGGER:PT0M", "ACTION:DISPLAY", "DESCRIPTION:Leçon avec Sirâj", "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" })); a.download = "rappel-sirat.ics"; document.body.appendChild(a); a.click(); a.remove();
+}
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-o],[data-know],[data-reason],[data-goal].opt"); if (!t || !document.querySelector(".onbw")) return;
+  const tm = () => { const i = document.getElementById("rtime"); if (i && i.value) ONB.time = i.value; };
+  if (t.dataset.know) { ONB.know = t.dataset.know; ONB.reacted = true; renderOnb(); }
+  else if (t.dataset.reason !== undefined) { const i = +t.dataset.reason, k = ONB.reasons.indexOf(i); if (k >= 0) ONB.reasons.splice(k, 1); else ONB.reasons.push(i); renderOnb(); }
+  else if (t.dataset.goal) { ONB.goal = +t.dataset.goal; renderOnb(); }
+  else if (t.dataset.o === "next") { tm(); ONB.step++; ONB.reacted = false; renderOnb(); }
+  else if (t.dataset.o === "remind") { tm(); ONB.remind = await enableReminder(ONB.time); renderOnb(); if (ONB.remind) toast("🔔 Rappel activé à " + ONB.time); }
+  else if (t.dataset.o === "ics") { tm(); downloadICS(ONB.time); toast("Ouvre le fichier pour l'ajouter à ton agenda."); }
+  else if (t.dataset.o === "done") { const S = E.S; ONB.force = false; S.onboarded = true; S.goal = ONB.goal; S.profile = { know: ONB.know, reasons: ONB.reasons.map(i => REASONS[i]) }; S.reminder = { on: ONB.remind, time: ONB.time, last: S.reminder.last }; E.save(); go("#/home"); }
+});
+setInterval(checkReminder, 60000);
+
 /* ---------- Routage ---------- */
 const NAV = [["home", "🏠", "Accueil"], ["path", "🛣️", "Parcours"], ["subjects", "📚", "Matières"], ["map", "🗺️", "Carte"], ["quiz", "🧠", "Quiz"], ["ai", "🤖", "IA"]];
 function route() {
-  const [r, a, b] = (location.hash.slice(2) || "home").split("/");
+  let [r, a, b] = (location.hash.slice(2) || "home").split("/");
+  if (!E.S.onboarded && r !== "welcome") { location.hash = "#/welcome"; return; }
+  if (r === "welcome" && E.S.onboarded && !ONB.force) r = "home";
+  document.body.classList.toggle("onb", r === "welcome");
+  if (r === "welcome") { renderOnb(); return; }
   const name = r === "quiz" && a ? "quiz" : r;
   const fn = { home: V.home, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, subjects: V.subjects, subject: V.subject, map: V.map, ai: V.ai, profile: V.profile }[r] || V.home;
   const html = fn(a, b);
@@ -279,14 +344,18 @@ function route() {
 }
 addEventListener("hashchange", route);
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],#rst");
+  const t = e.target.closest("[data-sub],[data-pin],[data-goal]:not(.opt),[data-ask],#rst,#prem,#pics,#pintro");
   if (!t) return;
   if (t.dataset.sub) { quizSubject = t.dataset.sub; route(); }
   else if (t.dataset.pin) { mapSel = t.dataset.pin; route(); }
   else if (t.dataset.goal) { E.S.goal = +t.dataset.goal; E.save(); route(); }
   else if (t.dataset.ask) { document.getElementById("askq").value = t.dataset.ask; answer(t.dataset.ask); }
+  else if (t.id === "prem") enableReminder(document.getElementById("ptime").value).then(() => route());
+  else if (t.id === "pics") downloadICS(document.getElementById("ptime").value);
+  else if (t.id === "pintro") { Object.assign(ONB, { step: 0, know: null, reacted: false, reasons: [], force: true }); location.hash = "#/welcome"; route(); }
   else if (t.id === "rst" && confirm("Effacer toute ta progression ?")) { E.reset(); route(); }
 });
 document.addEventListener("submit", e => { if (e.target.id === "askf") { e.preventDefault(); answer(document.getElementById("askq").value); } });
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+checkReminder();
 route();

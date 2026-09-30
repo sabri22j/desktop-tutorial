@@ -10,7 +10,7 @@ const E = (() => {
   const addDays = (s, n) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return dayStr(d); };
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
-  const fresh = () => ({ xp: 0, goal: 10, streak: { count: 0, last: null }, qs: {}, lessons: {}, exams: {}, badges: {},
+  const fresh = () => ({ xp: 0, goal: 10, onboarded: false, profile: null, reminder: { on: false, time: "19:00", last: null }, streak: { count: 0, last: null }, qs: {}, lessons: {}, exams: {}, badges: {},
     stats: { ok: 0, total: 0, quizzes: 0, reviews: 0, dailies: 0, exams: 0 }, day: { date: null, lessons: 0, questions: 0, xp: 0, daily: false } });
   let S;
   try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { S = fresh(); }
@@ -61,7 +61,10 @@ const E = (() => {
   const pick = (ids, n) => shuffle(ids).slice(0, n).map(id => QINDEX[id]);
   const buildDaily = () => pick(unlockedQids(), 5);
   const buildExam = n => { const ids = []; LEVELS.slice(0, n + 1).forEach(L => L.chapters.forEach(c => c.quiz.forEach(q => ids.push(q.id)))); return pick(ids, 30); };
-  const goalPlan = () => ({ 5: { lessons: 1, questions: 5 }, 10: { lessons: 2, questions: 10 }, 15: { lessons: 2, questions: 15 }, 20: { lessons: 3, questions: 20 } }[S.goal] || { lessons: 2, questions: 10 });
+  const planFor = m => ({ 5: { lessons: 1, questions: 5 }, 10: { lessons: 2, questions: 10 }, 15: { lessons: 3, questions: 15 }, 20: { lessons: 4, questions: 20 } }[m] || { lessons: 2, questions: 10 });
+  const goalPlan = () => planFor(S.goal);
+  // Estimation : on extrapole le nombre de leçons par niveau rédigé aux 101 niveaux (contenu 11-100 encore à écrire).
+  const estimate = m => { const per = Object.values(CHAPTERS).reduce((s, c) => s + c.lessons.length, 0) / LEVELS.length, total = Math.round(per * LEVEL_COUNT), p = planFor(m); return { plan: p, total, days: Math.ceil(total / p.lessons) }; };
 
   /* Que faire maintenant ? */
   function nextAction() {
@@ -97,5 +100,5 @@ const E = (() => {
 
   return { get S() { return S; }, save, reset, XP, UNLOCK, EXAM_PASS, BADGES, dayStr, shuffle, dayState, addXP, answer, mastery, lessonsDone, quizAttempted, completeLesson,
     levelObj, levelComplete, levelUnlocked, currentLevel, levelsCompleted, progress, chapterUnlocked, examReady, subjectMastery,
-    unlockedQids, dueQids, weakChapters, pick, buildDaily, buildExam, goalPlan, nextAction, streak, touch, evalBadges };
+    planFor, estimate, unlockedQids, dueQids, weakChapters, pick, buildDaily, buildExam, goalPlan, nextAction, streak, touch, evalBadges };
 })();
