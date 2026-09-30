@@ -10,6 +10,21 @@ const go = h => { location.hash = h; };
 const celebrate = () => E.evalBadges().forEach(b => toast("Nouveau badge : " + b));
 
 
+
+/* ---------- Voix de lecture (synthèse vocale de l'appareil) ---------- */
+const getVoices = () => window.speechSynthesis ? speechSynthesis.getVoices() : [];
+function pickVoice() { const v = getVoices(), id = E.S.settings.voice; return v.find(x => x.voiceURI === id) || v.find(x => /^fr/i.test(x.lang)) || null; }
+function speak(text) {
+  if (!window.speechSynthesis) return toast("Audio non disponible sur cet appareil.");
+  speechSynthesis.cancel(); const s = E.S.settings, u = new SpeechSynthesisUtterance(text), v = pickVoice();
+  if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "fr-FR";
+  u.rate = s.rate; u.pitch = s.pitch; speechSynthesis.speak(u);
+}
+const voiceOptions = () => { const all = getVoices(), fr = all.filter(v => /^fr/i.test(v.lang)), rest = all.filter(v => !/^fr/i.test(v.lang)), cur = E.S.settings.voice;
+  const opt = v => `<option value="${esc(v.voiceURI)}" ${v.voiceURI === cur ? "selected" : ""}>${esc(v.name)} (${esc(v.lang)})</option>`;
+  return `<option value="">Automatique (français)</option>${fr.length ? `<optgroup label="Français">${fr.map(opt).join("")}</optgroup>` : ""}${rest.length ? `<optgroup label="Autres langues">${rest.map(opt).join("")}</optgroup>` : ""}`; };
+if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => { if (location.hash === "#/profile") { const s = document.getElementById("set-voice"); if (s) s.innerHTML = voiceOptions(); } };
+
 /* ---------- Sirâj, le guide ---------- */
 function sirajSVG(mood, o = {}) {
   const eyes = {
@@ -197,7 +212,7 @@ V.lesson = (id, i) => {
     ${l.ar ? `<div class="ar">${esc(l.ar)}</div><div class="ph">${esc(l.ph)}</div>${l.fr ? `<p class="tr"><span class="muted">Traduction du sens :</span> ${esc(l.fr)}</p>` : ""}${l.ref ? `<div class="src">📖 <b>${esc(l.ref)}</b></div>` : ""}` : ""}</div>
     <div class="card"><div class="src">📚 <b>Sources du chapitre</b> : ${c.sources.map(esc).join(" · ")}</div></div>
     <button class="btn sec" id="speak">🎧 Écouter</button><button class="btn" id="cont">Continuer → question rapide</button>`;
-  document.getElementById("speak").onclick = () => { if (!window.speechSynthesis) return toast("Audio non disponible sur cet appareil."); speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(l.body); u.lang = "fr-FR"; speechSynthesis.speak(u); };
+  document.getElementById("speak").onclick = () => speak(l.body);
   document.getElementById("cont").onclick = () => {
     if (window.speechSynthesis) speechSynthesis.cancel();
     const after = () => { const xp = E.completeLesson(id, +i); if (xp) toast("+10 XP"); celebrate(); go(+i + 1 < c.lessons.length ? `#/lesson/${id}/${+i + 1}` : `#/quiz/${id}`); };
@@ -286,6 +301,12 @@ V.profile = () => {
     <label class="sw"><span>🔔 Sons juste / faux</span><input type="checkbox" id="set-sfx" ${S.settings.sfx ? "checked" : ""}></label>
     <label class="sw"><span>🔓 Tout débloquer (explorer librement)</span><input type="checkbox" id="set-free" ${S.settings.free ? "checked" : ""}></label>
     <div class="row" style="justify-content:flex-start"><button class="pill" id="t-ok">▶ Son « juste »</button><button class="pill" id="t-ko">▶ Son « faux »</button></div></div>
+  <div class="card"><h3>🎧 Voix de lecture</h3>
+    <label class="sw" style="display:block"><span>Voix</span><select id="set-voice" style="margin-top:6px">${voiceOptions()}</select></label>
+    <label class="sw"><span>🐢 Vitesse</span><input type="range" id="set-rate" min="0.6" max="1.3" step="0.05" value="${S.settings.rate}"></label>
+    <label class="sw"><span>🎚️ Grave ↔ aigu</span><input type="range" id="set-pitch" min="0.6" max="1.4" step="0.05" value="${S.settings.pitch}"></label>
+    <button class="pill" id="t-voice">▶ Écouter un exemple</button>
+    <p class="muted">Les voix disponibles dépendent de ton téléphone ou de ton navigateur. Pour en avoir d'autres, installe des voix françaises dans les réglages « Synthèse vocale » de ton appareil.</p></div>
   <div class="card"><h3>🔔 Rappel quotidien</h3><div class="row"><input type="time" id="ptime" value="${S.reminder.time}" style="width:auto;padding:8px"><b>${S.reminder.on ? "Activé" : "Désactivé"}</b></div>
     <button class="btn sec" id="prem">🔔 Activer / mettre à jour</button><button class="btn sec" id="pics">📅 Ajouter à mon agenda</button><button class="btn sec" id="pintro">👋 Revoir l'introduction avec Sirâj</button></div>
   <div class="card"><h3>Objectif quotidien</h3><div class="chips">${[5, 10, 15, 20].map(m => `<button class="pill ${S.goal === m ? "on" : ""}" data-goal="${m}">${m} min</button>`).join("")}</div></div>
@@ -388,11 +409,17 @@ document.addEventListener("change", e => {
   const S = E.S.settings;
   if (e.target.id === "set-music") { S.music = e.target.checked; E.save(); SND.apply(); }
   else if (e.target.id === "set-sfx") { S.sfx = e.target.checked; E.save(); }
+  else if (e.target.id === "set-voice") { S.voice = e.target.value; E.save(); speak("Salut ! Moi c'est Sirâj, ta lanterne-guide."); }
   else if (e.target.id === "set-free") { S.free = e.target.checked; E.save(); route(); }
   else if (e.target.id === "set-vol") { S.vol = +e.target.value; E.save(); SND.apply(); }
 });
-document.addEventListener("input", e => { if (e.target.id === "set-vol") { E.S.settings.vol = +e.target.value; SND.apply(); } });
+document.addEventListener("input", e => {
+  if (e.target.id === "set-vol") { E.S.settings.vol = +e.target.value; SND.apply(); }
+  else if (e.target.id === "set-rate") { E.S.settings.rate = +e.target.value; E.save(); }
+  else if (e.target.id === "set-pitch") { E.S.settings.pitch = +e.target.value; E.save(); }
+});
 document.addEventListener("click", e => {
+  if (e.target.id === "t-voice") speak("Salut ! Moi c'est Sirâj, ta lanterne-guide. Bismillah, on commence ?");
   if (e.target.id === "t-ok") { SND.unlock(); SND.correct(); } else if (e.target.id === "t-ko") { SND.unlock(); SND.wrong(); }
   const st = e.target.closest("[data-style]");
   if (st) { E.S.settings.style = st.dataset.style; E.S.settings.music = true; E.save(); SND.unlock(); SND.restart(); route(); }
