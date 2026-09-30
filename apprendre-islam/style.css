@@ -1,5 +1,5 @@
-:root{--bg:#f6f4ee;--card:#fff;--text:#1f2a24;--muted:#6b766f;--accent:#0f7a4d;--accent-d:#0a5a39;--gold:#e0a82e;--ok:#1a8a4a;--ko:#c0392b;--line:#e3e0d6}
-@media (prefers-color-scheme:dark){:root{--bg:#101813;--card:#1a251f;--text:#eaf1ec;--muted:#9fb0a6;--line:#2a3a31}}
+:root{--bg:#f6f4ee;--card:#fff;--text:#1f2a24;--muted:#6b766f;--accent:#0f7a4d;--accent-d:#0a5a39;--gold:#e0a82e;--ok:#1a8a4a;--ko:#c0392b;--line:#e3e0d6;--sea:#cfe3ee;--land:#efe6cf;--coast:#b9a97e;--lbl:#6b5d3a;--lbls:#4a7a94}
+@media (prefers-color-scheme:dark){:root{--bg:#101813;--card:#1a251f;--text:#eaf1ec;--muted:#9fb0a6;--line:#2a3a31;--sea:#16303d;--land:#2c3a2f;--coast:#4d6b55;--lbl:#9fb89a;--lbls:#6fa0b8}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.5;padding-bottom:76px}
 #top{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--accent);color:#fff}
@@ -41,7 +41,7 @@ select,input[type=text]{width:100%;padding:11px;border-radius:10px;border:2px so
 .score{font-size:2.4rem;text-align:center;font-weight:800;color:var(--accent)}
 .chips button{margin:0 6px 6px 0}.pill{border:2px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:6px 14px;cursor:pointer}.pill.on{border-color:var(--accent);background:rgba(15,122,77,.15);font-weight:700}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:9;max-width:90%;text-align:center}#toast.show{opacity:1}
-svg.map{width:100%;background:#dfe9e2;border-radius:14px}.pin{cursor:pointer}.pin circle{fill:var(--accent);stroke:#fff;stroke-width:2}.pin.on circle{fill:var(--gold)}.pin text{font-size:11px;fill:#1f2a24;font-weight:600}
+svg.map{width:100%;height:auto;background:var(--sea);border-radius:14px;display:block}.lbl-land{fill:var(--lbl);opacity:.55;font-weight:700;letter-spacing:.08em}.lbl-sea{fill:var(--lbls);font-style:italic}.pin{cursor:pointer}.pin circle{fill:var(--accent);stroke:#fff;stroke-width:2}.pin.on circle{fill:var(--gold)}.pin text{fill:var(--text);font-weight:700;paint-order:stroke;stroke:var(--bg);stroke-width:3px}
 .src{font-size:.85rem;margin:2px 0}.chat{display:flex;gap:8px}.chat input{flex:1}.chat button{width:auto;padding:0 18px;margin:0}
 
 /* Sirâj : guide animé */
@@ -101,3 +101,4 @@ body.onb #nav,body.onb #top{display:none}body.onb{padding-bottom:20px}
 .sw input[type=checkbox]{width:44px;height:26px;accent-color:var(--accent)}
 .sw input[type=range]{width:55%;accent-color:var(--accent)}
 .fb .src{margin-top:8px;padding-top:6px;border-top:1px dashed var(--line)}
+.fun{background:linear-gradient(135deg,rgba(242,201,76,.25),rgba(242,201,76,.08));border:2px solid rgba(224,168,46,.5)}.fun h3{color:var(--text)}

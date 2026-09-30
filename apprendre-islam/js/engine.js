@@ -3,18 +3,18 @@ const E = (() => {
   const KEY = "islam-path-v1";
   const BOX_STRENGTH = [0, 0.8, 0.9, 0.96, 1];   // force d'une question selon sa « boîte »
   const BOX_DAYS = [0, 1, 3, 7, 14];              // délai avant la prochaine révision
-  const UNLOCK = 0.7, EXAM_PASS = 0.75;
+  const UNLOCK = 0.6, EXAM_PASS = 0.65; // parcours souple
   const XP = { lesson: 10, check: 5, quiz: 20, exam: 50, review: 15, daily: 30, free: 10 };
 
   const dayStr = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const addDays = (s, n) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return dayStr(d); };
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
-  const fresh = () => ({ xp: 0, goal: 10, onboarded: false, settings: { music: true, vol: 0.5, sfx: true, style: "voix" }, profile: null, reminder: { on: false, time: "19:00", last: null }, streak: { count: 0, last: null }, qs: {}, lessons: {}, exams: {}, badges: {},
+  const fresh = () => ({ xp: 0, goal: 10, onboarded: false, settings: { music: true, vol: 0.5, sfx: true, style: "voix", free: false }, profile: null, reminder: { on: false, time: "19:00", last: null }, streak: { count: 0, last: null }, qs: {}, lessons: {}, exams: {}, badges: {},
     stats: { ok: 0, total: 0, quizzes: 0, reviews: 0, dailies: 0, exams: 0 }, day: { date: null, lessons: 0, questions: 0, xp: 0, daily: false } });
   let S;
   try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { S = fresh(); }
-  S.settings = Object.assign({ music: true, vol: 0.5, sfx: true, style: "voix" }, S.settings);
+  S.settings = Object.assign({ music: true, vol: 0.5, sfx: true, style: "voix", free: false }, S.settings);
   if (S.settings.v !== 2) { S.settings.v = 2; S.settings.style = "voix"; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
   const reset = () => { const st = S.settings; S = fresh(); S.settings = st; save(); };
@@ -47,13 +47,13 @@ const E = (() => {
 
   /* Niveaux */
   const levelObj = n => LEVELS[n] || null;
-  const levelComplete = n => { const L = LEVELS[n]; return !!L && L.chapters.every(c => mastery(c.id) >= UNLOCK) && (!needsExam(n) || !!S.exams[n]); };
-  const levelUnlocked = n => n === 0 || (!!LEVELS[n] && levelComplete(n - 1));
+  const levelComplete = n => { const L = LEVELS[n]; return !!L && L.chapters.every(c => mastery(c.id) >= UNLOCK); };
+  const levelUnlocked = n => !!LEVELS[n] && (n === 0 || S.settings.free || levelComplete(n - 1));
   const currentLevel = () => { for (let i = 0; i < LEVELS.length; i++) if (!levelComplete(i)) return i; return LEVELS.length; };
   const levelsCompleted = () => LEVELS.filter((_, i) => levelComplete(i)).length;
   const progress = () => levelsCompleted() / LEVEL_COUNT;
-  const chapterUnlocked = id => { const c = CHAPTERS[id]; return levelUnlocked(c.level) && (c.idx === 0 || mastery(LEVELS[c.level].chapters[c.idx - 1].id) >= UNLOCK); };
-  const examReady = n => needsExam(n) && !!LEVELS[n] && !S.exams[n] && LEVELS[n].chapters.every(c => mastery(c.id) >= UNLOCK);
+  const chapterUnlocked = id => levelUnlocked(CHAPTERS[id].level); // ordre libre dans un niveau
+  const examReady = n => needsExam(n) && !!LEVELS[n] && !S.exams[n] && levelComplete(n);
   const subjectMastery = sid => { const cs = Object.values(CHAPTERS).filter(c => c.subject === sid); return cs.length ? cs.reduce((s, c) => s + mastery(c.id), 0) / cs.length : null; };
 
   /* Révisions, défis, examens */
@@ -77,9 +77,8 @@ const E = (() => {
       const done = lessonsDone(c.id);
       if (done < c.lessons.length) return { label: done ? "Continuer la leçon" : "Commencer", sub: `${c.title} · leçon ${done + 1}/${c.lessons.length}`, href: `#/lesson/${c.id}/${done}` };
       if (!quizAttempted(c.id)) return { label: "Faire le quiz", sub: c.title, href: `#/quiz/${c.id}` };
-      return { label: "Consolider", sub: `${c.title} · maîtrise ${Math.round(mastery(c.id) * 100)} % (70 % requis)`, href: dueQids().length ? "#/review" : `#/quiz/${c.id}` };
+      return { label: "Consolider", sub: `${c.title} · maîtrise ${Math.round(mastery(c.id) * 100)} % (60 % pour continuer)`, href: dueQids().length ? "#/review" : `#/quiz/${c.id}` };
     }
-    if (examReady(n)) return { label: "Passer l'examen", sub: `Examen du niveau ${n}`, href: `#/exam/${n}` };
     return { label: "Continuer", sub: "", href: "#/path" };
   }
 

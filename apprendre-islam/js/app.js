@@ -127,8 +127,8 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,onFinish(res
     E.save(); celebrate();
     const m = cfg.chapter ? E.mastery(cfg.chapter) : null;
     if (score >= 0.8 || res.pass) { confetti(); SND.win(); }
-    $app.innerHTML = `<div class="card"><div style="text-align:center">${siraj(score >= 0.8 ? "proud" : score >= 0.6 ? "happy" : "think", 120, score >= 0.8 ? "jump" : "float")}</div><div class="score">${correct}/${total}</div><p style="text-align:center">${cfg.kind === "exam" ? (res.pass ? "🎓 Examen réussi !" : "Examen non validé (75 % requis). Révise puis réessaie.") : score >= 0.8 ? "🎉 Bravo !" : score >= 0.6 ? "👍 Bien, continue !" : "💪 Il faut réviser un peu."}</p>
-      <p style="text-align:center">+${res.xp} XP</p>${m !== null ? `<p>Maîtrise du chapitre : <b>${pct(m)} %</b>${bar(m)}<span class="muted">${m >= E.UNLOCK ? "🔓 Suite débloquée" : "70 % requis pour débloquer la suite. Les questions ratées reviendront en révision."}</span></p>` : ""}
+    $app.innerHTML = `<div class="card"><div style="text-align:center">${siraj(score >= 0.8 ? "proud" : score >= 0.6 ? "happy" : "think", 120, score >= 0.8 ? "jump" : "float")}</div><div class="score">${correct}/${total}</div><p style="text-align:center">${cfg.kind === "exam" ? (res.pass ? "🎓 Examen réussi !" : "Examen non validé (65 % requis). Révise puis réessaie.") : score >= 0.8 ? "🎉 Bravo !" : score >= 0.6 ? "👍 Bien, continue !" : "💪 Il faut réviser un peu."}</p>
+      <p style="text-align:center">+${res.xp} XP</p>${m !== null ? `<p>Maîtrise du chapitre : <b>${pct(m)} %</b>${bar(m)}<span class="muted">${m >= E.UNLOCK ? "🔓 Suite débloquée" : "60 % requis pour débloquer la suite. Les questions ratées reviendront en révision."}</span></p>` : ""}
       ${wrong.length ? `<p class="muted">🔄 À revoir : ${wrong.length} question(s) ajoutée(s) à tes révisions.</p>` : ""}</div>
       <a class="btn" href="${E.nextAction().href}">Continuer</a><a class="btn sec" href="${cfg.back || "#/home"}">Retour</a>`;
   };
@@ -146,6 +146,7 @@ V.home = () => {
     <div class="muted">Leçons ${Math.min(d.lessons, plan.lessons)}/${plan.lessons} · Questions ${Math.min(d.questions, plan.questions)}/${plan.questions}${due ? ` · ${due} à réviser` : ""}</div>
     ${bar(Math.min(1, (d.lessons / plan.lessons + d.questions / plan.questions) / 2))}
     <div class="muted">${na.sub}</div><a class="btn" href="${na.href}">${na.label} →</a></div>
+  ${LEVELS.filter(L => E.examReady(L.n)).map(L => `<a class="card ch" href="#/exam/${L.n}"><div class="row"><div><h3>🏆 Examen du niveau ${L.n}</h3><span class="muted">Facultatif · +50 XP · une grande étape à valider</span></div><b>→</b></div></a>`).join("")}
   ${due ? `<a class="card ch" href="#/review"><div class="row"><div><h3>🔄 À revoir</h3><span class="muted">${due} question(s) à réviser. Cette notion demande une courte révision.</span></div><b>→</b></div></a>` : ""}
   <a class="card ch" href="#/daily"><div class="row"><div><h3>🎯 Défi quotidien</h3><span class="muted">${d.daily ? "Fait aujourd'hui ✅" : "5 questions · +30 XP"}</span></div><b>→</b></div></a>
   ${weak.length ? `<div class="card"><h3>À améliorer</h3>${weak.map(c => `<a class="ch" href="#/chapter/${c.id}"><div class="row"><span>${esc(c.title)}</span><b>${pct(E.mastery(c.id))} %</b></div></a>`).join("")}</div>` : ""}`;
@@ -168,9 +169,9 @@ V.path = () => {
 V.level = n => {
   const L = LEVELS[+n]; if (!L) return V.path();
   const lock = !E.levelUnlocked(+n);
-  return `<a href="#/path" class="muted">← Parcours</a><h2>Niveau ${n} · ${esc(L.unit)}</h2>${lock ? `<div class="card">🔒 Termine le niveau précédent${needsExam(+n - 1) ? " et son examen" : ""} pour débloquer celui-ci.</div>` : ""}
+  return `<a href="#/path" class="muted">← Parcours</a><h2>Niveau ${n} · ${esc(L.unit)}</h2>${lock ? `<div class="card">🔒 Valide le niveau précédent (60 %) pour débloquer celui-ci, ou active « Tout débloquer » dans Profil → Paramètres.</div>` : ""}
   ${L.chapters.map(c => chapterCard(c)).join("")}
-  ${needsExam(+n) ? `<div class="card"><h3>🏆 Examen des niveaux 0–${n}</h3><p class="muted">30 questions mixtes, 75 % requis pour débloquer la suite.</p>${E.S.exams[n] ? "<b>✅ Réussi</b>" : E.examReady(+n) ? `<a class="btn" href="#/exam/${n}">Passer l'examen</a>` : `<span class="muted">Disponible quand tous les chapitres sont maîtrisés à 70 %.</span>`}</div>` : ""}`;
+  ${needsExam(+n) ? `<div class="card"><h3>🏆 Examen des niveaux 0–${n}</h3><p class="muted">30 questions mixtes, 65 % pour réussir. Facultatif, repassable à volonté.</p>${E.S.exams[n] ? "<b>✅ Réussi</b>" : E.examReady(+n) ? `<a class="btn" href="#/exam/${n}">Passer l'examen</a>` : `<span class="muted">Disponible quand les chapitres du niveau sont validés (60 %). Facultatif : il ne bloque pas la suite.</span>`}</div>` : ""}`;
 };
 function chapterCard(c) {
   const m = E.mastery(c.id), un = E.chapterUnlocked(c.id), sub = SUBJECTS.find(s => s.id === c.subject);
@@ -179,11 +180,13 @@ function chapterCard(c) {
 
 V.chapter = id => {
   const c = CHAPTERS[id]; if (!c) return V.path();
-  if (!E.chapterUnlocked(id)) return `<div class="card">🔒 Chapitre verrouillé. Maîtrise d'abord le précédent (70 %).</div><a class="btn" href="#/path">Retour</a>`;
+  if (!E.chapterUnlocked(id)) return `<div class="card">🔒 Niveau verrouillé. Valide le niveau précédent (60 %) ou active « Tout débloquer » dans Profil → Paramètres.</div><a class="btn" href="#/path">Retour</a>`;
   const m = E.mastery(id);
   return `<a href="#/level/${c.level}" class="muted">← Niveau ${c.level}</a><h2>${esc(c.title)}</h2>
-  <div class="card"><div class="row"><span>Maîtrise</span><b>${pct(m)} %</b></div>${bar(m)}<span class="muted">${m >= E.UNLOCK ? "🔓 Chapitre validé. Les révisions l'amèneront vers 100 %." : "70 % requis pour débloquer la suite."}</span></div>
+  <div class="card"><div class="row"><span>Maîtrise</span><b>${pct(m)} %</b></div>${bar(m)}<span class="muted">${m >= E.UNLOCK ? "🔓 Chapitre validé. Les révisions l'amèneront vers 100 %." : "60 % requis pour débloquer la suite."}</span></div>
   ${c.lessons.map((l, i) => `<a class="card ch" href="#/lesson/${id}/${i}"><div class="row"><div><h3>📖 Leçon ${i + 1} · ${esc(l.t)}</h3></div><b>${E.S.lessons[id + ":" + i] ? "✅" : "→"}</b></div></a>`).join("")}
+  ${c.video ? `<a class="btn sec" href="${esc(c.video.url)}" target="_blank" rel="noopener">🎬 Vidéo : ${esc(c.video.title)}</a>` : ""}
+  ${c.fun ? `<div class="card fun"><h3>💡 Le savais-tu ?</h3><p>${esc(c.fun)}</p></div>` : ""}
   <a class="btn" href="#/quiz/${id}">📝 Quiz du chapitre</a>
   <div class="card" style="margin-top:12px"><h3>📚 Sources</h3>${c.sources.map(s => `<div class="src">• ${esc(s)}</div>`).join("")}<p class="muted">Références issues de sources classiques, à faire valider par une personne qualifiée.</p></div>`;
 };
@@ -210,7 +213,7 @@ V.quiz = id => {
 };
 V.review = () => runSession({ kind: "review", title: "🔄 Révision", questions: E.dueQids().slice(0, E.S.goal).map(q => QINDEX[q]), back: "#/home" });
 V.daily = () => E.dayState().daily ? `<div class="card">🎯 Défi du jour déjà relevé. À demain !</div><a class="btn" href="#/home">Retour</a>` : runSession({ kind: "daily", title: "🎯 Défi quotidien", questions: E.buildDaily(), back: "#/home" });
-V.exam = n => { if (!E.examReady(+n)) return `<div class="card">L'examen n'est pas disponible (chapitres à maîtriser à 70 % ou examen déjà réussi).</div><a class="btn" href="#/level/${n}">Retour</a>`; runSession({ kind: "exam", title: "🏆 Examen niveau " + n, questions: E.buildExam(+n), retry: false, level: +n, back: "#/level/" + n }); };
+V.exam = n => { if (!E.examReady(+n)) return `<div class="card">L'examen n'est pas disponible (chapitres à maîtriser à 60 % ou examen déjà réussi).</div><a class="btn" href="#/level/${n}">Retour</a>`; runSession({ kind: "exam", title: "🏆 Examen niveau " + n, questions: E.buildExam(+n), retry: false, level: +n, back: "#/level/" + n }); };
 
 let quizSubject = "all";
 V.quizhub = () => {
@@ -231,22 +234,34 @@ V.subject = sid => {
   return `<a href="#/subjects" class="muted">← Matières</a><h2>${s.icon} ${esc(s.name)}</h2>${cs.length ? cs.map(chapterCard).join("") : `<div class="card">🚧 Ce parcours est en préparation. Il sera développé avec des sources fiables.</div>`}`;
 };
 
-/* Carte historique (schématique) */
+/* Carte historique : vrais contours (Natural Earth), zoom sur un lieu */
 const PLACES = [
-  { id: "mecque", n: "La Mecque", lon: 39.83, lat: 21.42, ev: ["Naissance du Prophète ﷺ (vers 570)", "Enfance et jeunesse", "Première révélation (grotte de Hira, près de La Mecque)", "La Kaaba"], ch: ["c6-arabie", "c6-naissance", "c7-enfance", "c7-jeunesse", "c8-revelation"], pers: "Abdallah, Amina, Abd al-Muttalib, Abu Talib, Khadija" },
-  { id: "medine", n: "Médine", lon: 39.61, lat: 24.47, ev: ["Hégire (622) : arrivée du Prophète ﷺ", "Mort du Prophète ﷺ"], ch: ["c0-muhammad"], pers: "Le Prophète ﷺ, Abu Bakr", soon: "Le parcours de la période médinoise arrive bientôt." },
-  { id: "taif", n: "Taïf", lon: 40.4, lat: 21.27, ev: ["Voyage du Prophète ﷺ à Taïf pour appeler à l'islam"], ch: [], soon: "Chapitre à venir." },
-  { id: "badr", n: "Badr", lon: 38.79, lat: 23.78, ev: ["Bataille de Badr (2 H, Ramadan)"], ch: [], soon: "Chapitre à venir." },
-  { id: "jerusalem", n: "Jérusalem", lon: 35.23, lat: 31.78, ev: ["Mentionnée avec Al-Aqsa dans le voyage nocturne (Coran 17:1)", "Première direction de prière avant la Kaaba"], ch: [], soon: "Chapitre à venir." },
-  { id: "bosra", n: "Bosra (Syrie)", lon: 36.48, lat: 32.52, ev: ["Voyages de commerce vers la Syrie dans la jeunesse du Prophète ﷺ"], ch: ["c7-jeunesse"], pers: "Muhammad ﷺ, Abu Talib" },
+  { id: "mecque", n: "La Mecque", lon: 39.83, lat: 21.42, dx: -12, anchor: "end", ev: ["Naissance du Prophète ﷺ (vers 570)", "Enfance et jeunesse", "Première révélation (grotte de Hira, près de La Mecque)", "La Kaaba et le puits de Zamzam", "Traité de Hudaybiya (6 H, près de La Mecque)", "Conquête de La Mecque (8 H)", "Pèlerinage d'adieu (10 H)"], ch: ["c6-arabie", "c6-naissance", "c7-enfance", "c7-jeunesse", "c8-revelation", "c21-appel", "c37-hudaybiya", "c38-conquete", "c20-hajj"], pers: "Abdallah, Amina, Abd al-Muttalib, Abu Talib, Khadija, Abu Bakr" },
+  { id: "taif", n: "Taïf", lon: 40.41, lat: 21.27, dy: 14, ev: ["Voyage du Prophète ﷺ à Taïf, après le décès d'Abu Talib et de Khadija"], ch: ["c27-taif"] },
+  { id: "medine", n: "Médine", lon: 39.61, lat: 24.47, dx: -12, anchor: "end", ev: ["Hégire : arrivée du Prophète ﷺ (622)", "Construction de la Mosquée du Prophète", "Bataille d'Uhud (3 H, près de Médine)", "Bataille du Fossé (5 H)", "Mort du Prophète ﷺ (11 H)"], ch: ["c30-hijra", "c31-medine", "c32-fraternite", "c33-adhan", "c35-uhud", "c36-khandaq", "c39-adieu"], pers: "Le Prophète ﷺ, Abu Bakr, Bilal, les Ansar" },
+  { id: "badr", n: "Badr", lon: 38.79, lat: 23.78, dx: -12, anchor: "end", ev: ["Bataille de Badr (2 H, 17 Ramadan)"], ch: ["c34-badr"] },
+  { id: "khaybar", n: "Khaybar", lon: 39.3, lat: 25.7, dx: 12, ev: ["Expédition de Khaybar (7 H)"], ch: [] },
+  { id: "tabuk", n: "Tabouk", lon: 36.57, lat: 28.38, dx: 12, ev: ["Expédition de Tabouk (9 H)"], ch: [] },
+  { id: "jerusalem", n: "Jérusalem", lon: 35.23, lat: 31.78, dx: -12, anchor: "end", ev: ["Voyage nocturne (Isra) vers Al-Aqsa et ascension (Mi'raj), Coran 17:1", "Première direction de prière (qibla) avant la Kaaba"], ch: ["c28-isra", "c33-adhan"] },
+  { id: "bosra", n: "Bosra", lon: 36.48, lat: 32.52, dx: 12, ev: ["Voyages de commerce vers la Syrie dans la jeunesse du Prophète ﷺ", "Rencontre avec le moine Bahira (récit de la Sîra)"], ch: ["c7-jeunesse"] },
+  { id: "axoum", n: "Aksoum (Abyssinie)", lon: 38.72, lat: 14.13, dx: 12, ev: ["Émigration de musulmans en Abyssinie, sous la protection du Négus (an-Najashi)"], ch: ["c24-abyssinie"] },
 ];
-let mapSel = "mecque";
+const SEAS = [["Mer Méditerranée", 30.5, 34.6], ["Mer Rouge", 39, 18.7], ["Golfe Persique", 51.6, 27.2], ["Mer d'Arabie", 56, 14], ["Golfe d'Aden", 47, 12.2]];
+const LANDS = [["ARABIE", 45, 23.5], ["ÉGYPTE", 30.5, 26.5], ["SYRIE (Sham)", 38.2, 35.6], ["YÉMEN", 45, 15.6], ["IRAK", 43.8, 32.6], ["ABYSSINIE", 39.8, 9.8]];
+let mapSel = "mecque", mapZoom = false;
+const mx = lon => (lon - MAP.lon0) * MAP.kx, my = lat => (MAP.lat1 - lat) * MAP.ky;
 V.map = () => {
-  const X = lon => (lon - 33) / 13 * 400, Y = lat => (35 - lat) / 17 * 500, p = PLACES.find(x => x.id === mapSel);
-  return `<h2>🗺️ Carte historique</h2><svg class="map" viewBox="0 0 400 500" role="img" aria-label="Carte schématique"><text x="10" y="20" font-size="10" fill="#6b766f">Carte schématique (positions approximatives)</text>
-  ${PLACES.map(q => `<g class="pin ${q.id === mapSel ? "on" : ""}" data-pin="${q.id}"><circle cx="${X(q.lon)}" cy="${Y(q.lat)}" r="9"/><text x="${X(q.lon) + (["mecque", "badr"].includes(q.id) ? -12 : 12)}" y="${Y(q.lat) + 4}" text-anchor="${["mecque", "badr"].includes(q.id) ? "end" : "start"}">${esc(q.n)}</text></g>`).join("")}</svg>
+  const p = PLACES.find(x => x.id === mapSel), w = mapZoom ? 180 : MAP.W, h = mapZoom ? 180 : MAP.H;
+  const cx = mx(p.lon), cy = my(p.lat), x0 = mapZoom ? Math.max(0, Math.min(MAP.W - w, cx - w / 2)) : 0, y0 = mapZoom ? Math.max(0, Math.min(MAP.H - h, cy - h / 2)) : 0, k = w / MAP.W;
+  const fs = (mapZoom ? 5.2 : 11), r = mapZoom ? 2.6 : 7;
+  const pins = PLACES.filter(q => !mapZoom || (Math.abs(mx(q.lon) - cx) < w && Math.abs(my(q.lat) - cy) < h)).map(q => `<g class="pin ${q.id === mapSel ? "on" : ""}" data-pin="${q.id}"><circle cx="${mx(q.lon)}" cy="${my(q.lat)}" r="${r}" stroke-width="${mapZoom ? .8 : 2}"/><text x="${mx(q.lon) + (q.dx || 12) * (mapZoom ? .4 : 1)}" y="${my(q.lat) + (q.dy || 4) * (mapZoom ? .4 : 1)}" text-anchor="${q.anchor || "start"}" font-size="${fs}">${esc(q.n)}</text></g>`).join("");
+  return `<h2>🗺️ Carte historique</h2><div class="row" style="margin-bottom:8px"><span class="muted">Touche un lieu</span><button class="pill" id="mapz">${mapZoom ? "🌍 Vue d'ensemble" : "🔍 Zoom sur " + esc(p.n)}</button></div>
+  <svg class="map" viewBox="${x0} ${y0} ${w} ${h}" role="img" aria-label="Carte de l'Arabie et des régions voisines"><rect x="0" y="0" width="${MAP.W}" height="${MAP.H}" fill="var(--sea)"/><path d="${MAP.land}" fill="var(--land)" stroke="var(--coast)" stroke-width="${mapZoom ? .5 : 1}" stroke-linejoin="round"/>
+  ${LANDS.map(([n, lo, la]) => `<text x="${mx(lo)}" y="${my(la)}" text-anchor="middle" class="lbl-land" font-size="${mapZoom ? 6 : 13}">${esc(n)}</text>`).join("")}
+  ${SEAS.map(([n, lo, la]) => `<text x="${mx(lo)}" y="${my(la)}" text-anchor="middle" class="lbl-sea" font-size="${mapZoom ? 4.5 : 10}">${esc(n)}</text>`).join("")}${pins}</svg>
+  <p class="muted" style="margin:6px 0 0">Contours : Natural Earth (domaine public). Positions des lieux approximatives.</p>
   <div class="card" style="margin-top:12px"><h3>📍 ${esc(p.n)}</h3><b>📅 Événements</b>${p.ev.map(e => `<div>• ${esc(e)}</div>`).join("")}${p.pers ? `<p><b>👤 Personnages</b> : ${esc(p.pers)}</p>` : ""}
-  ${p.ch.length ? `<b>📖 Histoire & quiz</b>${p.ch.map(id => `<a class="btn sec" href="#/chapter/${id}">${esc(CHAPTERS[id].title)}</a>`).join("")}` : ""}${p.soon ? `<p class="muted">🚧 ${esc(p.soon)}</p>` : ""}</div>`;
+  ${p.ch.filter(id => CHAPTERS[id]).length ? `<b>📖 Histoire & quiz</b>${p.ch.filter(id => CHAPTERS[id]).map(id => `<a class="btn sec" href="#/chapter/${id}">${esc(CHAPTERS[id].title)}</a>`).join("")}` : `<p class="muted">🚧 Chapitre à venir pour ce lieu.</p>`}</div>`;
 };
 
 /* Assistant */
@@ -269,6 +284,7 @@ V.profile = () => {
     <div class="chips" style="margin:8px 0">${[["voix", "🎙️ Voix (style nasheed)"], ["nature", "🌿 Eau et vent"], ["nuit", "🌙 Nuit étoilée"], ["desert", "🏜️ Désert calme"]].map(([id, n]) => `<button class="pill ${S.settings.style === id ? "on" : ""}" data-style="${id}">${n}</button>`).join("")}</div>
     <label class="sw"><span>🔊 Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>
     <label class="sw"><span>🔔 Sons juste / faux</span><input type="checkbox" id="set-sfx" ${S.settings.sfx ? "checked" : ""}></label>
+    <label class="sw"><span>🔓 Tout débloquer (explorer librement)</span><input type="checkbox" id="set-free" ${S.settings.free ? "checked" : ""}></label>
     <div class="row" style="justify-content:flex-start"><button class="pill" id="t-ok">▶ Son « juste »</button><button class="pill" id="t-ko">▶ Son « faux »</button></div></div>
   <div class="card"><h3>🔔 Rappel quotidien</h3><div class="row"><input type="time" id="ptime" value="${S.reminder.time}" style="width:auto;padding:8px"><b>${S.reminder.on ? "Activé" : "Désactivé"}</b></div>
     <button class="btn sec" id="prem">🔔 Activer / mettre à jour</button><button class="btn sec" id="pics">📅 Ajouter à mon agenda</button><button class="btn sec" id="pintro">👋 Revoir l'introduction avec Sirâj</button></div>
@@ -356,10 +372,11 @@ function route() {
 }
 addEventListener("hashchange", route);
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-sub],[data-pin],[data-goal]:not(.opt),[data-ask],#rst,#prem,#pics,#pintro");
+  const t = e.target.closest("[data-sub],[data-pin],[data-goal]:not(.opt),[data-ask],#mapz,#rst,#prem,#pics,#pintro");
   if (!t) return;
   if (t.dataset.sub) { quizSubject = t.dataset.sub; route(); }
   else if (t.dataset.pin) { mapSel = t.dataset.pin; route(); }
+  else if (t.id === "mapz") { mapZoom = !mapZoom; route(); }
   else if (t.dataset.goal) { E.S.goal = +t.dataset.goal; E.save(); route(); }
   else if (t.dataset.ask) { document.getElementById("askq").value = t.dataset.ask; answer(t.dataset.ask); }
   else if (t.id === "prem") enableReminder(document.getElementById("ptime").value).then(() => route());
@@ -371,6 +388,7 @@ document.addEventListener("change", e => {
   const S = E.S.settings;
   if (e.target.id === "set-music") { S.music = e.target.checked; E.save(); SND.apply(); }
   else if (e.target.id === "set-sfx") { S.sfx = e.target.checked; E.save(); }
+  else if (e.target.id === "set-free") { S.free = e.target.checked; E.save(); route(); }
   else if (e.target.id === "set-vol") { S.vol = +e.target.value; E.save(); SND.apply(); }
 });
 document.addEventListener("input", e => { if (e.target.id === "set-vol") { E.S.settings.vol = +e.target.value; SND.apply(); } });

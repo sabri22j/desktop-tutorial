@@ -7,7 +7,7 @@ const Q = {
   text: (q, ok, e) => ({ t: "text", q, ok, e }),
 };
 const L = (t, body, check, ar, ph, ref, fr) => ({ t, body, check, ar, ph, ref, fr });
-const ch = (id, subject, title, sources, lessons, quiz) => ({ id, subject, title, sources, lessons, quiz });
+const ch = (id, subject, title, sources, lessons, quiz, fun, video) => ({ id, subject, title, sources, lessons, quiz, fun, video });
 
 const SUBJECTS = [
   { id: "croyance", name: "Croyance", icon: "☪️" },
@@ -298,13 +298,17 @@ const LEVELS = [
   ]},
 ];
 
-/* Identifiants, index et niveaux */
+/* Identifiants, index et niveaux (rappelé après l'ajout des niveaux suivants) */
 const CHAPTERS = {}, QINDEX = {};
-LEVELS.forEach(lv => lv.chapters.forEach((c, i) => {
-  c.level = lv.n; c.idx = i;
-  CHAPTERS[c.id] = c;
-  c.quiz.forEach((q, k) => { q.id = c.id + ".q" + k; q.chapter = c.id; QINDEX[q.id] = q; });
-  c.lessons.forEach((l, k) => { if (l.check) { l.check.id = c.id + ".l" + k; l.check.chapter = c.id; } });
-}));
+function buildIndex() {
+  Object.keys(CHAPTERS).forEach(k => delete CHAPTERS[k]); Object.keys(QINDEX).forEach(k => delete QINDEX[k]);
+  LEVELS.forEach(lv => lv.chapters.forEach((c, i) => {
+    c.level = lv.n; c.idx = i;
+    CHAPTERS[c.id] = c;
+    c.quiz.forEach((q, k) => { q.id = c.id + ".q" + k; q.chapter = c.id; QINDEX[q.id] = q; });
+    c.lessons.forEach((l, k) => { if (l.check) { l.check.id = c.id + ".l" + k; l.check.chapter = c.id; } });
+  }));
+}
+buildIndex();
 const stageName = n => n === 0 ? STAGES[0] : STAGES[Math.ceil(n / 10)];
-const needsExam = n => n > 0 && n % 10 === 0;
+const needsExam = n => n >= 20 && n % 10 === 0;
