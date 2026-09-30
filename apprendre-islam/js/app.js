@@ -266,7 +266,7 @@ V.profile = () => {
   <div class="card"><h3>Maîtrise par matière</h3>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id); return `<div class="row"><span>${s.icon} ${esc(s.name)}</span><b>${m === null ? "à venir" : pct(m) + " %"}</b></div>${m === null ? "" : bar(m)}`; }).join("")}</div>
   <div class="card"><h3>⚙️ Paramètres</h3>
     <label class="sw"><span>🎵 Musique de fond apaisante</span><input type="checkbox" id="set-music" ${S.settings.music ? "checked" : ""}></label>
-    <div class="chips" style="margin:8px 0">${[["nature", "🌿 Eau et vent"], ["nuit", "🌙 Nuit étoilée"], ["desert", "🏜️ Désert calme"]].map(([id, n]) => `<button class="pill ${S.settings.style === id ? "on" : ""}" data-style="${id}">${n}</button>`).join("")}</div>
+    <div class="chips" style="margin:8px 0">${[["voix", "🎙️ Voix (style nasheed)"], ["nature", "🌿 Eau et vent"], ["nuit", "🌙 Nuit étoilée"], ["desert", "🏜️ Désert calme"]].map(([id, n]) => `<button class="pill ${S.settings.style === id ? "on" : ""}" data-style="${id}">${n}</button>`).join("")}</div>
     <label class="sw"><span>🔊 Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>
     <label class="sw"><span>🔔 Sons juste / faux</span><input type="checkbox" id="set-sfx" ${S.settings.sfx ? "checked" : ""}></label>
     <div class="row" style="justify-content:flex-start"><button class="pill" id="t-ok">▶ Son « juste »</button><button class="pill" id="t-ko">▶ Son « faux »</button></div></div>

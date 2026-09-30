@@ -34,6 +34,26 @@ const SND = (() => {
   function lfo(rate, depth, param) { const l = ctx.createOscillator(), g = ctx.createGain(); l.frequency.value = rate; g.gain.value = depth; l.connect(g); g.connect(param); l.start(); nodes.push(l); }
   function pad(freqs, g) { freqs.forEach((f, i) => { const gn = osc("sine", f * (1 + i * 0.0007), bus, g); lfo(0.05 + i * 0.03, g * 0.4, gn.gain); }); }
   const styles = {
+    voix() { // chœur a cappella : voix tenues, mode Nahawand (ré mi fa sol la si♭ do ré), sans instrument
+      const NAH = [146.83, 164.81, 174.61, 196, 220, 233.08, 261.63, 293.66], VOW = { a: [800, 1150], o: [450, 800], u: [325, 700] };
+      const voice = (f, t0, dur, g, vow, slideFrom) => {
+        const out = ctx.createGain(), [f1, f2] = VOW[vow], vib = ctx.createOscillator(), vg = ctx.createGain();
+        out.gain.setValueAtTime(0, t0); out.gain.linearRampToValueAtTime(g, t0 + 0.6); out.gain.setValueAtTime(g, t0 + Math.max(0.7, dur - 0.9)); out.gain.linearRampToValueAtTime(0, t0 + dur + 0.6);
+        vib.frequency.value = 5.2; vg.gain.value = f * 0.006; vib.connect(vg);
+        [f1, f2].forEach((fc, k) => { const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = fc; bp.Q.value = 4; const fg = ctx.createGain(); fg.gain.value = (k ? 0.5 : 1) * 5; bp.connect(fg); fg.connect(out);
+          [-7, 0, 7].forEach(c => { const o = ctx.createOscillator(); o.type = "sawtooth"; o.detune.value = c;
+            if (slideFrom) { o.frequency.setValueAtTime(slideFrom, t0); o.frequency.linearRampToValueAtTime(f, t0 + 0.18); } else o.frequency.value = f;
+            vg.connect(o.frequency); o.connect(bp); o.start(t0); o.stop(t0 + dur + 0.8); }); });
+        vib.start(t0); vib.stop(t0 + dur + 0.8); out.connect(bus);
+      };
+      const PH = [[[4, 3, 2, 3, 1, 0], [2.2, 1.6, 1.6, 1.8, 2, 4]], [[0, 2, 3, 4, 3, 2, 0], [2, 1.6, 1.6, 2.4, 1.6, 1.8, 4]], [[4, 5, 4, 3, 2, 1, 0], [2.2, 1.6, 1.6, 1.6, 1.6, 2, 4.5]], [[2, 3, 4, 7, 6, 4, 2, 0], [1.8, 1.4, 1.8, 2.6, 1.6, 1.6, 1.8, 4.5]]];
+      const drone = (f, g) => voice(f, ctx.currentTime, 600, g, "u");
+      drone(73.42, 0.05); drone(110, 0.03);
+      const sing = () => { if (!bus) return; const [deg, dur] = PH[Math.floor(Math.random() * PH.length)]; let t = ctx.currentTime + 0.3, prev = null;
+        deg.forEach((d, k) => { const f = NAH[d], vow = ["a", "o", "a", "u"][k % 4]; voice(f, t, dur[k], 0.09, vow, prev); voice(f * 1.5, t + 0.25, dur[k] - 0.2, 0.03, "o"); voice(f * 2, t + 0.45, dur[k] - 0.4, 0.02, "u"); prev = f; t += dur[k] - 0.3; });
+        timer = setTimeout(sing, (t - ctx.currentTime + 2 + Math.random() * 3) * 1000); };
+      sing();
+    },
     desert() { // bourdon et mélodie lente (mode Rast)
       pad([73.42, 110, 146.83], 0.1); let i = 3;
       const note = () => { if (!bus) return; const now = ctx.currentTime; i = Math.max(0, Math.min(7, i + [-2, -1, -1, 0, 1, 1, 2][Math.floor(Math.random() * 7)]));
@@ -58,7 +78,7 @@ const SND = (() => {
     if (!ensure() || started) return; started = true; nodes = [];
     bus = ctx.createGain(); bus.gain.value = 0; bus.connect(music); bus.gain.setTargetAtTime(1, ctx.currentTime, 1.5);
     music.gain.cancelScheduledValues(ctx.currentTime); music.gain.setTargetAtTime(vol(), ctx.currentTime, 0.3);
-    (styles[cfg().style] || styles.nature)();
+    (styles[cfg().style] || styles.voix)();
   }
   function stopMusic() {
     if (!started) return; started = false; clearTimeout(timer);
