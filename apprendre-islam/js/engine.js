@@ -10,7 +10,7 @@ const E = (() => {
   const addDays = (s, n) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return dayStr(d); };
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
-  const fresh = () => ({ xp: 0, goal: 10, onboarded: false, settings: { music: true, vol: 0.5, sfx: true, style: "nature", click: true, free: false, voice: "", rate: 0.95, pitch: 1 }, profile: null, reminder: { on: false, time: "19:00", last: null }, streak: { count: 0, last: null }, qs: {}, lessons: {}, exams: {}, badges: {},
+  const fresh = () => ({ xp: 0, goal: 10, onboarded: false, settings: { music: true, vol: 0.5, sfx: true, style: "nature", click: true, free: false, voice: "", rate: 0.95, pitch: 1 }, profile: null, reminder: { on: false, time: "19:00", last: null }, streak: { count: 0, last: null }, log: {}, cards: {}, celebrated: {}, qs: {}, lessons: {}, exams: {}, badges: {},
     stats: { ok: 0, total: 0, quizzes: 0, reviews: 0, dailies: 0, exams: 0 }, day: { date: null, lessons: 0, questions: 0, xp: 0, daily: false } });
   let S;
   try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { S = fresh(); }
@@ -28,7 +28,8 @@ const E = (() => {
     S.streak.last = t;
   }
   const streak = () => { const t = dayStr(); return (S.streak.last === t || S.streak.last === addDays(t, -1)) ? S.streak.count : 0; };
-  function addXP(n) { S.xp += n; dayState().xp += n; touch(); save(); return n; }
+  function logDay() { const t = dayStr(); return (S.log[t] = S.log[t] || { xp: 0, q: 0 }); }
+  function addXP(n) { S.xp += n; dayState().xp += n; logDay().xp += n; touch(); save(); return n; }
 
   /* Questions */
   function answer(qid, ok) { // première tentative uniquement
@@ -38,7 +39,7 @@ const E = (() => {
     if (ok) { if (st.due <= t) st.box = Math.min(4, st.box + 1); st.due = addDays(t, BOX_DAYS[st.box]); }
     else { st.box = Math.max(0, st.box - 1); st.wrong++; st.due = t; }
     S.qs[qid] = st; S.stats.total++; if (ok) S.stats.ok++;
-    dayState().questions++; touch(); save();
+    dayState().questions++; logDay().q++; touch(); save();
   }
   const mastery = id => { const c = CHAPTERS[id]; return c.quiz.reduce((s, q) => s + BOX_STRENGTH[(S.qs[q.id] || { box: 0 }).box], 0) / c.quiz.length; };
   const lessonsDone = id => CHAPTERS[id].lessons.filter((_, i) => S.lessons[id + ":" + i]).length;
@@ -99,7 +100,20 @@ const E = (() => {
     return fresh;
   }
 
+
+  /* Semaine, étapes, cartes de révision */
+  const LETTERS = ["D", "L", "M", "M", "J", "V", "S"];
+  function weekLog() { const t = dayStr(), out = []; for (let i = 6; i >= 0; i--) { const d = addDays(t, -i), l = S.log[d] || { xp: 0, q: 0 }, dt = new Date(d + "T12:00:00"); out.push({ date: d, letter: LETTERS[dt.getDay()], xp: l.xp, active: l.xp > 0 || l.q > 0, today: i === 0 }); } return out; }
+  const stageOf = n => n === 0 ? 0 : Math.ceil(n / 10);
+  function stageProgress(s) { const a = s === 0 ? 0 : (s - 1) * 10 + 1, b = s === 0 ? 0 : s * 10; let done = 0, total = 0; for (let n = a; n <= b; n++) if (LEVELS[n]) { total++; if (levelComplete(n)) done++; } return { done, total, a, b }; }
+  function newLevelsCompleted() { const out = []; LEVELS.forEach(L => { if (levelComplete(L.n) && !S.celebrated[L.n]) { S.celebrated[L.n] = true; out.push(L.n); } }); if (out.length) save(); return out; }
+  const CARD_DAYS = [0, 1, 3, 7, 14];
+  const cardsDue = (cat) => { const t = dayStr(), pool = LEXIQUE.filter(c => !cat || c.cat === cat), seen = pool.filter(c => S.cards[c.id] && S.cards[c.id].due <= t), fresh = pool.filter(c => !S.cards[c.id]); return { seen, fresh }; };
+  function cardSession(cat, n = 10) { const { seen, fresh } = cardsDue(cat); return shuffle(seen).concat(shuffle(fresh)).slice(0, n); }
+  function cardAnswer(id, ok) { const t = dayStr(), c = S.cards[id] || { box: 0, due: t }; c.box = ok ? Math.min(4, c.box + 1) : 0; c.due = addDays(t, CARD_DAYS[c.box]); S.cards[id] = c; touch(); save(); }
+  const cardStats = () => { const known = LEXIQUE.filter(c => S.cards[c.id] && S.cards[c.id].box >= 3).length, seen = LEXIQUE.filter(c => S.cards[c.id]).length, due = cardsDue().seen.length; return { total: LEXIQUE.length, seen, known, due }; };
+
   return { get S() { return S; }, save, reset, XP, UNLOCK, EXAM_PASS, BADGES, dayStr, shuffle, dayState, addXP, answer, mastery, lessonsDone, quizAttempted, completeLesson,
     levelObj, levelComplete, levelUnlocked, currentLevel, levelsCompleted, progress, chapterUnlocked, examReady, subjectMastery,
-    planFor, estimate, unlockedQids, dueQids, weakChapters, pick, buildDaily, buildExam, goalPlan, nextAction, streak, touch, evalBadges };
+    planFor, estimate, weekLog, stageOf, stageProgress, newLevelsCompleted, cardSession, cardAnswer, cardStats, cardsDue, logDay, unlockedQids, dueQids, weakChapters, pick, buildDaily, buildExam, goalPlan, nextAction, streak, touch, evalBadges };
 })();
