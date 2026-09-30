@@ -83,6 +83,7 @@ V.lesson = (id, i) => {
     <div class="card flat"><div class="src">📚 <b>Sources du chapitre</b> : ${c.sources.map(esc).join(" · ")}</div></div>
     <button class="btn gold" id="cont">Continuer</button></div>`;
   const btn = document.getElementById("speak"), pbi = document.getElementById("pbi"), plab = document.getElementById("plab"), psub = document.getElementById("psub");
+  VOICE.onFail = () => toast("La lecture audio n'est pas disponible ici. Essaie dans le navigateur de ton téléphone, ou choisis une autre voix dans le Profil.");
   VOICE.probe(id, +i, rec => { if (rec && psub) psub.textContent = "Voix humaine enregistrée"; });
   VOICE.onState = (st, rec) => { if (!btn.isConnected) return; btn.classList.toggle("pl", st === "playing"); pbi.innerHTML = ico(st === "playing" ? "pause" : "play", 22); plab.textContent = st === "playing" ? "Pause" : st === "loading" ? "Chargement…" : "Écouter la leçon"; if (rec) psub.textContent = "Voix humaine enregistrée"; };
   btn.onclick = () => { if (btn.classList.contains("pl")) VOICE.stop(); else VOICE.play(id, +i, l.body + (l.fr ? " " + l.fr : "")); };

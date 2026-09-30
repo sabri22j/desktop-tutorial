@@ -249,3 +249,14 @@ body.onb #nav,body.onb #top{display:none}body.onb{padding-bottom:20px}
 .card.stp{margin-bottom:10px}
 body.focus #toast{bottom:auto;top:24px}
 .pair{grid-template-columns:1fr;gap:6px}
+
+/* Sirâj dans les quiz */
+.mascot{display:flex;align-items:center;gap:6px;margin:0 0 12px;position:relative;min-height:100px}
+.mascot .bubble{font-size:.98rem}
+.spk{position:absolute;left:60px;top:48px;width:14px;height:14px;background:var(--gold);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:spk .9s ease-out forwards;pointer-events:none}
+@keyframes spk{from{transform:translate(0,0) scale(.3);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.3) rotate(120deg);opacity:0}}
+.sweat{position:absolute;left:92px;top:14px;width:10px;height:15px;background:#6ec7ff;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;animation:sweat 1.2s ease-in forwards;pointer-events:none}
+@keyframes sweat{from{transform:translateY(0);opacity:1}to{transform:translateY(46px);opacity:0}}
+.qcard.shk{animation:shakeX .5s ease-in-out}
+@keyframes shakeX{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.spk,.sweat,.qcard.shk{animation:none!important}}

@@ -93,10 +93,17 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
   if (!total) { $app.innerHTML = `<div class="card"><p>Rien à faire ici pour l'instant. 🎉</p><a class="btn" href="#/home">Retour</a></div>`; return; }
   let queue = cfg.questions.map(q => ({ q, retry: false })), answered = 0, correct = 0; const wrong = [];
   const dockEl = () => { let d = document.getElementById("dock"); if (!d) { d = document.createElement("div"); d.id = "dock"; d.className = "dock"; document.body.appendChild(d); } return d; };
+  const hint = (item, n, t) => item.retry ? "On réessaie cette question, tu vas y arriver !" : n === 0 ? "C'est parti ! Prends ton temps." : n === t - 1 ? "Dernière question, courage !" : pickMsg(["Réfléchis bien !", "Tu peux le faire !", "Question " + (n + 1) + " sur " + t + ".", "Bismillah, on continue !"]);
+  const react = ok => { // Sirâj réagit : saut + étincelles si juste, secousse + goutte si faux
+    const mas = document.getElementById("mas"), qc = document.getElementById("qc"); if (!mas) return;
+    mas.innerHTML = siraj(ok ? "proud" : "oops", 88, ok ? "jump" : "shake") + `<div class="bubble pop">${esc(ok ? pickMsg(OK_MSG) : pickMsg(KO_MSG))}</div>`;
+    if (ok) { for (let k = 0; k < 10; k++) { const s = document.createElement("i"); s.className = "spk"; const ang = (k / 10) * 6.28; s.style.setProperty("--dx", Math.cos(ang) * (50 + Math.random() * 30) + "px"); s.style.setProperty("--dy", Math.sin(ang) * (40 + Math.random() * 30) + "px"); s.style.animationDelay = (k % 3) * 40 + "ms"; mas.appendChild(s); setTimeout(() => s.remove(), 1100); } }
+    else { const d = document.createElement("i"); d.className = "sweat"; mas.appendChild(d); setTimeout(() => d.remove(), 1300); if (qc) { qc.classList.add("shk"); setTimeout(() => qc.classList.remove("shk"), 600); } }
+  };
   const step = () => {
     if (!queue.length) return finish();
     const item = queue.shift(), dock = dockEl(); dock.className = "dock";
-    $app.innerHTML = `<div class="stop"><button class="x" id="quit" aria-label="Quitter">${ico("close", 26)}</button>${bar(answered / total, "")}</div><div class="muted small" style="margin-bottom:8px">${esc(cfg.title)}${item.retry ? " · à refaire" : ""}</div><div class="card qcard"><div id="q"></div></div>`;
+    $app.innerHTML = `<div class="stop"><button class="x" id="quit" aria-label="Quitter">${ico("close", 26)}</button>${bar(answered / total, "")}</div><div class="mascot" id="mas">${siraj("think", 76, "float")}<div class="bubble">${esc(hint(item, answered, total))}</div></div><div class="card qcard" id="qc"><div id="q"></div></div>`;
     dock.innerHTML = `<div class="in"><button class="btn" id="go" disabled>Vérifier</button></div>`;
     const el = document.getElementById("q"), api = renderQ(item.q, el), btn = document.getElementById("go"); let checked = false;
     const refresh = () => { if (!checked) btn.disabled = api.evaluate() === null; };
@@ -108,10 +115,10 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
       checked = true; el.classList.add("locked-q"); el.querySelectorAll("select,input").forEach(x => x.disabled = true); api.reveal(ok);
       if (!item.retry) { answered++; if (ok) correct++; else wrong.push(item.q); if (item.q.id && QINDEX[item.q.id]) E.answer(item.q.id, ok); }
       if (!ok && cfg.retry !== false && !item.retry) queue.push({ q: item.q, retry: true });
-      ok ? SND.correct() : SND.wrong();
+      ok ? SND.correct() : SND.wrong(); react(ok);
       const ch = CHAPTERS[item.q.chapter], srcs = ch ? `<div class="src">📚 <b>Sources</b> : ${ch.sources.map(esc).join(" · ")}</div>` : "";
       dock.className = "dock " + (ok ? "ok" : "ko");
-      dock.innerHTML = `<div class="in"><div class="fbh">${siraj(ok ? "proud" : "oops", 56, ok ? "jump" : "shake")}<div class="fbt">${ok ? pickMsg(OK_MSG) : pickMsg(KO_MSG)}</div></div>${ok ? "" : `<div class="fbx">Bonne réponse : <b>${esc(api.answerText)}</b></div>`}${item.q.e ? `<div class="fbx muted">${esc(item.q.e)}</div>` : ""}${srcs}<button class="btn" id="go">Continuer</button></div>`;
+      dock.innerHTML = `<div class="in"><div class="fbh"><div class="fbt">${ok ? "✓ Correct !" : "✗ Pas tout à fait"}</div></div>${ok ? "" : `<div class="fbx">Bonne réponse : <b>${esc(api.answerText)}</b></div>`}${item.q.e ? `<div class="fbx muted">${esc(item.q.e)}</div>` : ""}${srcs}<button class="btn" id="go">Continuer</button></div>`;
       document.getElementById("go").onclick = step;
     };
   };
