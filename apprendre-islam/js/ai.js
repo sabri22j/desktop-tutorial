@@ -84,6 +84,19 @@ const KB = [
   { k: ["yusuf", "joseph", "yaqub", "jacob", "puits"], title: "Quelle est l'histoire de Yusuf (Joseph) ?",
     a: "Yusuf, fils de Yaqub, voit en rêve onze étoiles, le soleil et la lune se prosterner. Jeté dans un puits par ses frères jaloux, vendu en Égypte, emprisonné injustement, il devient responsable des réserves du pays. Il finit par retrouver sa famille et pardonne à ses frères.",
     src: [["Texte", "Coran 12 (sourate Yusuf)"]] },
+
+  { k: ["hud", "salih", "thamud", "lut", "loth", "shuayb", "chouaib", "madyan"], title: "Quels sont les peuples des prophètes Hud, Salih, Lut et Shu'ayb ?",
+    a: "Hud a été envoyé au peuple d'Ad (détruit par un vent violent), Salih aux Thamud (chamelle, puis cri et tremblement), Lut à son peuple corrompu (cité renversée) et Shu'ayb à Madyan (tricherie dans les mesures). Dans chaque cas, le Coran rappelle le danger de l'orgueil et du refus du message.",
+    src: [["Texte", "Coran 7:65-93"], ["Texte", "Coran 11:50-95"], ["Texte", "Coran 26:123-191"]] },
+  { k: ["yunus", "jonas", "baleine", "poisson"], title: "Qui était Yunus (Jonas) ?",
+    a: "Yunus a quitté son peuple avant l'autorisation d'Allah et a été avalé par un grand poisson. Dans les ténèbres, il a invoqué Allah : « Il n'y a de divinité que Toi ! Gloire à Toi ! J'ai été du nombre des injustes ». Allah l'a sauvé ; son peuple avait fini par croire.",
+    src: [["Texte", "Coran 21:87-88"], ["Texte", "Coran 37:139-148"], ["Texte", "Coran 10:98"], ["Hadith", "At-Tirmidhi 3505"]] },
+  { k: ["ayyub", "job", "patience", "epreuve"], title: "Qui était Ayyub (Job) ?",
+    a: "Ayyub est un prophète éprouvé dans sa santé et ses biens. Le Coran le présente comme un modèle de patience et un excellent serviteur ; Allah l'a guéri et lui a rendu sa famille.",
+    src: [["Texte", "Coran 21:83-84"], ["Texte", "Coran 38:41-44"]] },
+  { k: ["dawud", "david", "salomon", "sulayman", "zabur", "huppe", "saba"], title: "Qui étaient Dawud (David) et Sulayman (Salomon) ?",
+    a: "Dawud est un prophète-roi qui a vaincu Jalut et reçu le Zabur ; Allah lui a soumis les montagnes et les oiseaux et rendu le fer malléable. Son fils Sulayman a hérité de sa sagesse : il comprenait le langage des oiseaux, commandait les vents et les djinns, et a reçu la reine de Saba.",
+    src: [["Texte", "Coran 2:251 ; 34:10-14"], ["Texte", "Coran 27:15-44"], ["Texte", "Coran 38:17-40"], ["Hadith", "Bukhari 1131 (jeûne de Dawud)"]] },
 ];
 const normAI = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ");
 function askAI(query) {

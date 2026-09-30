@@ -4,7 +4,7 @@ Application mobile (PWA, sans dépendance) inspirée de la logique pédagogique 
 Ouvrir `index.html`, ou : `python3 -m http.server` puis http://localhost:8000 (installable sur téléphone via le navigateur).
 
 ## Ce qui est implémenté
-- **Parcours 0 → 100** (101 niveaux, 11 grandes étapes). Niveaux **0 à 46 rédigés** (56 chapitres, 280 questions : Sîra complète, prophètes, compagnons, Coran, pratique) ; 47 à 100 = structure prête, contenu à écrire.
+- **Parcours 0 → 100** (101 niveaux, 11 grandes étapes). Niveaux **0 à 50 rédigés** (64 chapitres, 320 questions : Sîra complète, prophètes, compagnons, Coran, pratique) ; 51 à 100 = structure prête, contenu à écrire.
 - **Niveaux → unités → chapitres → leçons → question rapide → quiz → examen.**
 - **XP ≠ maîtrise** : l'XP récompense ; seule la maîtrise (par chapitre) débloque la suite (70 %). Examen (75 %) tous les 10 niveaux.
 - **Révision espacée** (boîtes 0–4, rappels à J+1/3/7/14). Une question ratée reste « à revoir » ; répondre au hasard ne fait pas monter la maîtrise. Options mélangées.
