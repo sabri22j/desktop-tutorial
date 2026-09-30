@@ -296,9 +296,11 @@ V.profile = () => {
   <div class="card"><h3>Maîtrise par matière</h3>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id); return `<div class="row"><span>${s.icon} ${esc(s.name)}</span><b>${m === null ? "à venir" : pct(m) + " %"}</b></div>${m === null ? "" : bar(m)}`; }).join("")}</div>
   <div class="card"><h3>⚙️ Paramètres</h3>
     <label class="sw"><span>🎵 Musique de fond apaisante</span><input type="checkbox" id="set-music" ${S.settings.music ? "checked" : ""}></label>
-    <div class="chips" style="margin:8px 0">${[["voix", "🎙️ Voix (style nasheed)"], ["nature", "🌿 Eau et vent"], ["nuit", "🌙 Nuit étoilée"], ["desert", "🏜️ Désert calme"]].map(([id, n]) => `<button class="pill ${S.settings.style === id ? "on" : ""}" data-style="${id}">${n}</button>`).join("")}</div>
+    <div class="chips" style="margin:8px 0">${[["nature", "🌿 Eau et vent"], ["pluie", "🌧️ Pluie douce"], ["mer", "🌊 Vagues"], ["oiseaux", "🐦 Oiseaux et ruisseau"]].map(([id, n]) => `<button class="pill ${S.settings.style === id ? "on" : ""}" data-style="${id}">${n}</button>`).join("")}</div>
     <label class="sw"><span>🔊 Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>
-    <label class="sw"><span>🔔 Sons juste / faux</span><input type="checkbox" id="set-sfx" ${S.settings.sfx ? "checked" : ""}></label>
+    <label class="sw"><span>💧 Sons juste / faux</span><input type="checkbox" id="set-sfx" ${S.settings.sfx ? "checked" : ""}></label>
+    <label class="sw"><span>👆 Bruit des boutons</span><input type="checkbox" id="set-click" ${S.settings.click ? "checked" : ""}></label>
+    <p class="muted" style="margin:6px 0">Aucun instrument ni mélodie : uniquement des sons de la nature et de petits bruits.</p>
     <label class="sw"><span>🔓 Tout débloquer (explorer librement)</span><input type="checkbox" id="set-free" ${S.settings.free ? "checked" : ""}></label>
     <div class="row" style="justify-content:flex-start"><button class="pill" id="t-ok">▶ Son « juste »</button><button class="pill" id="t-ko">▶ Son « faux »</button></div></div>
   <div class="card"><h3>🎧 Voix de lecture</h3>
@@ -409,6 +411,7 @@ document.addEventListener("change", e => {
   const S = E.S.settings;
   if (e.target.id === "set-music") { S.music = e.target.checked; E.save(); SND.apply(); }
   else if (e.target.id === "set-sfx") { S.sfx = e.target.checked; E.save(); }
+  else if (e.target.id === "set-click") { S.click = e.target.checked; E.save(); }
   else if (e.target.id === "set-voice") { S.voice = e.target.value; E.save(); speak("Salut ! Moi c'est Sirâj, ta lanterne-guide."); }
   else if (e.target.id === "set-free") { S.free = e.target.checked; E.save(); route(); }
   else if (e.target.id === "set-vol") { S.vol = +e.target.value; E.save(); SND.apply(); }
@@ -418,6 +421,7 @@ document.addEventListener("input", e => {
   else if (e.target.id === "set-rate") { E.S.settings.rate = +e.target.value; E.save(); }
   else if (e.target.id === "set-pitch") { E.S.settings.pitch = +e.target.value; E.save(); }
 });
+document.addEventListener("pointerdown", e => { if (e.target.closest("button:not(:disabled), a[href], .opt, .chip, .pill, .node, label.sw")) SND.click(); }, { passive: true });
 document.addEventListener("click", e => {
   if (e.target.id === "t-voice") speak("Salut ! Moi c'est Sirâj, ta lanterne-guide. Bismillah, on commence ?");
   if (e.target.id === "t-ok") { SND.unlock(); SND.correct(); } else if (e.target.id === "t-ko") { SND.unlock(); SND.wrong(); }
