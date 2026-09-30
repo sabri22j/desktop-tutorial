@@ -9,6 +9,49 @@ function toast(msg) { $toast.textContent = msg; $toast.classList.add("show"); cl
 const go = h => { location.hash = h; };
 const celebrate = () => E.evalBadges().forEach(b => toast("Nouveau badge : " + b));
 
+
+/* ---------- Sirâj, le guide ---------- */
+function sirajSVG(mood) {
+  const eyes = {
+    happy: `<g class="eyes"><ellipse cx="80" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="82" cy="130" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="122" cy="130" rx="7" ry="9.5" fill="#23170a"/><circle cx="85" cy="125" r="3.2" fill="#fff"/><circle cx="125" cy="125" r="3.2" fill="#fff"/></g>`,
+    think: `<g class="eyes"><ellipse cx="80" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="85" cy="124" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="125" cy="124" rx="7" ry="9.5" fill="#23170a"/><circle cx="88" cy="119" r="3.2" fill="#fff"/><circle cx="128" cy="119" r="3.2" fill="#fff"/></g><path d="M64 106q16-10 32-2M104 104q16-8 32 2" stroke="#23170a" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
+    proud: `<path d="M68 130q12-18 24 0M108 130q12-18 24 0" stroke="#23170a" stroke-width="6" fill="none" stroke-linecap="round"/>`,
+    oops: `<g class="eyes"><ellipse cx="80" cy="130" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="130" rx="12" ry="15" fill="#fff"/><ellipse cx="80" cy="134" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="120" cy="134" rx="7" ry="9.5" fill="#23170a"/><circle cx="83" cy="130" r="3.2" fill="#fff"/><circle cx="123" cy="130" r="3.2" fill="#fff"/></g><path d="M66 108l26 6M134 108l-26 6" stroke="#23170a" stroke-width="4.5" stroke-linecap="round"/>`,
+  }[mood];
+  const mouth = {
+    happy: `<path d="M84 154q16 18 32 0z" fill="#7a2b1e" stroke="#23170a" stroke-width="4" stroke-linejoin="round"/><path d="M90 158q10 7 20 0" fill="#ff8f7d"/>`,
+    think: `<path d="M90 158q10 5 22-2" stroke="#23170a" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+    proud: `<path d="M80 150q20 30 40 0z" fill="#7a2b1e" stroke="#23170a" stroke-width="4" stroke-linejoin="round"/><path d="M88 158q12 10 24 0" fill="#ff8f7d"/>`,
+    oops: `<path d="M88 162q12-10 24 0" stroke="#23170a" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+  }[mood];
+  const star = mood === "proud" ? `<path d="M166 64l5 12 13 2-10 9 3 13-11-7-11 7 3-13-10-9 13-2z" fill="#ffd54a" stroke="#c99a1a" stroke-width="2"/>` : "";
+  return `<svg viewBox="0 0 200 250" aria-hidden="true"><ellipse cx="100" cy="240" rx="52" ry="8" fill="#000" opacity=".16"/>
+  <circle class="glow" cx="100" cy="135" r="98" fill="url(#gGlow)"/>
+  <path d="M100 16v24" stroke="#084a2f" stroke-width="6" stroke-linecap="round"/><circle cx="100" cy="14" r="9" fill="none" stroke="url(#gBase)" stroke-width="5"/>
+  <path d="M58 72q42-56 84 0z" fill="url(#gCap)"/><path d="M72 62q16-22 40-22" stroke="#7be0b0" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+  <rect x="52" y="68" width="96" height="13" rx="6.5" fill="url(#gBase)"/>
+  <path d="M60 81h80q11 42 0 82q-7 32-40 32t-40-32q-11-40 0-82z" fill="url(#gBody)" stroke="#8a5f10" stroke-width="3"/>
+  <path d="M132 86q9 40-2 78q-6 22-26 28q34 0 40-30q11-40-2-76z" fill="#8a5f10" opacity=".22"/>
+  <ellipse cx="74" cy="104" rx="10" ry="22" transform="rotate(14 74 104)" fill="#fff" opacity=".55"/>
+  <rect x="62" y="190" width="76" height="15" rx="7" fill="url(#gBase)"/><path d="M70 205h60l-8 24H78z" fill="url(#gBase)"/><rect x="72" y="227" width="56" height="10" rx="5" fill="#084a2f"/>
+  <ellipse cx="62" cy="152" rx="10" ry="6.5" fill="#ff8f7d" opacity=".55"/><ellipse cx="138" cy="152" rx="10" ry="6.5" fill="#ff8f7d" opacity=".55"/>
+  ${eyes}${mouth}${star}</svg>`;
+}
+const siraj = (mood = "happy", size = 110, anim = "float") => `<span class="sj ${anim}" style="--s:${size}px">${sirajSVG(mood)}</span>`;
+function confetti() {
+  const cols = ["#f2c94c", "#0f7a4d", "#27b77c", "#ffffff", "#e0a82e"];
+  for (let i = 0; i < 36; i++) { const d = document.createElement("i"); d.className = "confetti"; d.style.left = Math.random() * 100 + "vw"; d.style.background = cols[i % cols.length]; d.style.setProperty("--dx", (Math.random() * 120 - 60) + "px"); d.style.animationDelay = Math.random() * .4 + "s"; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+}
+const OK_MSG = ["Machallah, bravo !", "Excellent !", "Tu progresses bien !", "Exactement !"], KO_MSG = ["Pas grave, on apprend !", "Regarde la bonne réponse, tu la retiendras.", "Courage, ça reviendra en révision."];
+const pickMsg = a => a[Math.floor(Math.random() * a.length)];
+function dayMessage() {
+  const S = E.S, t = E.dayStr();
+  if (!S.stats.total && !S.xp) return "Salam ! Je suis Sirâj, ta lanterne. Je t'accompagne de 0 à 100. On commence ?";
+  if (S.streak.count > 0 && S.streak.last !== t) return `Ta série de ${S.streak.count} jour(s) est en jeu : fais une activité aujourd'hui !`;
+  if (E.dueQids().length) return "Quelques notions méritent une courte révision. Prêt ?";
+  return pickMsg(["Chaque petite leçon compte. Bismillah !", "Un pas après l'autre, tu avances bien.", "Prêt pour la suite ?"]);
+}
+
 /* ---------- Questions ---------- */
 function renderQ(q, el) { // affiche la question, renvoie { evaluate(): true|false|null, answerText }
   let h = `<h3>${esc(q.q)}</h3>`, api;
@@ -60,7 +103,7 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,onFinish(res
       checked = true; el.classList.add("locked-q"); el.querySelectorAll("select,input").forEach(x => x.disabled = true); api.reveal(ok);
       if (!item.retry) { answered++; if (ok) correct++; else wrong.push(item.q); if (item.q.id && QINDEX[item.q.id]) E.answer(item.q.id, ok); }
       if (!ok && cfg.retry !== false && !item.retry) queue.push({ q: item.q, retry: true });
-      document.getElementById("fb").innerHTML = `<div class="fb ${ok ? "ok" : "ko"}"><b>${ok ? "✅ Correct !" : "❌ Pas tout à fait"}</b>${ok ? "" : `<div>Bonne réponse : ${esc(api.answerText)}</div>`}${item.q.e ? `<div class="muted">${esc(item.q.e)}</div>` : ""}</div>`;
+      document.getElementById("fb").innerHTML = `<div class="fb ${ok ? "ok" : "ko"}"><div class="fbrow">${siraj(ok ? "proud" : "oops", 64, ok ? "jump" : "shake")}<div><b>${ok ? "✅ " + pickMsg(OK_MSG) : "❌ " + pickMsg(KO_MSG)}</b></div></div>${ok ? "" : `<div>Bonne réponse : <b>${esc(api.answerText)}</b></div>`}${item.q.e ? `<div class="muted">${esc(item.q.e)}</div>` : ""}</div>`;
       btn.textContent = "Continuer";
     };
   };
@@ -78,7 +121,8 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,onFinish(res
     }
     E.save(); celebrate();
     const m = cfg.chapter ? E.mastery(cfg.chapter) : null;
-    $app.innerHTML = `<div class="card"><div class="score">${correct}/${total}</div><p style="text-align:center">${cfg.kind === "exam" ? (res.pass ? "🎓 Examen réussi !" : "Examen non validé (75 % requis). Révise puis réessaie.") : score >= 0.8 ? "🎉 Bravo !" : score >= 0.6 ? "👍 Bien, continue !" : "💪 Il faut réviser un peu."}</p>
+    if (score >= 0.8 || res.pass) confetti();
+    $app.innerHTML = `<div class="card"><div style="text-align:center">${siraj(score >= 0.8 ? "proud" : score >= 0.6 ? "happy" : "think", 120, score >= 0.8 ? "jump" : "float")}</div><div class="score">${correct}/${total}</div><p style="text-align:center">${cfg.kind === "exam" ? (res.pass ? "🎓 Examen réussi !" : "Examen non validé (75 % requis). Révise puis réessaie.") : score >= 0.8 ? "🎉 Bravo !" : score >= 0.6 ? "👍 Bien, continue !" : "💪 Il faut réviser un peu."}</p>
       <p style="text-align:center">+${res.xp} XP</p>${m !== null ? `<p>Maîtrise du chapitre : <b>${pct(m)} %</b>${bar(m)}<span class="muted">${m >= E.UNLOCK ? "🔓 Suite débloquée" : "70 % requis pour débloquer la suite. Les questions ratées reviendront en révision."}</span></p>` : ""}
       ${wrong.length ? `<p class="muted">🔄 À revoir : ${wrong.length} question(s) ajoutée(s) à tes révisions.</p>` : ""}</div>
       <a class="btn" href="${E.nextAction().href}">Continuer</a><a class="btn sec" href="${cfg.back || "#/home"}">Retour</a>`;
@@ -91,7 +135,8 @@ const V = {};
 V.home = () => {
   const S = E.S, n = E.currentLevel(), na = E.nextAction(), plan = E.goalPlan(), d = E.dayState(), due = E.dueQids().length, weak = E.weakChapters().slice(0, 3);
   const lv = n >= LEVELS.length ? "—" : n;
-  return `<div class="card hero"><div class="stats"><div><b>🔥 ${E.streak()}</b>série</div><div><b>⭐ ${lv}</b>niveau</div><div><b>📊 ${pct(E.progress())} %</b>parcours</div></div></div>
+  return `<div class="guide">${siraj(E.S.xp ? "happy" : "proud", 110, "float")}<div class="bubble">${esc(dayMessage())}</div></div>
+  <div class="card hero" style="margin-top:12px"><div class="stats"><div><b>🔥 ${E.streak()}</b>série</div><div><b>⭐ ${lv}</b>niveau</div><div><b>📊 ${pct(E.progress())} %</b>parcours</div></div></div>
   <div class="card"><h3>🎯 Objectif du jour · ${S.goal} min</h3>
     <div class="muted">Leçons ${Math.min(d.lessons, plan.lessons)}/${plan.lessons} · Questions ${Math.min(d.questions, plan.questions)}/${plan.questions}${due ? ` · ${due} à réviser` : ""}</div>
     ${bar(Math.min(1, (d.lessons / plan.lessons + d.questions / plan.questions) / 2))}

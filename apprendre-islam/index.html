@@ -10,7 +10,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header id="top"></header>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<radialGradient id="gBody" cx="36%" cy="28%" r="80%"><stop offset="0" stop-color="#fffbe0"/><stop offset=".35" stop-color="#ffe27a"/><stop offset=".75" stop-color="#e8b23a"/><stop offset="1" stop-color="#b9831a"/></radialGradient>
+<linearGradient id="gCap" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#27b77c"/><stop offset=".6" stop-color="#0f7a4d"/><stop offset="1" stop-color="#084a2f"/></linearGradient>
+<linearGradient id="gBase" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a9a66"/><stop offset="1" stop-color="#084a2f"/></linearGradient>
+<radialGradient id="gGlow"><stop offset="0" stop-color="#fff3b0" stop-opacity=".9"/><stop offset="1" stop-color="#f2c94c" stop-opacity="0"/></radialGradient>
+</defs></svg>
+<header id="top"></header>
   <main id="app"></main>
   <nav id="nav"></nav>
   <div id="toast" role="status"></div>
