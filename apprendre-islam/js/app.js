@@ -266,6 +266,7 @@ V.profile = () => {
   <div class="card"><h3>Maîtrise par matière</h3>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id); return `<div class="row"><span>${s.icon} ${esc(s.name)}</span><b>${m === null ? "à venir" : pct(m) + " %"}</b></div>${m === null ? "" : bar(m)}`; }).join("")}</div>
   <div class="card"><h3>⚙️ Paramètres</h3>
     <label class="sw"><span>🎵 Musique de fond apaisante</span><input type="checkbox" id="set-music" ${S.settings.music ? "checked" : ""}></label>
+    <div class="chips" style="margin:8px 0">${[["nature", "🌿 Eau et vent"], ["nuit", "🌙 Nuit étoilée"], ["desert", "🏜️ Désert calme"]].map(([id, n]) => `<button class="pill ${S.settings.style === id ? "on" : ""}" data-style="${id}">${n}</button>`).join("")}</div>
     <label class="sw"><span>🔊 Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>
     <label class="sw"><span>🔔 Sons juste / faux</span><input type="checkbox" id="set-sfx" ${S.settings.sfx ? "checked" : ""}></label>
     <div class="row" style="justify-content:flex-start"><button class="pill" id="t-ok">▶ Son « juste »</button><button class="pill" id="t-ko">▶ Son « faux »</button></div></div>
@@ -375,6 +376,8 @@ document.addEventListener("change", e => {
 document.addEventListener("input", e => { if (e.target.id === "set-vol") { E.S.settings.vol = +e.target.value; SND.apply(); } });
 document.addEventListener("click", e => {
   if (e.target.id === "t-ok") { SND.unlock(); SND.correct(); } else if (e.target.id === "t-ko") { SND.unlock(); SND.wrong(); }
+  const st = e.target.closest("[data-style]");
+  if (st) { E.S.settings.style = st.dataset.style; E.S.settings.music = true; E.save(); SND.unlock(); SND.restart(); route(); }
   const m = e.target.closest("#mtog"); if (m) { E.S.settings.music = !E.S.settings.music; E.save(); SND.apply(); route(); }
 });
 document.addEventListener("submit", e => { if (e.target.id === "askf") { e.preventDefault(); answer(document.getElementById("askq").value); } });
