@@ -78,3 +78,21 @@ body.onb #nav,body.onb #top{display:none}body.onb{padding-bottom:20px}
 .opt.multi::before{content:"☐ "}.opt.multi.sel::before{content:"☑ "}
 .opt small{display:block;color:var(--muted);font-weight:400}
 .slide{animation:slide .35s ease-out}@keyframes slide{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
+
+/* Intro de Sirâj : salut de la main, regard, lumière */
+.sj .inner{opacity:0}.sj .sparks .sp{opacity:0;transform-box:fill-box;transform-origin:center}
+.sj .hand{transform-box:view-box;transform-origin:138px 158px}
+.sj.intro{animation:appear .7s cubic-bezier(.2,1.4,.4,1) both,float 3.2s ease-in-out 1.2s infinite}
+.sj.intro .hand{animation:handwave 1s ease-in-out .7s 3 both;transform:rotate(0deg)}
+.sj.intro .pu{animation:look 4s ease-in-out 2.8s 2 both}
+.sj.intro .inner{animation:flare 2.4s ease-in-out 3.2s 1 both}
+.sj.intro .glow{animation:glowup 2.4s ease-in-out 3.2s 1 both,pulse 3s ease-in-out 5.6s infinite}
+.sj.intro .sp{animation:twinkle 1.6s ease-in-out 3.3s 2 both}.sj.intro .s2{animation-delay:3.6s}.sj.intro .s3{animation-delay:3.9s}
+@keyframes appear{from{transform:scale(.3) translateY(30px);opacity:0}to{transform:none;opacity:1}}
+@keyframes handwave{0%,100%{transform:rotate(0)}25%{transform:rotate(-32deg)}50%{transform:rotate(18deg)}75%{transform:rotate(-28deg)}}
+@keyframes look{0%,100%{transform:translate(0,0)}20%{transform:translate(-5px,-2px)}45%{transform:translate(5px,-2px)}70%{transform:translate(3px,3px)}}
+@keyframes flare{0%,100%{opacity:0}40%{opacity:1}}
+@keyframes glowup{0%,100%{transform:scale(1);opacity:.75}45%{transform:scale(1.35);opacity:1}}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(.2) rotate(0)}50%{opacity:1;transform:scale(1.2) rotate(40deg)}}
+.pop2{animation:pop .45s cubic-bezier(.2,1.4,.4,1) .9s both}.pop3{animation:pop .4s ease-out 1.6s both}
+@media (prefers-reduced-motion:reduce){.pop2,.pop3{animation:none!important}}

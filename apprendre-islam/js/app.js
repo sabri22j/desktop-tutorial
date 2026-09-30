@@ -11,9 +11,9 @@ const celebrate = () => E.evalBadges().forEach(b => toast("Nouveau badge : " + b
 
 
 /* ---------- Sirâj, le guide ---------- */
-function sirajSVG(mood) {
+function sirajSVG(mood, o = {}) {
   const eyes = {
-    happy: `<g class="eyes"><ellipse cx="80" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="82" cy="130" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="122" cy="130" rx="7" ry="9.5" fill="#23170a"/><circle cx="85" cy="125" r="3.2" fill="#fff"/><circle cx="125" cy="125" r="3.2" fill="#fff"/></g>`,
+    happy: `<g class="eyes"><ellipse cx="80" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="128" rx="12" ry="15" fill="#fff"/><g class="pu"><ellipse cx="82" cy="130" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="122" cy="130" rx="7" ry="9.5" fill="#23170a"/><circle cx="85" cy="125" r="3.2" fill="#fff"/><circle cx="125" cy="125" r="3.2" fill="#fff"/></g></g>`,
     think: `<g class="eyes"><ellipse cx="80" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="85" cy="124" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="125" cy="124" rx="7" ry="9.5" fill="#23170a"/><circle cx="88" cy="119" r="3.2" fill="#fff"/><circle cx="128" cy="119" r="3.2" fill="#fff"/></g><path d="M64 106q16-10 32-2M104 104q16-8 32 2" stroke="#23170a" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
     proud: `<path d="M68 130q12-18 24 0M108 130q12-18 24 0" stroke="#23170a" stroke-width="6" fill="none" stroke-linecap="round"/>`,
     oops: `<g class="eyes"><ellipse cx="80" cy="130" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="130" rx="12" ry="15" fill="#fff"/><ellipse cx="80" cy="134" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="120" cy="134" rx="7" ry="9.5" fill="#23170a"/><circle cx="83" cy="130" r="3.2" fill="#fff"/><circle cx="123" cy="130" r="3.2" fill="#fff"/></g><path d="M66 108l26 6M134 108l-26 6" stroke="#23170a" stroke-width="4.5" stroke-linecap="round"/>`,
@@ -24,6 +24,9 @@ function sirajSVG(mood) {
     proud: `<path d="M80 150q20 30 40 0z" fill="#7a2b1e" stroke="#23170a" stroke-width="4" stroke-linejoin="round"/><path d="M88 158q12 10 24 0" fill="#ff8f7d"/>`,
     oops: `<path d="M88 162q12-10 24 0" stroke="#23170a" stroke-width="5" fill="none" stroke-linecap="round"/>`,
   }[mood];
+  const hand = o.hand ? `<g class="hand"><path d="M140 158q22 4 28-22" stroke="#8a5f10" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M140 158q22 4 28-22" stroke="url(#gBody)" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="170" cy="120" r="15" fill="url(#gBody)" stroke="#8a5f10" stroke-width="3"/><ellipse cx="184" cy="124" rx="6" ry="9" transform="rotate(-30 184 124)" fill="url(#gBody)" stroke="#8a5f10" stroke-width="3"/><ellipse cx="166" cy="114" rx="5" ry="7" fill="#fff" opacity=".5"/></g>` : "";
+  const sparks = o.sparks ? `<g class="sparks"><path class="sp s1" d="M34 70l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#ffd54a"/><path class="sp s2" d="M166 36l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" fill="#fff3b0"/><path class="sp s3" d="M24 168l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" fill="#fff3b0"/></g>` : "";
+  const inner = `<ellipse class="inner" cx="100" cy="132" rx="38" ry="54" fill="url(#gGlow)"/>`;
   const star = mood === "proud" ? `<path d="M166 64l5 12 13 2-10 9 3 13-11-7-11 7 3-13-10-9 13-2z" fill="#ffd54a" stroke="#c99a1a" stroke-width="2"/>` : "";
   return `<svg viewBox="0 0 200 250" aria-hidden="true"><ellipse cx="100" cy="240" rx="52" ry="8" fill="#000" opacity=".16"/>
   <circle class="glow" cx="100" cy="135" r="98" fill="url(#gGlow)"/>
@@ -32,12 +35,12 @@ function sirajSVG(mood) {
   <rect x="52" y="68" width="96" height="13" rx="6.5" fill="url(#gBase)"/>
   <path d="M60 81h80q11 42 0 82q-7 32-40 32t-40-32q-11-40 0-82z" fill="url(#gBody)" stroke="#8a5f10" stroke-width="3"/>
   <path d="M132 86q9 40-2 78q-6 22-26 28q34 0 40-30q11-40-2-76z" fill="#8a5f10" opacity=".22"/>
-  <ellipse cx="74" cy="104" rx="10" ry="22" transform="rotate(14 74 104)" fill="#fff" opacity=".55"/>
+  ${inner}<ellipse cx="74" cy="104" rx="10" ry="22" transform="rotate(14 74 104)" fill="#fff" opacity=".55"/>
   <rect x="62" y="190" width="76" height="15" rx="7" fill="url(#gBase)"/><path d="M70 205h60l-8 24H78z" fill="url(#gBase)"/><rect x="72" y="227" width="56" height="10" rx="5" fill="#084a2f"/>
   <ellipse cx="62" cy="152" rx="10" ry="6.5" fill="#ff8f7d" opacity=".55"/><ellipse cx="138" cy="152" rx="10" ry="6.5" fill="#ff8f7d" opacity=".55"/>
-  ${eyes}${mouth}${star}</svg>`;
+  ${eyes}${mouth}${star}${hand}${sparks}</svg>`;
 }
-const siraj = (mood = "happy", size = 110, anim = "float") => `<span class="sj ${anim}" style="--s:${size}px">${sirajSVG(mood)}</span>`;
+const siraj = (mood = "happy", size = 110, anim = "float", o = {}) => `<span class="sj ${anim}" style="--s:${size}px">${sirajSVG(mood, o)}</span>`;
 function confetti() {
   const cols = ["#f2c94c", "#0f7a4d", "#27b77c", "#ffffff", "#e0a82e"];
   for (let i = 0; i < 36; i++) { const d = document.createElement("i"); d.className = "confetti"; d.style.left = Math.random() * 100 + "vw"; d.style.background = cols[i % cols.length]; d.style.setProperty("--dx", (Math.random() * 120 - 60) + "px"); d.style.animationDelay = Math.random() * .4 + "s"; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
@@ -273,12 +276,12 @@ const REASONS = ["Mieux comprendre ma religion", "Je découvre l'Islam", "Mieux 
 const GOALS = [[5, "🐢", "Tranquille"], [10, "🚶", "Normal"], [15, "🏃", "Intensif"], [20, "🚀", "Extrême"]];
 const durText = d => d < 60 ? `${d} jours` : `environ ${Math.round(d / 30)} mois`;
 function goalText(m) { const x = E.estimate(m); return `${m} min par jour = <b>${x.plan.lessons} leçon${x.plan.lessons > 1 ? "s" : ""}</b> + <b>${x.plan.questions} questions</b> par jour. Parcours terminé en <b>${durText(x.days)}</b> (estimation sur ~${x.total} leçons).`; }
-const say = (mood, text, anim, size = 130) => `<div class="hero-s">${siraj(mood, size, anim)}</div><div class="bubble c pop">${text}</div>`;
+const say = (mood, text, anim, size = 130, o = {}) => `<div class="hero-s">${siraj(mood, size, anim, o)}</div><div class="bubble c pop">${text}</div>`;
 const dots = n => `<div class="dots">${[0, 1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</div>`;
 
 function renderOnb() {
   const s = ONB.step; let h = "";
-  if (s === 0) h = say("happy", "Salut ! Moi c'est <b>Sirâj</b> 🏮<br>Je suis ta lanterne-guide. Je vais t'accompagner, pas à pas, du niveau 0 au niveau 100.", "wave", 170) + `<button class="btn" data-o="next">Enchanté, Sirâj !</button>`;
+  if (s === 0) h = `<div class="hero-s intro">${siraj("happy", 200, "intro", { hand: true, sparks: true })}</div><div class="bubble c pop2">Salut ! Moi c'est <b>Sirâj</b> 🏮</div><button class="btn pop3" data-o="next">Salut Sirâj ! 👋</button>`;
   else if (s === 1 && !ONB.reacted) h = say("think", "Petite question pour mieux te connaître : <b>tu as des bases en Islam ?</b>", "float") + KNOW.map(k => `<button class="opt" data-know="${k[0]}">${k[1]}</button>`).join("");
   else if (s === 1) { const k = KNOW.find(x => x[0] === ONB.know); h = say("proud", k[2], "jump", 150) + `<button class="btn" data-o="next">Continuer</button>`; }
   else if (s === 2) h = say("think", "<b>Pourquoi veux-tu apprendre l'Islam ?</b><br><span class='muted'>Coche tout ce qui te correspond.</span>", "float", 110) + REASONS.map((r, i) => `<button class="opt multi ${ONB.reasons.includes(i) ? "sel" : ""}" data-reason="${i}">${esc(r)}</button>`).join("") + `<button class="btn" data-o="next" ${ONB.reasons.length ? "" : "disabled"}>Continuer</button>`;
