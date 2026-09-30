@@ -73,6 +73,17 @@ const KB = [
   { k: ["jumua", "vendredi", "aid", "fete", "fetes"], title: "Que sont le vendredi et les deux Aïd ?",
     a: "Le vendredi, on prie la Jumu'a à la place de Dhuhr après un sermon. L'Aïd al-Fitr marque la fin du Ramadan ; l'Aïd al-Adha a lieu le 10 Dhul-Hijja et rappelle l'épreuve d'Ibrahim.",
     src: [["Texte", "Coran 62:9-10"], ["Texte", "Coran 37:102-107"]] },
+
+  { k: ["moussa", "moise", "pharaon", "harun", "torah"], title: "Qui était Moussa (Moïse) ?",
+    a: "Moussa est un prophète envoyé aux Bani Israil et à Pharaon. Sauvé du fleuve étant bébé, il a reçu la parole d'Allah dans la vallée de Tuwa, a affronté Pharaon avec son frère Harun, a quitté l'Égypte avec son peuple (la mer s'est ouverte) et a reçu la Torah.",
+    src: [["Texte", "Coran 28:1-35"], ["Texte", "Coran 20:9-48"], ["Texte", "Coran 26:10-68"], ["Texte", "Coran 7:103-145"]] },
+  { k: ["issa", "jesus", "maryam", "marie", "injil", "evangile"], title: "Qui était Issa (Jésus) selon l'islam ?",
+    a: "Selon le Coran, Issa est un messager d'Allah, né de Maryam par la parole d'Allah, sans père, et créé comme Adam. Il a accompli des miracles par la permission d'Allah et a reçu l'Injil. Le Coran dit qu'il n'est ni Dieu ni fils de Dieu, et qu'Allah l'a élevé auprès de Lui.",
+    src: [["Texte", "Coran 3:45-59"], ["Texte", "Coran 19:16-34"], ["Texte", "Coran 5:72-75, 110-117"], ["Texte", "Coran 4:157-159"], ["Hadith", "Bukhari 3448 ; Muslim 155 (son retour)"]],
+    nuance: "C'est la croyance musulmane, qui diffère d'autres religions sur sa nature et sa fin." },
+  { k: ["yusuf", "joseph", "yaqub", "jacob", "puits"], title: "Quelle est l'histoire de Yusuf (Joseph) ?",
+    a: "Yusuf, fils de Yaqub, voit en rêve onze étoiles, le soleil et la lune se prosterner. Jeté dans un puits par ses frères jaloux, vendu en Égypte, emprisonné injustement, il devient responsable des réserves du pays. Il finit par retrouver sa famille et pardonne à ses frères.",
+    src: [["Texte", "Coran 12 (sourate Yusuf)"]] },
 ];
 const normAI = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ");
 function askAI(query) {

@@ -20,7 +20,7 @@ const SUBJECTS = [
 
 const STAGES = [
   "Découverte", "Fondamentaux terminés", "Bases de la Sîra", "Période mecquoise", "Hégire et Médine",
-  "Parcours principal de la Sîra", "Prophètes", "Approfondissement", "Compagnons", "Coran et pratique avancés", "Grand parcours terminé",
+  "Les prophètes", "Parcours principal de la Sîra", "Approfondissement", "Compagnons", "Coran et pratique avancés", "Grand parcours terminé",
 ];
 const LEVEL_COUNT = 101;
 
