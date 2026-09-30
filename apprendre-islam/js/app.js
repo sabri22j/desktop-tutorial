@@ -97,7 +97,7 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,onFinish(res
     const item = queue.shift();
     $app.innerHTML = `<div class="top-s"><button class="x" id="quit">✕</button>${bar(answered / total, "gold")}</div><div class="muted">${esc(cfg.title)}${item.retry ? " · à refaire" : ""}</div><div class="card"><div id="q"></div></div><div id="fb"></div><button class="btn" id="go">Vérifier</button>`;
     const el = document.getElementById("q"), api = renderQ(item.q, el); let checked = false;
-    document.getElementById("quit").onclick = () => { if (confirm("Quitter la session ? Ta progression sur cette session sera perdue.")) go(cfg.back || "#/home"); };
+    document.getElementById("quit").onclick = () => go(cfg.back || "#/home");
     const btn = document.getElementById("go");
     btn.onclick = () => {
       if (checked) return step();
@@ -356,7 +356,7 @@ document.addEventListener("click", e => {
   else if (t.id === "prem") enableReminder(document.getElementById("ptime").value).then(() => route());
   else if (t.id === "pics") downloadICS(document.getElementById("ptime").value);
   else if (t.id === "pintro") { Object.assign(ONB, { step: 0, know: null, reacted: false, reasons: [], force: true }); location.hash = "#/welcome"; route(); }
-  else if (t.id === "rst" && confirm("Effacer toute ta progression ?")) { E.reset(); route(); }
+  else if (t.id === "rst") { if (t.dataset.sure) { E.reset(); location.hash = "#/welcome"; route(); } else { t.dataset.sure = 1; t.textContent = "⚠️ Touche encore pour tout effacer"; setTimeout(() => { delete t.dataset.sure; t.textContent = "Réinitialiser ma progression"; }, 4000); } }
 });
 document.addEventListener("submit", e => { if (e.target.id === "askf") { e.preventDefault(); answer(document.getElementById("askq").value); } });
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
