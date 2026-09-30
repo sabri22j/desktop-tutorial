@@ -96,3 +96,8 @@ body.onb #nav,body.onb #top{display:none}body.onb{padding-bottom:20px}
 @keyframes twinkle{0%,100%{opacity:0;transform:scale(.2) rotate(0)}50%{opacity:1;transform:scale(1.2) rotate(40deg)}}
 .pop2{animation:pop .45s cubic-bezier(.2,1.4,.4,1) .9s both}.pop3{animation:pop .4s ease-out 1.6s both}
 @media (prefers-reduced-motion:reduce){.pop2,.pop3{animation:none!important}}
+
+.sw{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.sw input[type=checkbox]{width:44px;height:26px;accent-color:var(--accent)}
+.sw input[type=range]{width:55%;accent-color:var(--accent)}
+.fb .src{margin-top:8px;padding-top:6px;border-top:1px dashed var(--line)}

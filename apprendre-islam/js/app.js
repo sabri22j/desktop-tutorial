@@ -16,7 +16,7 @@ function sirajSVG(mood, o = {}) {
     happy: `<g class="eyes"><ellipse cx="80" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="128" rx="12" ry="15" fill="#fff"/><g class="pu"><ellipse cx="82" cy="130" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="122" cy="130" rx="7" ry="9.5" fill="#23170a"/><circle cx="85" cy="125" r="3.2" fill="#fff"/><circle cx="125" cy="125" r="3.2" fill="#fff"/></g></g>`,
     think: `<g class="eyes"><ellipse cx="80" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="128" rx="12" ry="15" fill="#fff"/><ellipse cx="85" cy="124" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="125" cy="124" rx="7" ry="9.5" fill="#23170a"/><circle cx="88" cy="119" r="3.2" fill="#fff"/><circle cx="128" cy="119" r="3.2" fill="#fff"/></g><path d="M64 106q16-10 32-2M104 104q16-8 32 2" stroke="#23170a" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
     proud: `<path d="M68 130q12-18 24 0M108 130q12-18 24 0" stroke="#23170a" stroke-width="6" fill="none" stroke-linecap="round"/>`,
-    oops: `<g class="eyes"><ellipse cx="80" cy="130" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="130" rx="12" ry="15" fill="#fff"/><ellipse cx="80" cy="134" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="120" cy="134" rx="7" ry="9.5" fill="#23170a"/><circle cx="83" cy="130" r="3.2" fill="#fff"/><circle cx="123" cy="130" r="3.2" fill="#fff"/></g><path d="M66 108l26 6M134 108l-26 6" stroke="#23170a" stroke-width="4.5" stroke-linecap="round"/>`,
+    oops: `<g class="eyes"><ellipse cx="80" cy="130" rx="12" ry="15" fill="#fff"/><ellipse cx="120" cy="130" rx="12" ry="15" fill="#fff"/><ellipse cx="80" cy="134" rx="7" ry="9.5" fill="#23170a"/><ellipse cx="120" cy="134" rx="7" ry="9.5" fill="#23170a"/><circle cx="83" cy="130" r="3.2" fill="#fff"/><circle cx="123" cy="130" r="3.2" fill="#fff"/></g><path d="M66 116l26-8M134 116l-26-8" stroke="#23170a" stroke-width="4.5" stroke-linecap="round"/>`,
   }[mood];
   const mouth = {
     happy: `<path d="M84 154q16 18 32 0z" fill="#7a2b1e" stroke="#23170a" stroke-width="4" stroke-linejoin="round"/><path d="M90 158q10 7 20 0" fill="#ff8f7d"/>`,
@@ -106,7 +106,9 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,onFinish(res
       checked = true; el.classList.add("locked-q"); el.querySelectorAll("select,input").forEach(x => x.disabled = true); api.reveal(ok);
       if (!item.retry) { answered++; if (ok) correct++; else wrong.push(item.q); if (item.q.id && QINDEX[item.q.id]) E.answer(item.q.id, ok); }
       if (!ok && cfg.retry !== false && !item.retry) queue.push({ q: item.q, retry: true });
-      document.getElementById("fb").innerHTML = `<div class="fb ${ok ? "ok" : "ko"}"><div class="fbrow">${siraj(ok ? "proud" : "oops", 64, ok ? "jump" : "shake")}<div><b>${ok ? "✅ " + pickMsg(OK_MSG) : "❌ " + pickMsg(KO_MSG)}</b></div></div>${ok ? "" : `<div>Bonne réponse : <b>${esc(api.answerText)}</b></div>`}${item.q.e ? `<div class="muted">${esc(item.q.e)}</div>` : ""}</div>`;
+      ok ? SND.correct() : SND.wrong();
+      const ch = CHAPTERS[item.q.chapter], srcs = ch ? `<div class="src">📚 <b>Sources</b> : ${ch.sources.map(esc).join(" · ")}</div>` : "";
+      document.getElementById("fb").innerHTML = `<div class="fb ${ok ? "ok" : "ko"}"><div class="fbrow">${siraj(ok ? "proud" : "oops", 64, ok ? "jump" : "shake")}<div><b>${ok ? "✅ " + pickMsg(OK_MSG) : "❌ " + pickMsg(KO_MSG)}</b></div></div>${ok ? "" : `<div>Bonne réponse : <b>${esc(api.answerText)}</b></div>`}${item.q.e ? `<div class="muted">${esc(item.q.e)}</div>` : ""}${srcs}</div>`;
       btn.textContent = "Continuer";
     };
   };
@@ -124,7 +126,7 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,onFinish(res
     }
     E.save(); celebrate();
     const m = cfg.chapter ? E.mastery(cfg.chapter) : null;
-    if (score >= 0.8 || res.pass) confetti();
+    if (score >= 0.8 || res.pass) { confetti(); SND.win(); }
     $app.innerHTML = `<div class="card"><div style="text-align:center">${siraj(score >= 0.8 ? "proud" : score >= 0.6 ? "happy" : "think", 120, score >= 0.8 ? "jump" : "float")}</div><div class="score">${correct}/${total}</div><p style="text-align:center">${cfg.kind === "exam" ? (res.pass ? "🎓 Examen réussi !" : "Examen non validé (75 % requis). Révise puis réessaie.") : score >= 0.8 ? "🎉 Bravo !" : score >= 0.6 ? "👍 Bien, continue !" : "💪 Il faut réviser un peu."}</p>
       <p style="text-align:center">+${res.xp} XP</p>${m !== null ? `<p>Maîtrise du chapitre : <b>${pct(m)} %</b>${bar(m)}<span class="muted">${m >= E.UNLOCK ? "🔓 Suite débloquée" : "70 % requis pour débloquer la suite. Les questions ratées reviendront en révision."}</span></p>` : ""}
       ${wrong.length ? `<p class="muted">🔄 À revoir : ${wrong.length} question(s) ajoutée(s) à tes révisions.</p>` : ""}</div>
@@ -183,13 +185,14 @@ V.chapter = id => {
   <div class="card"><div class="row"><span>Maîtrise</span><b>${pct(m)} %</b></div>${bar(m)}<span class="muted">${m >= E.UNLOCK ? "🔓 Chapitre validé. Les révisions l'amèneront vers 100 %." : "70 % requis pour débloquer la suite."}</span></div>
   ${c.lessons.map((l, i) => `<a class="card ch" href="#/lesson/${id}/${i}"><div class="row"><div><h3>📖 Leçon ${i + 1} · ${esc(l.t)}</h3></div><b>${E.S.lessons[id + ":" + i] ? "✅" : "→"}</b></div></a>`).join("")}
   <a class="btn" href="#/quiz/${id}">📝 Quiz du chapitre</a>
-  <div class="card" style="margin-top:12px"><h3>📚 Sources</h3>${c.sources.map(s => `<div class="src">• ${esc(s)}</div>`).join("")}</div>`;
+  <div class="card" style="margin-top:12px"><h3>📚 Sources</h3>${c.sources.map(s => `<div class="src">• ${esc(s)}</div>`).join("")}<p class="muted">Références issues de sources classiques, à faire valider par une personne qualifiée.</p></div>`;
 };
 
 V.lesson = (id, i) => {
   const c = CHAPTERS[id], l = c && c.lessons[+i]; if (!l) return V.path();
   $app.innerHTML = `<a href="#/chapter/${id}" class="muted">← ${esc(c.title)}</a><h2>${esc(l.t)}</h2><div class="card body">${l.body.split("\n\n").map(p => `<p>${esc(p)}</p>`).join("")}
-    ${l.ar ? `<div class="ar">${esc(l.ar)}</div><div class="ph">${esc(l.ph)}</div>` : ""}</div>
+    ${l.ar ? `<div class="ar">${esc(l.ar)}</div><div class="ph">${esc(l.ph)}</div>${l.fr ? `<p class="tr"><span class="muted">Traduction du sens :</span> ${esc(l.fr)}</p>` : ""}${l.ref ? `<div class="src">📖 <b>${esc(l.ref)}</b></div>` : ""}` : ""}</div>
+    <div class="card"><div class="src">📚 <b>Sources du chapitre</b> : ${c.sources.map(esc).join(" · ")}</div></div>
     <button class="btn sec" id="speak">🎧 Écouter</button><button class="btn" id="cont">Continuer → question rapide</button>`;
   document.getElementById("speak").onclick = () => { if (!window.speechSynthesis) return toast("Audio non disponible sur cet appareil."); speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(l.body); u.lang = "fr-FR"; speechSynthesis.speak(u); };
   document.getElementById("cont").onclick = () => {
@@ -261,6 +264,11 @@ V.profile = () => {
   return `<h2>Profil</h2><div class="card"><div class="stats"><div><b>${n >= LEVELS.length ? "—" : n}</b>niveau</div><div><b>${S.xp}</b>XP</div><div><b>${pct(E.progress())} %</b>progression</div></div>
   <p>🔥 Série : <b>${E.streak()} jour(s)</b> · Quiz réussis : <b>${S.stats.total ? pct(S.stats.ok / S.stats.total) : 0} %</b></p><p class="muted">Niveau 100 = parcours de l'application terminé, pas « tout l'Islam ».</p></div>
   <div class="card"><h3>Maîtrise par matière</h3>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id); return `<div class="row"><span>${s.icon} ${esc(s.name)}</span><b>${m === null ? "à venir" : pct(m) + " %"}</b></div>${m === null ? "" : bar(m)}`; }).join("")}</div>
+  <div class="card"><h3>⚙️ Paramètres</h3>
+    <label class="sw"><span>🎵 Musique de fond apaisante</span><input type="checkbox" id="set-music" ${S.settings.music ? "checked" : ""}></label>
+    <label class="sw"><span>🔊 Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>
+    <label class="sw"><span>🔔 Sons juste / faux</span><input type="checkbox" id="set-sfx" ${S.settings.sfx ? "checked" : ""}></label>
+    <div class="row" style="justify-content:flex-start"><button class="pill" id="t-ok">▶ Son « juste »</button><button class="pill" id="t-ko">▶ Son « faux »</button></div></div>
   <div class="card"><h3>🔔 Rappel quotidien</h3><div class="row"><input type="time" id="ptime" value="${S.reminder.time}" style="width:auto;padding:8px"><b>${S.reminder.on ? "Activé" : "Désactivé"}</b></div>
     <button class="btn sec" id="prem">🔔 Activer / mettre à jour</button><button class="btn sec" id="pics">📅 Ajouter à mon agenda</button><button class="btn sec" id="pintro">👋 Revoir l'introduction avec Sirâj</button></div>
   <div class="card"><h3>Objectif quotidien</h3><div class="chips">${[5, 10, 15, 20].map(m => `<button class="pill ${S.goal === m ? "on" : ""}" data-goal="${m}">${m} min</button>`).join("")}</div></div>
@@ -341,7 +349,7 @@ function route() {
   if (typeof html === "string") $app.innerHTML = html;
   const tab = { level: "path", chapter: "path", lesson: "path", subject: "subjects", free: "quiz", review: "quiz", daily: "quiz", exam: "quiz" }[r] || r;
   $nav.innerHTML = NAV.map(([id, ic, n]) => `<a href="#/${id}" class="${tab === id ? "on" : ""}"><span>${ic}</span>${n}</a>`).join("");
-  $top.innerHTML = `<b>🕌 Sirat</b><span><a href="#/profile">🔥 ${E.streak()}</a><a href="#/profile">⭐ ${E.S.xp}</a></span>`;
+  $top.innerHTML = `<b>🕌 Sirat</b><span><a href="#" id="mtog" onclick="return false">${E.S.settings.music ? "🎵" : "🔇"}</a><a href="#/profile">🔥 ${E.streak()}</a><a href="#/profile">⭐ ${E.S.xp}</a></span>`;
   if (r !== "lesson" && window.speechSynthesis) speechSynthesis.cancel();
   window.scrollTo(0, 0);
 }
@@ -357,6 +365,17 @@ document.addEventListener("click", e => {
   else if (t.id === "pics") downloadICS(document.getElementById("ptime").value);
   else if (t.id === "pintro") { Object.assign(ONB, { step: 0, know: null, reacted: false, reasons: [], force: true }); location.hash = "#/welcome"; route(); }
   else if (t.id === "rst") { if (t.dataset.sure) { E.reset(); location.hash = "#/welcome"; route(); } else { t.dataset.sure = 1; t.textContent = "⚠️ Touche encore pour tout effacer"; setTimeout(() => { delete t.dataset.sure; t.textContent = "Réinitialiser ma progression"; }, 4000); } }
+});
+document.addEventListener("change", e => {
+  const S = E.S.settings;
+  if (e.target.id === "set-music") { S.music = e.target.checked; E.save(); SND.apply(); }
+  else if (e.target.id === "set-sfx") { S.sfx = e.target.checked; E.save(); }
+  else if (e.target.id === "set-vol") { S.vol = +e.target.value; E.save(); SND.apply(); }
+});
+document.addEventListener("input", e => { if (e.target.id === "set-vol") { E.S.settings.vol = +e.target.value; SND.apply(); } });
+document.addEventListener("click", e => {
+  if (e.target.id === "t-ok") { SND.unlock(); SND.correct(); } else if (e.target.id === "t-ko") { SND.unlock(); SND.wrong(); }
+  const m = e.target.closest("#mtog"); if (m) { E.S.settings.music = !E.S.settings.music; E.save(); SND.apply(); route(); }
 });
 document.addEventListener("submit", e => { if (e.target.id === "askf") { e.preventDefault(); answer(document.getElementById("askq").value); } });
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});

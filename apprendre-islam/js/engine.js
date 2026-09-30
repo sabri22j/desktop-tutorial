@@ -10,12 +10,13 @@ const E = (() => {
   const addDays = (s, n) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return dayStr(d); };
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
-  const fresh = () => ({ xp: 0, goal: 10, onboarded: false, profile: null, reminder: { on: false, time: "19:00", last: null }, streak: { count: 0, last: null }, qs: {}, lessons: {}, exams: {}, badges: {},
+  const fresh = () => ({ xp: 0, goal: 10, onboarded: false, settings: { music: true, vol: 0.5, sfx: true }, profile: null, reminder: { on: false, time: "19:00", last: null }, streak: { count: 0, last: null }, qs: {}, lessons: {}, exams: {}, badges: {},
     stats: { ok: 0, total: 0, quizzes: 0, reviews: 0, dailies: 0, exams: 0 }, day: { date: null, lessons: 0, questions: 0, xp: 0, daily: false } });
   let S;
   try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { S = fresh(); }
+  S.settings = Object.assign({ music: true, vol: 0.5, sfx: true }, S.settings);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
-  const reset = () => { S = fresh(); save(); };
+  const reset = () => { const st = S.settings; S = fresh(); S.settings = st; save(); };
 
   const dayState = () => { const t = dayStr(); if (S.day.date !== t) S.day = { date: t, lessons: 0, questions: 0, xp: 0, daily: false }; return S.day; };
 

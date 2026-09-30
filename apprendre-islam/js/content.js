@@ -6,7 +6,7 @@ const Q = {
   match: (q, pairs, e) => ({ t: "match", q, pairs, e }),
   text: (q, ok, e) => ({ t: "text", q, ok, e }),
 };
-const L = (t, body, check, ar, ph) => ({ t, body, check, ar, ph });
+const L = (t, body, check, ar, ph, ref, fr) => ({ t, body, check, ar, ph, ref, fr });
 const ch = (id, subject, title, sources, lessons, quiz) => ({ id, subject, title, sources, lessons, quiz });
 
 const SUBJECTS = [
@@ -40,7 +40,10 @@ const LEVELS = [
     ]),
     ch("c0-allah", "croyance", "Qui est Allah ?", ["Coran 112 (Al-Ikhlas)", "Coran 1:1-3 (Al-Fatiha)"], [
       L("Un Dieu unique", "Allah est le nom de Dieu en arabe : l'Unique, le Créateur de tout ce qui existe. Il n'a pas d'associé, n'a pas été engendré et n'engendre pas (sourate Al-Ikhlas).",
-        Q.tf("Allah a un fils.", false, "Sourate 112 : « Il n'a pas engendré et n'a pas été engendré »."), "قُلْ هُوَ اللَّهُ أَحَدٌ", "Qul huwa Llâhu ahad"),
+        Q.tf("Allah a un fils.", false, "Sourate 112 : « Il n'a pas engendré et n'a pas été engendré »."),
+        "قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ",
+        "Qul huwa Llâhu ahad. Allâhu s-samad. Lam yalid wa lam yûlad. Wa lam yakun lahu kufuwan ahad.", "Coran 112:1-4 (sourate Al-Ikhlas)",
+        "Dis : Il est Allah, Unique. Allah, le Seul à être imploré pour ce que nous désirons. Il n'a jamais engendré, n'a pas été engendré non plus. Et nul n'est égal à Lui."),
       L("Ses noms", "Allah est décrit par de beaux noms : Ar-Rahman (le Tout Miséricordieux), Ar-Rahim (le Très Miséricordieux), Al-Khaliq (le Créateur), Ar-Razzaq (Celui qui pourvoit).",
         Q.mc("Que signifie Ar-Rahman ?", ["Le Tout Miséricordieux", "Le Créateur", "Le Puissant", "Le Juge"], 0, "Ar-Rahman : le Tout Miséricordieux.")),
     ], [
@@ -116,7 +119,10 @@ const LEVELS = [
   { n: 2, unit: "Introduction au Coran", chapters: [
     ch("c2-coran", "coran", "Structure du Coran", ["Coran 1 (Al-Fatiha)", "Coran 2 (Al-Baqara)"], [
       L("Sourates et versets", "Le Coran est divisé en 114 sourates, composées de versets (ayat). Il est aussi divisé en 30 parties égales appelées juz'. La première sourate est Al-Fatiha, la plus longue est Al-Baqara.",
-        Q.mc("Quelle est la première sourate du Coran ?", ["Al-Fatiha", "Al-Baqara", "Al-Ikhlas", "An-Nas"], 0, "")),
+        Q.mc("Quelle est la première sourate du Coran ?", ["Al-Fatiha", "Al-Baqara", "Al-Ikhlas", "An-Nas"], 0, ""),
+        "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ۝ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ۝ الرَّحْمَٰنِ الرَّحِيمِ ۝ مَالِكِ يَوْمِ الدِّينِ ۝ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ۝ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ۝ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+        "Bismi-llâhi r-Rahmâni r-Rahîm. Al-hamdu li-llâhi Rabbi l-'âlamîn. Ar-Rahmâni r-Rahîm. Mâliki yawmi d-dîn. Iyyâka na'budu wa iyyâka nasta'în. Ihdina s-sirâta l-mustaqîm. Sirâta lladhîna an'amta 'alayhim ghayri l-maghdûbi 'alayhim wa lâ d-dâllîn.", "Coran 1:1-7 (sourate Al-Fatiha)",
+        "Au nom d'Allah, le Tout Miséricordieux, le Très Miséricordieux. Louange à Allah, Seigneur de l'univers. Le Tout Miséricordieux, le Très Miséricordieux, Maître du Jour de la rétribution. C'est Toi [Seul] que nous adorons, et c'est Toi [Seul] dont nous implorons secours. Guide-nous dans le droit chemin, le chemin de ceux que Tu as comblés de faveurs, non pas de ceux qui ont encouru Ta colère, ni des égarés."),
       L("Mecquoises et médinoises", "On distingue les sourates mecquoises (révélées avant l'Hégire, centrées sur la foi) et médinoises (après l'Hégire, avec davantage de règles de vie communautaire).",
         Q.mc("Les sourates médinoises ont été révélées…", ["après l'Hégire", "avant la naissance du Prophète", "à Jérusalem", "en une nuit"], 0, "")),
     ], [
@@ -140,7 +146,7 @@ const LEVELS = [
       Q.mc("Selon Coran 29:45, la prière éloigne…", ["de la turpitude et du blâmable", "de la faim", "de la ville", "du travail"], 0, ""),
       Q.text("Comment appelle-t-on la prière en arabe ? (un mot)", ["salat", "salah", "salat"], "La salat."),
     ]),
-    ch("c3-cinq", "pratique", "Les cinq prières", ["Coran 4:103"], [
+    ch("c3-cinq", "pratique", "Les cinq prières", ["Coran 4:103", "Coran 17:78"], [
       L("Les noms", "Les cinq prières sont : Fajr (aube), Dhuhr (midi), Asr (après-midi), Maghrib (coucher du soleil), Isha (nuit).",
         Q.mc("Quelle prière se fait à l'aube ?", ["Fajr", "Dhuhr", "Asr", "Isha"], 0, "")),
       L("Les rak'at", "Fajr : 2 rak'at. Dhuhr : 4. Asr : 4. Maghrib : 3. Isha : 4. Le vendredi, la prière de Jumu'a remplace Dhuhr pour les hommes adultes.",
@@ -154,7 +160,7 @@ const LEVELS = [
     ]),
   ]},
   { n: 4, unit: "La purification", chapters: [
-    ch("c4-ablutions", "pratique", "Les ablutions (woudou)", ["Coran 5:6"], [
+    ch("c4-ablutions", "pratique", "Les ablutions (woudou)", ["Coran 5:6", "Hadith sur la validité de la prière et des ablutions (Bukhari 135, Muslim 225)"], [
       L("Pourquoi ?", "Avant la prière, le musulman se purifie par les ablutions (woudou). Coran 5:6 en décrit les parties principales : le visage, les bras, la tête et les pieds.",
         Q.mc("Où est décrit le principe des ablutions ?", ["Coran 5:6", "Coran 112:1", "Coran 1:1", "Coran 96:1"], 0, "")),
       L("Les étapes", "On commence par l'intention et « Bismillah », puis : mains, bouche, nez, visage, bras jusqu'aux coudes, tête et oreilles (essuyage), pieds jusqu'aux chevilles.",
@@ -168,7 +174,7 @@ const LEVELS = [
     ]),
   ]},
   { n: 5, unit: "Accomplir la prière", chapters: [
-    ch("c5-etapes", "pratique", "Les étapes de la prière", ["Hadith rapportés sur la description de la prière"], [
+    ch("c5-etapes", "pratique", "Les étapes de la prière", ["Hadith : « Priez comme vous m'avez vu prier » (Bukhari 631)"], [
       L("Une rak'a", "Une rak'a comprend : le takbir (« Allahou akbar »), la lecture d'Al-Fatiha et d'une sourate, le rukou' (inclinaison), le retour debout, puis deux sujud (prosternations) séparés par une position assise.",
         Q.mc("Comment s'appelle l'inclinaison ?", ["Rukou'", "Sujud", "Takbir", "Taslim"], 0, "")),
       L("La fin", "La prière se termine par le tashahhud en position assise, puis le taslim (salutations à droite et à gauche, « As-salamou 'alaykoum wa rahmatou Llah »).",
@@ -182,7 +188,7 @@ const LEVELS = [
     ]),
   ]},
   { n: 6, unit: "Avant la révélation", chapters: [
-    ch("c6-arabie", "histoire", "L'Arabie avant l'Islam", ["Coran 105 (Al-Fil)", "Coran 106 (Quraysh)", "Sîra d'Ibn Hichâm"], [
+    ch("c6-arabie", "histoire", "L'Arabie avant l'Islam", ["Coran 105 (Al-Fil)", "Coran 106 (Quraysh)", "Sîra d'Ibn Hichâm", "Ar-Rahîq al-Makhtoum (Al-Moubarakpouri)"], [
       L("Une société de tribus", "Avant l'islam, l'Arabie était organisée en tribus. La poésie et le commerce caravanier avaient une grande importance. Cette période est appelée la jahiliyya (période d'ignorance).",
         Q.tf("L'Arabie était organisée en tribus.", true, "")),
       L("La Mecque et la Kaaba", "La Mecque abritait la Kaaba, bâtie selon la tradition islamique par Ibrahim et Ismaïl. La tribu de Quraysh en avait la garde. À cette époque, des idoles y étaient vénérées.",
@@ -194,7 +200,7 @@ const LEVELS = [
       Q.mc("Qui était Abraha ?", ["Un gouverneur du Yémen qui marcha sur la Kaaba", "Un prophète", "Le grand-père du Prophète", "Un compagnon"], 0, "Sourate 105 (Al-Fil) évoque l'événement de l'Éléphant."),
       Q.text("Comment appelle-t-on la période avant l'islam ? (un mot)", ["jahiliyya", "jahiliya", "jahilia"], "La jahiliyya."),
     ]),
-    ch("c6-naissance", "histoire", "La naissance du Prophète ﷺ", ["Sîra d'Ibn Hichâm"], [
+    ch("c6-naissance", "histoire", "La naissance du Prophète ﷺ", ["Sîra d'Ibn Hichâm", "Ar-Rahîq al-Makhtoum (Al-Moubarakpouri)"], [
       L("Sa famille", "Muhammad ﷺ est né à La Mecque, selon les récits les plus rapportés l'année de l'Éléphant (vers 570). Son père Abdallah est mort avant sa naissance. Sa mère s'appelait Amina bint Wahb. La date exacte est discutée.",
         Q.mc("Comment s'appelait son père ?", ["Abdallah", "Abu Talib", "Abu Bakr", "Abbas"], 0, "")),
       L("La nourrice", "Selon la coutume, il est confié à une nourrice du désert, Halima as-Sa'diyya, puis revient auprès de sa mère et de son grand-père Abd al-Muttalib.",
@@ -208,7 +214,7 @@ const LEVELS = [
     ]),
   ]},
   { n: 7, unit: "Enfance et jeunesse", chapters: [
-    ch("c7-enfance", "histoire", "L'enfance du Prophète ﷺ", ["Sîra d'Ibn Hichâm"], [
+    ch("c7-enfance", "histoire", "L'enfance du Prophète ﷺ", ["Sîra d'Ibn Hichâm", "Ar-Rahîq al-Makhtoum (Al-Moubarakpouri)"], [
       L("Les pertes", "Sa mère Amina meurt alors qu'il a environ 6 ans. Son grand-père Abd al-Muttalib le prend en charge, puis meurt quand il a environ 8 ans.",
         Q.mc("À quel âge environ perd-il sa mère ?", ["6 ans", "2 ans", "12 ans", "20 ans"], 0, "")),
       L("Abu Talib", "Il est ensuite pris en charge par son oncle Abu Talib, qui le protégera longtemps, même sans embrasser l'islam.",
@@ -220,7 +226,7 @@ const LEVELS = [
       Q.order("Remets dans l'ordre.", ["Naissance", "Séjour chez Halima", "Mort d'Amina", "Tutelle d'Abd al-Muttalib", "Tutelle d'Abu Talib"], ""),
       Q.text("Comment s'appelait son oncle qui l'a élevé ? (Abu …)", ["talib"], "Abu Talib."),
     ]),
-    ch("c7-jeunesse", "histoire", "La jeunesse du Prophète ﷺ", ["Sîra d'Ibn Hichâm"], [
+    ch("c7-jeunesse", "histoire", "La jeunesse du Prophète ﷺ", ["Sîra d'Ibn Hichâm", "Ar-Rahîq al-Makhtoum (Al-Moubarakpouri)"], [
       L("Al-Amin", "Jeune, il était connu à La Mecque pour son honnêteté et on l'appelait al-Amin (le digne de confiance). Il travaillait comme berger puis comme commerçant.",
         Q.mc("Que signifie al-Amin ?", ["Le digne de confiance", "Le riche", "Le savant", "Le fort"], 0, "")),
       L("Khadija", "Il travaille pour Khadija bint Khuwaylid, commerçante réputée. Elle l'épouse lorsqu'il a environ 25 ans. Plus tard, lors de la reconstruction de la Kaaba, il résout par sa sagesse la dispute sur la Pierre noire en la plaçant sur un manteau.",
@@ -238,7 +244,10 @@ const LEVELS = [
       L("La grotte de Hira", "Avant la révélation, le Prophète ﷺ se retirait pour méditer dans la grotte de Hira, sur le mont Jabal an-Nour, près de La Mecque. Il avait environ 40 ans, en Ramadan.",
         Q.mc("Où se retirait-il pour méditer ?", ["La grotte de Hira", "Médine", "Taïf", "Damas"], 0, "")),
       L("Iqra", "L'ange Jibril lui apparaît et lui dit : « Iqra » (Lis / récite). Les premiers versets révélés sont ceux de la sourate Al-'Alaq (96:1-5). Effrayé, il rentre auprès de Khadija qui le rassure, puis l'emmène chez son cousin Waraqa ibn Nawfal.",
-        Q.mc("Quel est le premier mot que dit l'ange ?", ["Iqra", "Qum", "Ihbit", "Salam"], 0, ""), "اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ", "Iqra' bismi Rabbika lladhî khalaq"),
+        Q.mc("Quel est le premier mot que dit l'ange ?", ["Iqra", "Qum", "Ihbit", "Salam"], 0, ""),
+        "اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ ۝ خَلَقَ الْإِنسَانَ مِنْ عَلَقٍ ۝ اقْرَأْ وَرَبُّكَ الْأَكْرَمُ ۝ الَّذِي عَلَّمَ بِالْقَلَمِ ۝ عَلَّمَ الْإِنسَانَ مَا لَمْ يَعْلَمْ",
+        "Iqra' bismi Rabbika lladhî khalaq. Khalaqa l-insâna min 'alaq. Iqra' wa Rabbuka l-akram. Alladhî 'allama bi-l-qalam. 'Allama l-insâna mâ lam ya'lam.", "Coran 96:1-5 (sourate Al-'Alaq)",
+        "Lis, au nom de ton Seigneur qui a créé, qui a créé l'homme d'une adhérence. Lis ! Ton Seigneur est le Très Noble, qui a enseigné par la plume, a enseigné à l'homme ce qu'il ne savait pas."),
     ], [
       Q.mc("Où le Prophète ﷺ se retirait-il avant la première révélation ?", ["La grotte de Hira", "Médine", "Taïf", "Damas"], 0, ""),
       Q.mc("Quel ange lui a apporté la révélation ?", ["Jibril", "Mikaïl", "Israfil", "Malik"], 0, ""),
@@ -295,7 +304,7 @@ LEVELS.forEach(lv => lv.chapters.forEach((c, i) => {
   c.level = lv.n; c.idx = i;
   CHAPTERS[c.id] = c;
   c.quiz.forEach((q, k) => { q.id = c.id + ".q" + k; q.chapter = c.id; QINDEX[q.id] = q; });
-  c.lessons.forEach((l, k) => { if (l.check) l.check.id = c.id + ".l" + k; });
+  c.lessons.forEach((l, k) => { if (l.check) { l.check.id = c.id + ".l" + k; l.check.chapter = c.id; } });
 }));
 const stageName = n => n === 0 ? STAGES[0] : STAGES[Math.ceil(n / 10)];
 const needsExam = n => n > 0 && n % 10 === 0;
