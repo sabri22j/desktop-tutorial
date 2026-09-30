@@ -1,0 +1,7 @@
+/* Configuration de la version hébergée (à remplir une fois). Rien ici n'est secret : les clés secrètes restent côté serveur.
+   - firebase : configuration Web d'un projet Firebase (Authentication : Google, Apple, e-mail ; Firestore). Voir README > Comptes.
+   - aiEndpoint : URL du serveur d'IA (server/ai-proxy.mjs). Voir README > Assistant IA. */
+const APP_CONFIG = {
+  firebase: null, // exemple : { apiKey: "...", authDomain: "xxx.firebaseapp.com", projectId: "xxx", appId: "..." }
+  aiEndpoint: null, // exemple : "https://ton-serveur.example/ask"
+};

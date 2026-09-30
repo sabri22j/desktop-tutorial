@@ -23,5 +23,19 @@ Chaque chapitre accepte `video: { title, url }` (8e argument de `ch(...)`) : un 
 ## Structure
 `js/content*.js` (contenu), `js/engine.js` (XP, maîtrise, révision, série, badges), `js/daily.js` (versets, hadiths, lexique), `js/art.js` (icônes et illustrations sans personnes représentées), `js/audio.js` (sons), `js/voice.js` (lecture), `js/app1-3.js` (interface).
 
+## Comptes (Google, Apple, e-mail)
+L'application fonctionne sans compte (mode invité, progression sur l'appareil). Pour activer les connexions et la synchronisation entre appareils (version hébergée) :
+1. Créer un projet sur https://console.firebase.google.com, puis **Authentication** : activer Google, Apple (nécessite un compte Apple Developer) et e-mail/mot de passe ; ajouter votre domaine dans « Domaines autorisés ».
+2. Créer une base **Firestore** avec ces règles : `match /users/{uid} { allow read, write: if request.auth != null && request.auth.uid == uid; }`.
+3. Copier la configuration Web du projet dans `js/config.js` (`firebase: { apiKey, authDomain, projectId, appId }`). Ces valeurs ne sont pas secrètes.
+La progression est fusionnée par date de dernière modification (la plus récente gagne). Les réglages de sons et de voix restent propres à chaque appareil. Dans une page Claude, la connexion utilise le compte Claude du lecteur.
+
+## Assistant IA
+L'assistant est « ancré » : il retrouve les chapitres et réponses sourcées pertinents, puis demande à Claude de répondre **uniquement** à partir de ces extraits, sans inventer de référence (prompt dans `js/assistant.js`). Il affiche les chapitres consultés.
+- Dans une page Claude : appel direct avec le compte Claude du lecteur.
+- Version hébergée : `node server/ai-proxy.mjs` (après `npm i @anthropic-ai/sdk`, variable `ANTHROPIC_API_KEY`, clé gardée côté serveur, limite de 20 questions par heure et par IP), puis renseigner `aiEndpoint` dans `js/config.js`.
+- Sans IA : réponses préparées hors ligne.
+Cette IA reste une aide : elle ne remplace pas un savant.
+
 ## À faire
 Faire relire le contenu ; enregistrer les voix ; ajouter les vidéos ; vrai assistant IA (serveur, sources vérifiables, aucune référence inventée) ; notifications natives (Capacitor) ; comptes et synchronisation.

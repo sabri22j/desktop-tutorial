@@ -10,6 +10,7 @@ V.profile = () => {
   <div class="card"><div class="row"><h3>Cette semaine</h3><span class="muted small">XP par jour</span></div><div class="wbars">${wk.map(w => `<div class="wb ${w.active ? "on" : ""}"><i style="height:${Math.max(6, w.xp / mx * 100)}%"></i><span>${w.letter}</span></div>`).join("")}</div></div>
   <div class="card"><h3>Maîtrise par matière</h3><div class="sp"></div>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id) || 0; return `<div class="row" style="padding:6px 0"><div class="gap"><span class="ic-b" style="width:38px;height:38px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center">${ico(LEVEL_ICON[s.id], 20)}</span><b>${esc(s.name)}</b></div><b>${pct(m)} %</b></div>${bar(m)}`; }).join("")}<p class="muted small">Niveau 100 = parcours de l'application terminé, pas « tout l'islam ».</p></div>
   <div class="card"><h3>Badges</h3><div class="sp"></div><div class="badges">${E.BADGES.map(b => `<div class="bdg ${S.badges[b[0]] ? "" : "off"}"><b>${b[1]}</b>${esc(b[2])}</div>`).join("")}</div></div>
+  ${accountCard()}
   <div class="sec-h"><h3>Paramètres</h3></div>
   <div class="card"><h3>Sons</h3>${sw("set-music", "Musique de fond (nature)", S.settings.music)}<div style="padding:8px 0">${[["nature", "Eau et vent"], ["pluie", "Pluie douce"], ["mer", "Vagues"], ["oiseaux", "Oiseaux et ruisseau"]].map(([id, nm]) => `<button class="pill ${S.settings.style === id ? "on" : ""}" data-style="${id}">${nm}</button>`).join("")}</div>
     <label class="set"><span>Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>${sw("set-sfx", "Sons juste / faux", S.settings.sfx)}${sw("set-click", "Bruit des boutons", S.settings.click)}
@@ -22,6 +23,18 @@ V.profile = () => {
   <div class="card"><h3>Objectif quotidien</h3><div>${[5, 10, 15, 20].map(m => `<button class="pill ${S.goal === m ? "on" : ""}" data-goal="${m}">${m} min</button>`).join("")}</div>${sw("set-free", "Tout débloquer (explorer librement)", S.settings.free)}</div>
   <button class="btn sec" id="pintro">Revoir l'introduction avec Sirâj</button><button class="btn sec" id="rst">Réinitialiser ma progression</button>`;
 };
+
+function accountCard() {
+  const a = ACCOUNT.state;
+  if (a.provider !== "local") return `<div class="card"><h3>Compte</h3><p><b>${esc(a.user.name)}</b>${a.user.email ? `<br><span class="muted small">${esc(a.user.email)}</span>` : ""}</p><p class="muted small">${a.provider === "claude" ? "Connecté avec ton compte Claude." : "Connecté."} Ta progression est synchronisée entre tes appareils.</p><button class="btn sec" id="acc-sync">Synchroniser maintenant</button>${a.provider === "firebase" ? `<button class="btn sec" id="acc-out">Se déconnecter</button>` : ""}</div>`;
+  if (!ACCOUNT.canSignIn) return `<div class="card"><h3>Compte</h3><p class="muted small">Mode invité : ta progression est enregistrée sur cet appareil. La connexion Google, Apple ou e-mail s'active une fois le serveur configuré (voir le README, section Comptes).</p></div>`;
+  return `<div class="card"><h3>Compte</h3><p class="muted small">Connecte-toi pour retrouver ta progression sur tous tes appareils.</p><button class="btn sec" id="acc-google">Continuer avec Google</button><button class="btn sec" id="acc-apple">Continuer avec Apple</button><div class="sp"></div><input type="text" id="acc-mail" placeholder="Adresse e-mail" autocomplete="email" style="margin-bottom:8px"><input type="text" id="acc-pass" placeholder="Mot de passe (6 caractères minimum)" autocomplete="current-password"><button class="btn sec" id="acc-email">Connexion ou création par e-mail</button><p class="muted small">Sans connexion, tu restes en mode invité (progression sur cet appareil).</p></div>`;
+}
+const authError = e => { const c = e && (e.code || ""); return /popup-closed|cancelled/.test(c) ? "Connexion annulée." : /network/.test(c) ? "Pas de connexion internet." : /weak-password/.test(c) ? "Mot de passe trop court (6 caractères minimum)." : /invalid-email/.test(c) ? "Adresse e-mail invalide." : /email-already-in-use/.test(c) ? "Cette adresse existe déjà : vérifie le mot de passe." : /not_configured/.test(c) ? "La connexion n'est pas encore configurée." : "Connexion impossible pour le moment."; };
+async function accAuth(kind) {
+  try { toast("Connexion…"); const r = await ACCOUNT.signIn(kind, { email: (document.getElementById("acc-mail") || {}).value, password: (document.getElementById("acc-pass") || {}).value }); toast(r === "pulled" ? "Progression récupérée depuis ton compte." : "Connecté."); route(); }
+  catch (e) { toast(authError(e)); }
+}
 
 /* ---------- Introduction avec Sirâj ---------- */
 const ONB = { step: 0, know: null, reacted: false, reasons: [], goal: 10, time: "19:00", remind: false };
@@ -84,12 +97,13 @@ function route() {
   if (typeof html === "string") $app.innerHTML = html;
   chrome(TABMAP[r] || r);
   if (r === "lexique") lexList("");
+  if (r === "ai") AI.mode().then(m => { const t = document.getElementById("aimode"); if (t) t.textContent = m === "claude" ? "IA Claude · réponses ancrées dans les chapitres" : m === "server" ? "IA connectée · réponses ancrées dans les chapitres" : "Mode hors ligne · réponses préparées"; });
   if (r === "path") setTimeout(() => { const c = document.querySelector(".node.cur"); if (c) c.scrollIntoView({ block: "center" }); }, 60); else window.scrollTo(0, 0);
 }
 addEventListener("hashchange", route);
 document.addEventListener("pointerdown", e => { if (e.target.closest("button:not(:disabled), a[href], .opt, .chip, .pill, .node, label.set, .flip")) SND.click(); }, { passive: true });
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko");
+  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync");
   if (!t) return;
   if (document.querySelector(".onbw") && (t.dataset.o || t.dataset.know || t.dataset.reason !== undefined || (t.dataset.goal && t.classList.contains("opt")))) {
     const tm = () => { const i = document.getElementById("rtime"); if (i && i.value) ONB.time = i.value; };
@@ -109,6 +123,9 @@ document.addEventListener("click", async e => {
   else if (t.dataset.ask) { const q = document.getElementById("askq"); if (q) answer(t.dataset.ask); }
   else if (t.dataset.style) { E.S.settings.style = t.dataset.style; E.S.settings.music = true; E.save(); SND.unlock(); SND.restart(); route(); }
   else if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.copy).then(() => toast("Copié")).catch(() => toast("Copie impossible")); } catch { toast("Copie impossible"); } }
+  else if (t.id === "acc-google") accAuth("google"); else if (t.id === "acc-apple") accAuth("apple"); else if (t.id === "acc-email") accAuth("email");
+  else if (t.id === "acc-out") { ACCOUNT.signOut().then(() => { toast("Déconnecté."); route(); }); }
+  else if (t.id === "acc-sync") { toast("Synchronisation…"); ACCOUNT.pull().then(r => { toast(r === "pulled" ? "Progression récupérée." : r === "error" ? "Synchronisation impossible." : "Progression synchronisée."); route(); }); }
   else if (t.id === "t-voice") VOICE.play("none", 0, "Salut ! Moi c'est Sirâj, ta lanterne-guide. Bismillah, on commence ?");
   else if (t.id === "t-ok") { SND.unlock(); SND.correct(); } else if (t.id === "t-ko") { SND.unlock(); SND.wrong(); }
   else if (t.id === "mtog") { E.S.settings.music = !E.S.settings.music; E.save(); SND.apply(); chrome(location.hash.split("/")[1] || "home"); }
@@ -136,4 +153,6 @@ document.addEventListener("submit", e => { if (e.target.id === "askf") { e.preve
 if (VOICE.synth) VOICE.synth.onvoiceschanged = () => { if (location.hash === "#/profile") route(); };
 setInterval(checkReminder, 60000);
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+ACCOUNT.onChange(() => { if (location.hash === "#/profile") route(); });
 applyPattern(); checkReminder(); route();
+ACCOUNT.init().then(r => { if (r === "pulled") { toast("Progression récupérée depuis ton compte."); route(); } });

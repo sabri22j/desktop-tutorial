@@ -178,11 +178,29 @@ V.map = () => {
   ${chs.length ? `<div class="sec-h" style="margin-top:14px"><h3>Chapitres liés</h3></div>${chs.map(id => `<a class="btn sec" href="#/chapter/${id}">${esc(CHAPTERS[id].title)}</a>`).join("")}` : `<p class="muted">Chapitre à venir pour ce lieu.</p>`}</div>`;
 };
 
-/* Assistant */
-V.ai = () => `<h2>Assistant</h2><div class="chat" id="chat"><div class="msg">${siraj("happy", 54, "float")}<div class="mb">Pose-moi une question. Je réponds à partir de réponses préparées et sourcées, et je ne réponds pas si je n'ai pas de source. Je ne remplace pas un savant.</div></div></div>
-  <form class="askbar" id="askf"><input type="text" id="askq" placeholder="Ex. : Pourquoi l'Hégire ?" maxlength="120" autocomplete="off"><button class="btn">OK</button></form><div class="sp"></div>
+/* Assistant : IA ancrée dans les chapitres (Claude), sinon réponses préparées hors ligne */
+let aiHist = [], aiBusy = false;
+const paras = t => String(t).split(/\n{2,}|\n/).filter(Boolean).map(p => `<p style="margin:0 0 8px">${esc(p)}</p>`).join("");
+const kbHtml = e => `<b>${esc(e.title)}</b><p>${esc(e.a)}</p>${e.nuance ? `<div class="nuance"><b>Nuance</b> : ${esc(e.nuance)}</div>` : ""}<b>Sources</b>${e.src.map(s => `<div class="src"><span class="tag">${esc(s[0])}</span>${esc(s[1])}</div>`).join("")}`;
+const srcHtml = list => list.length ? `<div class="sec-h" style="margin:10px 0 4px"><b>Sources consultées dans l'application</b></div>${list.map(s => `<div class="src">${s.id ? `<a href="#/chapter/${s.id}" style="color:var(--green);font-weight:800">${esc(s.title)}</a>` : `<b>${esc(s.title)}</b>`} · ${s.refs.map(esc).join(" · ")}</div>`).join("")}` : "";
+V.ai = () => `<h2>Assistant</h2><div class="gap" style="margin:6px 0 10px"><span class="tag" id="aimode">…</span></div><div class="chat" id="chat"><div class="msg">${siraj("happy", 54, "float")}<div class="mb">Pose-moi une question sur ce que tu apprends. Je réponds à partir des chapitres de l'application, avec leurs sources, et je ne réponds pas si je n'ai pas de source. Je ne remplace pas un savant.</div></div></div>
+  <form class="askbar" id="askf"><input type="text" id="askq" placeholder="Ex. : Pourquoi l'Hégire ?" maxlength="160" autocomplete="off"><button class="btn">OK</button></form><div class="sp"></div>
   <div>${KB.slice(0, 10).map(e => `<button class="pill" data-ask="${esc(e.title)}">${esc(e.title)}</button>`).join("")}</div>`;
-function answer(qs) { const chat = document.getElementById("chat"); if (!chat || !qs.trim()) return; const e = askAI(qs);
-  chat.insertAdjacentHTML("beforeend", `<div class="msg me"><div class="mb">${esc(qs)}</div></div>`);
-  chat.insertAdjacentHTML("beforeend", `<div class="msg">${siraj(e ? "happy" : "think", 54, "float")}<div class="mb">${e ? `<b>${esc(e.title)}</b><p>${esc(e.a)}</p>${e.nuance ? `<div class="nuance"><b>Nuance</b> : ${esc(e.nuance)}</div>` : ""}<b>Sources</b>${e.src.map(s => `<div class="src"><span class="tag">${esc(s[0])}</span>${esc(s[1])}</div>`).join("")}` : `Je n'ai pas de réponse sourcée à cette question pour l'instant, et je préfère ne rien inventer. Reformule, ou demande à une personne de confiance formée en sciences islamiques.`}</div></div>`);
-  document.getElementById("askq").value = ""; chat.lastElementChild.scrollIntoView({ behavior: "smooth", block: "center" }); }
+async function answer(qs) {
+  const chat = document.getElementById("chat"); qs = (qs || "").trim(); if (!chat || !qs || aiBusy) return; aiBusy = true;
+  const id = "m" + Date.now();
+  chat.insertAdjacentHTML("beforeend", `<div class="msg me"><div class="mb">${esc(qs)}</div></div><div class="msg">${siraj("think", 54, "float")}<div class="mb" id="${id}">Je cherche dans les chapitres…</div></div>`);
+  const el = document.getElementById(id); document.getElementById("askq").value = ""; el.scrollIntoView({ behavior: "smooth", block: "center" });
+  const none = `Je n'ai pas de source dans l'application pour répondre à cette question, et je préfère ne rien inventer. Reformule, ou demande à une personne de confiance formée en sciences islamiques.`;
+  try {
+    const r = await AI.ask(qs, aiHist.slice(-4), t => { el.innerHTML = paras(t); });
+    if (r.none) el.textContent = none;
+    else if (r.offline) el.innerHTML = kbHtml(r.offline) + srcHtml(r.sources.filter(s => s.id));
+    else if (r.mode === "offline") el.innerHTML = `Je n'ai pas de réponse préparée, mais ces chapitres peuvent t'aider :${srcHtml(r.sources)}`;
+    else { el.innerHTML = paras(r.text) + srcHtml(r.sources) + `<div class="muted small" style="margin-top:8px">Réponse générée par IA à partir des chapitres de l'application. Vérifie auprès d'une personne qualifiée.</div>`; aiHist.push({ role: "user", text: qs }, { role: "assistant", text: r.text }); }
+  } catch (e) {
+    const k = askAI(qs);
+    el.innerHTML = (k ? kbHtml(k) : none) + `<div class="muted small" style="margin-top:8px">L'IA n'est pas disponible pour le moment${e && e.code === "not_granted" ? " (autorisation refusée)" : ""} : réponse hors ligne.</div>`;
+  }
+  aiBusy = false; el.scrollIntoView({ behavior: "smooth", block: "end" });
+}

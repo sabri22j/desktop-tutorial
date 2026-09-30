@@ -16,8 +16,13 @@ const E = (() => {
   try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { S = fresh(); }
   S.settings = Object.assign({ music: true, vol: 0.5, sfx: true, style: "nature", click: true, free: false, voice: "", rate: 0.95, pitch: 1 }, S.settings);
   if (S.settings.v !== 3) { S.settings.v = 3; S.settings.style = "nature"; } // v3 : sons sans instrument
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+  let saveHook = null;
+  const save = () => { S.updatedAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} if (saveHook) saveHook(); };
   const reset = () => { const st = S.settings; S = fresh(); S.settings = st; save(); };
+  /* Synchronisation de compte : l'état exporté exclut les réglages propres à l'appareil (sons, voix). */
+  const exportState = () => { const o = JSON.parse(JSON.stringify(S)); delete o.settings; return o; };
+  const importState = obj => { const st = S.settings; S = Object.assign(fresh(), obj); S.settings = st; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+  const setSaveHook = f => { saveHook = f; };
 
   const dayState = () => { const t = dayStr(); if (S.day.date !== t) S.day = { date: t, lessons: 0, questions: 0, xp: 0, daily: false }; return S.day; };
 
@@ -113,7 +118,7 @@ const E = (() => {
   function cardAnswer(id, ok) { const t = dayStr(), c = S.cards[id] || { box: 0, due: t }; c.box = ok ? Math.min(4, c.box + 1) : 0; c.due = addDays(t, CARD_DAYS[c.box]); S.cards[id] = c; touch(); save(); }
   const cardStats = () => { const known = LEXIQUE.filter(c => S.cards[c.id] && S.cards[c.id].box >= 3).length, seen = LEXIQUE.filter(c => S.cards[c.id]).length, due = cardsDue().seen.length; return { total: LEXIQUE.length, seen, known, due }; };
 
-  return { get S() { return S; }, save, reset, XP, UNLOCK, EXAM_PASS, BADGES, dayStr, shuffle, dayState, addXP, answer, mastery, lessonsDone, quizAttempted, completeLesson,
+  return { get S() { return S; }, save, reset, exportState, importState, setSaveHook, XP, UNLOCK, EXAM_PASS, BADGES, dayStr, shuffle, dayState, addXP, answer, mastery, lessonsDone, quizAttempted, completeLesson,
     levelObj, levelComplete, levelUnlocked, currentLevel, levelsCompleted, progress, chapterUnlocked, examReady, subjectMastery,
     planFor, estimate, weekLog, stageOf, stageProgress, newLevelsCompleted, cardSession, cardAnswer, cardStats, cardsDue, logDay, unlockedQids, dueQids, weakChapters, pick, buildDaily, buildExam, goalPlan, nextAction, streak, touch, evalBadges };
 })();
