@@ -5,8 +5,8 @@ const FX = (() => {
   /* « +10 XP » qui monte et s'efface, puis la pastille d'XP du haut qui rebondit */
   function gain(text, el) {
     if (still()) return; const r = el ? el.getBoundingClientRect() : { left: innerWidth / 2 - 40, top: innerHeight * 0.45, width: 80, height: 0 };
-    const d = mk("fxgain", "💎 " + text, { left: r.left + r.width / 2 + "px", top: r.top + "px" }); setTimeout(() => d.remove(), 1500);
-    const chip = document.querySelector(".tchip.gem"); if (chip) { chip.classList.remove("bump"); void chip.offsetWidth; chip.classList.add("bump"); }
+    const d = mk("fxgain", "🌙 " + text, { left: r.left + r.width / 2 + "px", top: r.top + "px" }); setTimeout(() => d.remove(), 1500);
+    const chip = document.querySelector(".tchip.moon"); if (chip) { chip.classList.remove("bump"); void chip.offsetWidth; chip.classList.add("bump"); }
   }
   /* Étincelles autour d'un élément (bonne réponse) */
   function burst(el, n = 14) {
@@ -16,7 +16,7 @@ const FX = (() => {
   }
   /* Nouveau rang : plein écran, rayons qui tournent, Sirâj qui saute, chiffre qui apparaît */
   function rankUp(r) {
-    if (!r) return; const o = mk("fxrank", `<div class="rays"></div><div class="box"><div class="duo">${siraj3d("proud", 130)}${siraj3d("happy", 90, "float", "gem")}</div><div class="small">Nouveau rang</div><div class="big">${r.n}</div><h2>${r.title}</h2><button class="btn gold" id="fxok">Continuer</button></div>`);
+    if (!r) return; const o = mk("fxrank", `<div class="rays"></div><div class="box"><div class="duo">${siraj3d("proud", 130)}${siraj3d("happy", 90, "float", "moon")}</div><div class="small">Nouveau rang</div><div class="big">${r.n}</div><h2>${r.title}</h2><button class="btn gold" id="fxok">Continuer</button></div>`);
     H3D.scan(o); SND.win(); confetti(); const close = () => { o.classList.add("out"); setTimeout(() => o.remove(), 350); }; o.querySelector("#fxok").onclick = close; setTimeout(close, 6000);
   }
   /* Compteur qui défile jusqu'à la valeur */
