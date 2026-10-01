@@ -24,7 +24,7 @@ const H3D = (() => {
       const c = new T.Mesh(new T.CircleGeometry(0.09, 20), pink); c.position.set(x * 1.6, -0.1, 0.62); c.lookAt(x * 4, -0.1, 3); g.add(c); });
     const smile = new T.Mesh(new T.TorusGeometry(0.16, 0.03, 8, 24, Math.PI), dark); smile.position.set(0, -0.04, 0.65); smile.rotation.z = Math.PI; g.add(smile);
     const glow = new T.PointLight(0xffb23a, 1.6, 6); glow.position.set(0, 0, 0.2); g.add(glow);
-    return { obj: g, eyes, amber, glow, y0: 0 };
+    return { obj: g, eyes, amber, glow, smile, y0: 0 };
   }
   function gem(T) {
     const g = new T.Group(), m = new T.MeshStandardMaterial({ color: 0x3ab0ff, emissive: 0x0a5fa8, emissiveIntensity: 0.5, roughness: 0.12, metalness: 0.35, flatShading: true });
@@ -42,7 +42,7 @@ const H3D = (() => {
       const sc = new T.Scene(), cam = new T.PerspectiveCamera(32, w / h, 0.1, 50); cam.position.set(0, 0.1, kind === "gem" ? 5.2 : 6.4);
       sc.add(new T.AmbientLight(0xffffff, 0.75)); const key = new T.DirectionalLight(0xffffff, 1.1); key.position.set(2, 3, 4); sc.add(key);
       const m = kind === "gem" ? gem(T) : lantern(T); sc.add(m.obj); host.appendChild(r.domElement); host.classList.add("on3d");
-      let tx = 0, ty = 0, spin = 0; const t0 = performance.now(), mv = e => { const b = host.getBoundingClientRect(); tx = Math.max(-1, Math.min(1, (e.clientX - b.left - b.width / 2) / 220)); ty = Math.max(-1, Math.min(1, (e.clientY - b.top - b.height / 2) / 220)); };
+      let tx = 0, ty = 0, spin = 0, rs = null; host.__h3 = { react: ok => { rs = { ok, t0: performance.now() }; } }; const t0 = performance.now(), mv = e => { const b = host.getBoundingClientRect(); tx = Math.max(-1, Math.min(1, (e.clientX - b.left - b.width / 2) / 220)); ty = Math.max(-1, Math.min(1, (e.clientY - b.top - b.height / 2) / 220)); };
       addEventListener("pointermove", mv, { passive: true }); host.addEventListener("pointerdown", () => { spin = 1; }, { passive: true });
       let raf = 0, visible = true; const io = "IntersectionObserver" in window ? new IntersectionObserver(es => { visible = es[0].isIntersecting; }) : null; io && io.observe(host);
       const loop = now => {
@@ -53,7 +53,11 @@ const H3D = (() => {
         else { m.obj.position.y = Math.sin(t * 2.2) * 0.1; spin = Math.max(0, spin - 0.016);
           m.obj.rotation.y = Math.sin(t * 0.9) * 0.35 + tx * 0.5 + (spin ? (1 - spin) * Math.PI * 2 : 0); m.obj.rotation.x = ty * 0.2 + (spin ? Math.sin((1 - spin) * Math.PI) * -0.25 : 0);
           m.amber.emissiveIntensity = 0.32 + Math.sin(t * 3) * 0.1; m.glow.intensity = 0.9 + Math.sin(t * 3) * 0.25;
-          const bl = (t % 4) > 3.88 ? 0.1 : 1.35; m.eyes.forEach(e => { e.scale.y = bl; }); }
+          const bl = (t % 4) > 3.88 ? 0.1 : 1.35; let big = 1, dy = 0, rz = 0, sm = 0;
+          if (rs) { const k = (now - rs.t0) / 1400; if (k >= 1) rs = null; else if (rs.ok) { dy = Math.abs(Math.sin(k * Math.PI * 2.5)) * 0.55 * (1 - k); m.obj.rotation.y += k * Math.PI * 4 * (1 - k * .2); m.glow.intensity += 1.6 * (1 - k); }
+            else { rz = Math.sin(k * 40) * 0.28 * (1 - k); big = 1.5; sm = 1; m.amber.emissiveIntensity *= 0.6; } }
+          m.obj.position.y += dy; m.obj.rotation.z = rz; m.eyes.forEach(e => { e.scale.y = bl * big; e.scale.x = big; });
+          m.smile.rotation.z = sm ? 0 : Math.PI; m.smile.position.y = sm ? -0.18 : -0.04; }
         r.render(sc, cam);
       };
       raf = requestAnimationFrame(loop);

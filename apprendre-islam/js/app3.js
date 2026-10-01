@@ -106,7 +106,7 @@ document.addEventListener("pointerdown", e => { const t = e.target.closest("butt
   if (t.matches(".opt")) SND.select(); else if (t.matches(".flip")) SND.flip(); else if (t.closest("#nav")) SND.nav(); else SND.click(); }, { passive: true });
 let lastKey = 0; document.addEventListener("input", e => { if (e.target.matches("input[type=text],input[type=search],input[type=password],textarea") && Date.now() - lastKey > 70) { lastKey = Date.now(); SND.click(); } else if (e.target.matches("input[type=range]") && Date.now() - lastKey > 120) { lastKey = Date.now(); SND.click(); } });
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-aiprov],#ai-save,#ai-del,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
+  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#map3,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-aiprov],#ai-save,#ai-del,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
   if (!t) return;
   if (document.querySelector(".onbw") && (t.dataset.o || t.dataset.know || t.dataset.reason !== undefined || (t.dataset.goal && t.classList.contains("opt")))) {
     const tm = () => { const i = document.getElementById("rtime"); if (i && i.value) ONB.time = i.value; };
@@ -121,6 +121,7 @@ document.addEventListener("click", async e => {
   }
   if (t.dataset.sub) { quizSubject = t.dataset.sub; route(); }
   else if (t.dataset.pin) { mapSel = t.dataset.pin; route(); }
+  else if (t.id === "map3") { map3 = !map3; route(); }
   else if (t.id === "mapz") { mapZoom = !mapZoom; route(); }
   else if (t.dataset.goal) { E.S.goal = +t.dataset.goal; E.save(); route(); }
   else if (t.dataset.ask) { const q = document.getElementById("askq"); if (q) answer(t.dataset.ask); }

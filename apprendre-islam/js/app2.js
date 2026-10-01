@@ -167,15 +167,16 @@ const SEAS = [["Mer Méditerranée", 30.5, 34.6], ["Mer Rouge", 39, 18.7], ["Gol
 const LANDS = [["ARABIE", 45, 23.5], ["ÉGYPTE", 30.5, 26.5], ["SYRIE (Sham)", 38.2, 35.6], ["YÉMEN", 45, 15.6], ["IRAK", 43.8, 32.6], ["ABYSSINIE", 39.8, 9.8]];
 let mapSel = "mecque", mapZoom = false;
 const mx = lon => (lon - MAP.lon0) * MAP.kx, my = lat => (MAP.lat1 - lat) * MAP.ky;
+let map3 = true;
 V.map = () => {
   const p = PLACES.find(x => x.id === mapSel), w = mapZoom ? 180 : MAP.W, h = mapZoom ? 180 : MAP.H, cx = mx(p.lon), cy = my(p.lat);
   const x0 = mapZoom ? Math.max(0, Math.min(MAP.W - w, cx - w / 2)) : 0, y0 = mapZoom ? Math.max(0, Math.min(MAP.H - h, cy - h / 2)) : 0, fs = mapZoom ? 5.2 : 11, r = mapZoom ? 2.6 : 7;
   const pins = PLACES.filter(q => !mapZoom || (Math.abs(mx(q.lon) - cx) < w && Math.abs(my(q.lat) - cy) < h)).map(q => `<g class="pin ${q.id === mapSel ? "on" : ""}" data-pin="${q.id}"><circle cx="${mx(q.lon)}" cy="${my(q.lat)}" r="${r}" stroke-width="${mapZoom ? .8 : 2}"/><text x="${mx(q.lon) + (q.dx || 12) * (mapZoom ? .4 : 1)}" y="${my(q.lat) + (q.dy || 4) * (mapZoom ? .4 : 1)}" text-anchor="${q.anchor || "start"}" font-size="${fs}">${esc(q.n)}</text></g>`).join("");
   const chs = p.ch.filter(id => CHAPTERS[id]);
-  return `<a class="back" href="#/explore">${ico("back", 18)} Explorer</a><div class="row" style="margin-bottom:10px"><h2>Carte historique</h2><button class="pill" id="mapz" style="margin:0">${mapZoom ? "Vue d'ensemble" : "Zoom : " + esc(p.n)}</button></div>
-  <svg class="map" viewBox="${x0} ${y0} ${w} ${h}" role="img" aria-label="Carte de l'Arabie et des régions voisines"><rect x="0" y="0" width="${MAP.W}" height="${MAP.H}" fill="var(--sea)"/><path d="${MAP.land}" fill="var(--land)" stroke="var(--coast)" stroke-width="${mapZoom ? .5 : 1}" stroke-linejoin="round"/>
+  return `<a class="back" href="#/explore">${ico("back", 18)} Explorer</a><div class="row" style="margin-bottom:10px"><h2>Carte historique</h2><div class="gap"><button class="pill ${map3 ? "on" : ""}" id="map3" style="margin:0">3D</button><button class="pill" id="mapz" style="margin:0">${mapZoom ? "Vue d'ensemble" : "Zoom : " + esc(p.n)}</button></div></div>
+  <div class="m3w ${map3 ? "m3" : ""}"><svg class="map" viewBox="${x0} ${y0} ${w} ${h}" role="img" aria-label="Carte de l'Arabie et des régions voisines"><rect x="0" y="0" width="${MAP.W}" height="${MAP.H}" fill="var(--sea)"/><path d="${MAP.land}" fill="var(--land)" stroke="var(--coast)" stroke-width="${mapZoom ? .5 : 1}" stroke-linejoin="round"/>
   ${LANDS.map(([n, lo, la]) => `<text x="${mx(lo)}" y="${my(la)}" text-anchor="middle" class="lbl-land" font-size="${mapZoom ? 6 : 13}">${esc(n)}</text>`).join("")}${SEAS.map(([n, lo, la]) => `<text x="${mx(lo)}" y="${my(la)}" text-anchor="middle" class="lbl-sea" font-size="${mapZoom ? 4.5 : 10}">${esc(n)}</text>`).join("")}${pins}</svg>
-  <p class="muted small" style="margin:6px 2px 12px">Touche un lieu. Contours : Natural Earth (domaine public). Positions approximatives.</p>
+  </div><p class="muted small" style="margin:6px 2px 12px">Touche un lieu. Contours : Natural Earth (domaine public). Positions approximatives.</p>
   <div class="card"><h3>${esc(p.n)}</h3><div class="sp"></div>${p.ev.map(e => `<div class="row" style="justify-content:flex-start;align-items:flex-start"><span style="color:var(--green)">●</span><span>${esc(e)}</span></div>`).join("")}${p.pers ? `<p><b>Personnages</b> : ${esc(p.pers)}</p>` : ""}
   ${chs.length ? `<div class="sec-h" style="margin-top:14px"><h3>Chapitres liés</h3></div>${chs.map(id => `<a class="btn sec" href="#/chapter/${id}">${esc(CHAPTERS[id].title)}</a>`).join("")}` : `<p class="muted">Chapitre à venir pour ce lieu.</p>`}</div>`;
 };
