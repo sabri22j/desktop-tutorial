@@ -15,7 +15,7 @@ V.profile = () => {
   <div class="card"><h3>Badges</h3><div class="sp"></div><div class="badges">${E.BADGES.map(b => `<div class="bdg ${S.badges[b[0]] ? "" : "off"}"><b>${b[1]}</b>${esc(b[2])}</div>`).join("")}</div></div>
   ${accountCard()}
   <div class="sec-h"><h3>Paramètres</h3></div>
-  <div class="card"><h3>Sons</h3>${sw("set-music", "Musique de fond (nature)", S.settings.music)}<div style="padding:8px 0">${[["nature", "Eau et vent"], ["pluie", "Pluie douce"], ["mer", "Vagues"], ["oiseaux", "Oiseaux et ruisseau"]].map(([id, nm]) => `<button class="pill ${S.settings.style === id ? "on" : ""}" data-style="${id}">${nm}</button>`).join("")}</div>
+  <div class="card"><h3>Sons</h3>
     <label class="set"><span>Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>${sw("set-sfx", "Sons juste / faux", S.settings.sfx)}${sw("set-click", "Bruit des boutons", S.settings.click)}
     <div style="padding-top:8px"><button class="pill" id="t-ok">Écouter « juste »</button><button class="pill" id="t-ko">Écouter « faux »</button></div><p class="muted small">Aucun instrument ni mélodie : uniquement des sons de la nature et de petits bruits.</p></div>
   <div class="card"><h3>Voix de lecture</h3><p class="muted small">${allV.length ? `Voix utilisée : <b>${esc(cur ? cur.name : "automatique")}</b>.` : "Aucune voix détectée sur cet appareil."} ${cur && VOICE.isRobotic(cur) ? "Cette voix peut sembler robotique : choisis une voix marquée « Natural », « Neural », « Enhanced » ou « Google » si ton appareil en propose." : ""}</p>
@@ -99,7 +99,7 @@ const TABMAP = { signup: "home", profedit: "home", ranking: "home", level: "path
 const LANTERN = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v2.5" stroke="#0a6546" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 7.5q4.5-6 9 0z" fill="#0f8a5f"/><path d="M7 7.5h10l.8 9q-1 4.5-5.8 4.5T6.2 16.5z" fill="#f4b836"/><path d="M9 9v9M15 9v9" stroke="#c98d10" stroke-width=".8" opacity=".6"/></svg>`;
 function chrome(tab) {
   $nav.innerHTML = NAV.map(([id, ic, nm]) => `<a class="ni ${tab === id ? "on" : ""}${id === "reseau" ? " center" : ""}" href="#/${id}"><span class="b">${ico(ic, 23)}</span>${nm}</a>`).join("");
-  $top.innerHTML = `<div class="tb"><a class="brand" href="#/home">${LANTERN}Sirat</a><div class="chips-top"><a class="tchip flame" href="#/profile">${ico("flame", 18)}${E.streak()}</a><a class="tchip moon" href="#/profile">${ico("moon", 18)}${E.S.xp}</a><button class="tchip snd" id="mtog" aria-label="Son">${ico(E.S.settings.music ? "speaker" : "mute", 18)}</button><a class="tchip snd" href="#/profile" aria-label="Profil">${ico("user", 18)}</a></div></div>`;
+  $top.innerHTML = `<div class="tb"><a class="brand" href="#/home">${LANTERN}Sirat</a><div class="chips-top"><a class="tchip flame" href="#/profile">${ico("flame", 18)}${E.streak()}</a><a class="tchip moon" href="#/profile">${ico("moon", 18)}${E.S.xp}</a><button class="tchip snd" id="mtog" aria-label="Sons">${ico(E.S.settings.sfx ? "speaker" : "mute", 18)}</button><a class="tchip snd" href="#/profile" aria-label="Profil">${ico("user", 18)}</a></div></div>`;
 }
 function route() {
   let [r, a, b] = (location.hash.slice(2) || "home").split("/");
@@ -120,7 +120,7 @@ document.addEventListener("pointerdown", e => { const t = e.target.closest("butt
   if (t.matches(".opt")) SND.select(); else if (t.matches(".flip")) SND.flip(); else if (t.closest("#nav")) SND.nav(); else SND.click(); }, { passive: true });
 let lastKey = 0; document.addEventListener("input", e => { if (e.target.matches("input[type=text],input[type=search],input[type=password],textarea") && Date.now() - lastKey > 70) { lastKey = Date.now(); SND.click(); } else if (e.target.matches("input[type=range]") && Date.now() - lastKey > 120) { lastKey = Date.now(); SND.click(); } });
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#map3,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
+  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-copy],[data-o],[data-know],[data-reason],#mapz,#map3,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
   if (!t) return;
   if (document.querySelector(".onbw") && (t.dataset.o || t.dataset.know || t.dataset.reason !== undefined || (t.dataset.goal && t.classList.contains("opt")))) {
     const tm = () => { const i = document.getElementById("rtime"); if (i && i.value) ONB.time = i.value; };
@@ -138,7 +138,6 @@ document.addEventListener("click", async e => {
   else if (t.id === "map3") { map3 = !map3; route(); }
   else if (t.id === "mapz") { mapZoom = !mapZoom; route(); }
   else if (t.dataset.goal) { E.S.goal = +t.dataset.goal; E.save(); route(); }
-  else if (t.dataset.style) { E.S.settings.style = t.dataset.style; E.S.settings.music = true; E.save(); SND.unlock(); SND.restart(); route(); }
   else if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.copy).then(() => toast("Copié")).catch(() => toast("Copie impossible")); } catch { toast("Copie impossible"); } }
   else if (t.dataset.rtopic) { resTopic = t.dataset.rtopic; route(); }
   else if (t.dataset.rview) { resView = t.dataset.rview; route(); }
@@ -151,7 +150,7 @@ document.addEventListener("click", async e => {
   else if (t.id === "acc-sync") { toast("Synchronisation…"); ACCOUNT.pull().then(r => { toast(r === "pulled" ? "Progression récupérée." : r === "error" ? "Synchronisation impossible." : "Progression synchronisée."); route(); }); }
   else if (t.id === "t-voice") VOICE.play("none", 0, "Salut ! Moi c'est Sirâj, ta lanterne-guide. Bismillah, on commence ?");
   else if (t.id === "t-ok") { SND.unlock(); SND.correct(); } else if (t.id === "t-ko") { SND.unlock(); SND.wrong(); }
-  else if (t.id === "mtog") { E.S.settings.music = !E.S.settings.music; E.save(); SND.apply(); chrome(location.hash.split("/")[1] || "home"); }
+  else if (t.id === "mtog") { const st = E.S.settings, on = !st.sfx; st.sfx = on; st.click = on; E.save(); chrome(location.hash.split("/")[1] || "home"); if (on) SND.pop(); }
   else if (t.id === "prem") enableReminder(document.getElementById("ptime").value).then(() => route());
   else if (t.id === "pics") downloadICS(document.getElementById("ptime").value);
   else if (t.id === "pintro") { Object.assign(ONB, { step: 0, know: null, reacted: false, reasons: [], force: true }); location.hash = "#/welcome"; route(); }
@@ -159,15 +158,14 @@ document.addEventListener("click", async e => {
 });
 document.addEventListener("change", e => {
   const S = E.S.settings, id = e.target.id;
-  if (id === "set-music") { S.music = e.target.checked; E.save(); SND.apply(); chrome("profile"); }
-  else if (id === "set-sfx") { S.sfx = e.target.checked; E.save(); }
+  if (id === "set-sfx") { S.sfx = e.target.checked; E.save(); }
   else if (id === "set-click") { S.click = e.target.checked; E.save(); }
   else if (id === "set-free") { S.free = e.target.checked; E.save(); }
   else if (id === "set-voice") { S.voice = e.target.value; E.save(); VOICE.play("none", 0, "Salut ! Moi c'est Sirâj, ta lanterne-guide."); }
 });
 document.addEventListener("input", e => {
   const id = e.target.id;
-  if (id === "set-vol") { E.S.settings.vol = +e.target.value; SND.apply(); E.save(); }
+  if (id === "set-vol") { E.S.settings.vol = +e.target.value; E.save(); }
   else if (id === "set-rate") { E.S.settings.rate = +e.target.value; E.save(); }
   else if (id === "set-pitch") { E.S.settings.pitch = +e.target.value; E.save(); }
   else if (id === "lexq") lexList(e.target.value);
