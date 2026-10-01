@@ -5,7 +5,7 @@ V.profile = () => {
   const vopt = v => `<option value="${esc(v.voiceURI)}" ${cur && v.voiceURI === cur.voiceURI && S.settings.voice ? "selected" : ""}>${v === best ? "★ " : ""}${esc(v.name)} (${esc(v.lang)})</option>`;
   const sw = (id, label, on) => `<label class="set"><span>${label}</span><input type="checkbox" class="switch" id="${id}" ${on ? "checked" : ""}></label>`;
   return `<h2>Profil</h2><div class="sp"></div>
-  <div class="card phead">${siraj("happy", 84, "float")}<div><div class="muted small">Niveau actuel</div><h2>${n >= LEVELS.length ? "100" : n}</h2><div class="xpchip" style="margin:4px 0 0">${ico("gem", 18)} ${S.xp} XP</div></div></div>
+  <div class="card phead">${siraj3d("happy", 96)}<div><div class="muted small">Niveau actuel</div><h2>${n >= LEVELS.length ? "100" : n}</h2><div class="xpchip" style="margin:4px 0 0">${ico("gem", 18)} ${S.xp} XP</div></div></div>
   ${(() => { const r = E.rank(); return `<div class="card rkc"><div class="row"><h3>Rang ${r.n} · ${esc(r.title)}</h3><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}<p class="muted small">Il te manque ${r.left} XP pour le rang ${r.n + 1}. Les XP viennent des leçons (+10), des quiz (+20), des révisions (+15), du quiz du jour (+30) et des examens (+50). Ce rang est séparé des niveaux du parcours, qui, eux, dépendent de ta maîtrise.</p></div>`; })()}
   <div class="stat3" style="grid-template-columns:repeat(3,1fr)"><div class="stat"><b style="color:#ef7b1a">${E.streak()}</b><span>Série</span></div><div class="stat"><b>${S.stats.total ? pct(S.stats.ok / S.stats.total) : 0}%</b><span>Réussite</span></div><div class="stat"><b>${done}</b><span>Chapitres</span></div></div>
   <div class="card"><div class="row"><h3>Cette semaine</h3><span class="muted small">XP par jour</span></div><div class="wbars">${wk.map(w => `<div class="wb ${w.active ? "on" : ""}"><i style="height:${Math.max(6, w.xp / mx * 100)}%"></i><span>${w.letter}</span></div>`).join("")}</div></div>
@@ -95,7 +95,7 @@ function route() {
   if (r === "welcome") { renderOnb(); return; }
   const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, reseau: V.reseau, map: V.map, ai: V.ai, profile: V.profile }[r] || V.home;
   const html = fn(a, b);
-  if (typeof html === "string") { $app.innerHTML = html; FX.enter($app); }
+  if (typeof html === "string") { $app.innerHTML = html; FX.enter($app); H3D.scan($app); $app.classList.remove("p3d"); void $app.offsetWidth; $app.classList.add("p3d"); }
   chrome(TABMAP[r] || r);
   if (r === "lexique") lexList("");
   if (r === "ai") AI.mode().then(m => { const t = document.getElementById("aimode"); if (t) t.textContent = m === "byok" ? "Ton IA : " + AI.PROVIDERS[AI.getMine().provider].name + " · réponses ancrées dans les chapitres" : m === "claude" ? "IA Claude · réponses ancrées dans les chapitres" : m === "server" ? "IA connectée · réponses ancrées dans les chapitres" : "Mode hors ligne · réponses préparées"; });

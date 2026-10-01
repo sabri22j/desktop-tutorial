@@ -13,7 +13,7 @@ V.home = () => {
   const week = E.weekLog().map(w => `<div class="wd ${w.active ? "on" : ""} ${w.today ? "today" : ""}"><i>${w.active ? ico("flame", 16) : ""}</i>${w.letter}</div>`).join("");
   const exams = LEVELS.filter(L => E.examReady(L.n));
   return `${artBox("night", 3, `<div class="hello">Salam ! <small>${greeting()}. Prêt à apprendre ?</small></div>
-    <div class="guide">${siraj(S.xp ? "happy" : "proud", 96, "float")}<div class="bubble">${esc(dayMessage())}</div></div>
+    <div class="guide">${siraj3d(S.xp ? "happy" : "proud", 120)}<div class="bubble">${esc(dayMessage())}</div></div>
     <div class="week">${week}</div><a class="btn gold" href="${na.href}">${esc(na.label)}</a>${na.sub ? `<div class="small" style="text-align:center;margin-top:8px;opacity:.9">${esc(na.sub)}</div>` : ""}`, "hero")}
   ${(() => { const r = E.rank(); return `<a class="card rkc" href="#/profile"><div class="row"><b>${ico("gem", 18)} Rang ${r.n} · ${esc(r.title)}</b><span class="muted small">${r.left} XP avant le rang ${r.n + 1}</span></div>${bar(r.pct)}</a>`; })()}
   <div class="stat3"><div class="stat"><b style="color:#ef7b1a">${E.streak()}</b><span>Série</span></div><div class="stat"><b>${lv}</b><span>Niveau</span></div><div class="stat"><b style="color:var(--green)">${pct(E.progress())}%</b><span>Parcours</span></div></div>
