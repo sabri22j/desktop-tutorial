@@ -59,7 +59,9 @@ const E = (() => {
 
   /* Niveaux */
   const levelObj = n => LEVELS[n] || null;
-  const levelComplete = n => { const L = LEVELS[n]; return !!L && L.chapters.every(c => mastery(c.id) >= UNLOCK); };
+  /* Un chapitre est « fini » quand ses leçons et son quiz sont faits, même sans 100 % : la maîtrise monte ensuite avec les révisions. */
+  const chapterDone = id => lessonsDone(id) >= CHAPTERS[id].lessons.length && quizAttempted(id);
+  const levelComplete = n => { const L = LEVELS[n]; return !!L && L.chapters.every(c => chapterDone(c.id)); };
   const levelUnlocked = n => !!LEVELS[n] && (n === 0 || S.settings.free || levelComplete(n - 1));
   const currentLevel = () => { for (let i = 0; i < LEVELS.length; i++) if (!levelComplete(i)) return i; return LEVELS.length; };
   const levelsCompleted = () => LEVELS.filter((_, i) => levelComplete(i)).length;
@@ -85,11 +87,11 @@ const E = (() => {
     const n = currentLevel(), L = LEVELS[n];
     if (!L) return { label: "Révision", sub: "Tu as terminé tout le contenu disponible pour l'instant.", href: dueQids().length ? "#/review" : "#/quiz" };
     for (const c of L.chapters) {
-      if (mastery(c.id) >= UNLOCK) continue;
+      if (chapterDone(c.id)) continue;
       const done = lessonsDone(c.id);
       if (done < c.lessons.length) return { label: done ? "Continuer la leçon" : "Commencer", sub: `${c.title} · leçon ${done + 1}/${c.lessons.length}`, href: `#/lesson/${c.id}/${done}` };
       if (!quizAttempted(c.id)) return { label: "Faire le quiz", sub: c.title, href: `#/quiz/${c.id}` };
-      return { label: "Consolider", sub: `${c.title} · maîtrise ${Math.round(mastery(c.id) * 100)} % (60 % pour continuer)`, href: dueQids().length ? "#/review" : `#/quiz/${c.id}` };
+      return { label: "Consolider", sub: `${c.title} · maîtrise ${Math.round(mastery(c.id) * 100)} %`, href: dueQids().length ? "#/review" : `#/quiz/${c.id}` };
     }
     return { label: "Continuer", sub: "", href: "#/path" };
   }
@@ -124,7 +126,7 @@ const E = (() => {
   function cardAnswer(id, ok) { const t = dayStr(), c = S.cards[id] || { box: 0, due: t }; c.box = ok ? Math.min(4, c.box + 1) : 0; c.due = addDays(t, CARD_DAYS[c.box]); S.cards[id] = c; touch(); save(); }
   const cardStats = () => { const known = LEXIQUE.filter(c => S.cards[c.id] && S.cards[c.id].box >= 3).length, seen = LEXIQUE.filter(c => S.cards[c.id]).length, due = cardsDue().seen.length; return { total: LEXIQUE.length, seen, known, due }; };
 
-  return { get S() { return S; }, rank, popRankUp, save, reset, exportState, importState, setSaveHook, XP, UNLOCK, EXAM_PASS, BADGES, dayStr, shuffle, dayState, addXP, answer, mastery, lessonsDone, quizAttempted, completeLesson,
+  return { get S() { return S; }, chapterDone, rank, popRankUp, save, reset, exportState, importState, setSaveHook, XP, UNLOCK, EXAM_PASS, BADGES, dayStr, shuffle, dayState, addXP, answer, mastery, lessonsDone, quizAttempted, completeLesson,
     levelObj, levelComplete, levelUnlocked, currentLevel, levelsCompleted, progress, chapterUnlocked, examReady, subjectMastery,
     planFor, estimate, weekLog, stageOf, stageProgress, newLevelsCompleted, cardSession, cardAnswer, cardStats, cardsDue, logDay, unlockedQids, dueQids, weakChapters, pick, buildDaily, buildExam, goalPlan, nextAction, streak, touch, evalBadges };
 })();

@@ -43,7 +43,7 @@ function sirajSVG(mood, o = {}) {
   <ellipse cx="62" cy="152" rx="10" ry="6.5" fill="#ff8f7d" opacity=".55"/><ellipse cx="138" cy="152" rx="10" ry="6.5" fill="#ff8f7d" opacity=".55"/>
   ${eyes}${mouth}${star}${hand}${sparks}</svg>`;
 }
-const siraj3d = (mood = "happy", size = 110, anim = "float", kind = "lantern") => `<span class="s3d" data-k="${kind}" style="--s:${size}px">${siraj(mood, size, anim)}</span>`;
+const siraj3d = (mood = "happy", size = 110, anim = "float", kind = "lantern") => kind === "gem" ? `<span class="s3d" data-k="gem" style="--s:${size}px">${ico("gem", Math.round(size * .6))}</span>` : `<span class="sj3dw" style="--s:${size}px">${siraj(mood, size, anim)}</span>`;
 const siraj = (mood = "happy", size = 110, anim = "float", o = {}) => `<span class="sj ${anim}" style="--s:${size}px">${sirajSVG(mood, o)}</span>`;
 function confetti() {
   const cols = ["#f4b836", "#0f8a5f", "#27b77c", "#ffffff", "#e0a82e", "#e5584a"];
@@ -118,7 +118,7 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
       const ok = api.evaluate(); if (ok === null) return;
       checked = true; el.classList.add("locked-q"); el.querySelectorAll("select,input").forEach(x => x.disabled = true); api.reveal(ok);
       if (!item.retry) { answered++; if (ok) correct++; else wrong.push(item.q); if (item.q.id && QINDEX[item.q.id]) E.answer(item.q.id, ok); }
-      if (!ok && cfg.retry !== false && !item.retry) queue.push({ q: item.q, retry: true });
+      if (!ok && cfg.retry !== false && (item.tries || 0) < 3) queue.splice(Math.min(2, queue.length), 0, { q: item.q, retry: true, tries: (item.tries || 0) + 1 });
       ok ? SND.correct() : SND.wrong(); react(ok); if (ok) FX.burst(el.querySelector(".opt.ok, .opt.sel") || btn);
       const ch = CHAPTERS[item.q.chapter], srcs = ch ? `<div class="src">📚 <b>Sources</b> : ${ch.sources.map(esc).join(" · ")}</div>` : "";
       dock.className = "dock " + (ok ? "ok" : "ko");
@@ -145,7 +145,7 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
       <h2>${title}</h2><div class="sp"></div>${ring(score, 120, 12, `${correct}/${total}`, score >= 0.6 ? "var(--green)" : "var(--gold)")}<div class="sp"></div>
       <div class="xpchip">${ico("gem", 20)} +<span id="xpn">0</span> XP</div>${(() => { const r = E.rank(); return `<div class="rkc"><div class="row"><b>Rang ${r.n} · ${esc(r.title)}</b><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}</div>`; })()}${up ? `<div class="lvlup">⭐ Nouveau rang : ${up.n} · ${esc(up.title)} !</div>` : ""}
       ${newly.map(n => `<div class="lvlup">🎉 Niveau ${n} validé !</div>`).join("")}${stages.map(s => `<div class="lvlup">🎓 Étape terminée : ${esc(STAGES[s])}</div>`).join("")}
-      ${m !== null ? `<div class="card" style="text-align:left"><div class="row"><b>Maîtrise du chapitre</b><b>${pct(m)} %</b></div>${bar(m)}<span class="muted small">${m >= E.UNLOCK ? "🔓 Suite débloquée. Les révisions l'amèneront vers 100 %." : "60 % pour débloquer la suite. Les questions ratées reviendront en révision."}</span></div>` : ""}
+      ${m !== null ? `<div class="card" style="text-align:left"><div class="row"><b>Maîtrise du chapitre</b><b>${pct(m)} %</b></div>${bar(m)}<span class="muted small">${m >= 1 ? "🏅 Maîtrise parfaite !" : "🔓 Tu peux passer à la suite. Les questions ratées reviendront en révision pour atteindre 100 %."}</span></div>` : ""}
       ${wrong.length ? `<p class="muted">🔄 ${wrong.length} question${wrong.length > 1 ? "s" : ""} à revoir : ajoutée${wrong.length > 1 ? "s" : ""} à tes révisions.</p>` : ""}</div>
       <a class="btn gold" href="${E.nextAction().href}">Continuer</a><a class="btn sec" href="${cfg.back || "#/home"}">Retour</a>`;
   };
