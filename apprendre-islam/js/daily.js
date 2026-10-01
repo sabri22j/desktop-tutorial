@@ -1,0 +1,61 @@
+/* Contenu du quotidien : verset, hadith (sens), lexique pour cartes de révision. Références classiques ; traductions du sens à faire valider. */
+const VERSES = [
+  { ar: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا ۝ إِنَّ مَعَ الْعُسْرِ يُسْرًا", fr: "A côté de la difficulté est certes une facilité. Oui, à côté de la difficulté est une facilité.", ref: "Coran 94:5-6", theme: "Espérance" },
+  { ar: "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا", fr: "Allah n'impose à aucune âme une charge supérieure à sa capacité.", ref: "Coran 2:286", theme: "Facilité" },
+  { ar: "فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ", fr: "Souvenez-vous de Moi, Je Me souviendrai de vous. Soyez-Moi reconnaissants et ne soyez pas ingrats envers Moi.", ref: "Coran 2:152", theme: "Rappel" },
+  { ar: "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ", fr: "N'est-ce point par l'évocation d'Allah que les cœurs se tranquillisent ?", ref: "Coran 13:28", theme: "Sérénité" },
+  { ar: "وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ", fr: "Quiconque place sa confiance en Allah, Il lui suffit.", ref: "Coran 65:3", theme: "Confiance" },
+  { ar: "وَقُل رَّبِّ زِدْنِي عِلْمًا", fr: "Et dis : Ô mon Seigneur, accrois mes connaissances.", ref: "Coran 20:114", theme: "Savoir" },
+  { ar: "إِنَّ أَكْرَمَكُمْ عِندَ اللَّهِ أَتْقَاكُمْ", fr: "Le plus noble d'entre vous, auprès d'Allah, est le plus pieux.", ref: "Coran 49:13", theme: "Fraternité" },
+  { ar: "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ", fr: "Allah est avec les endurants.", ref: "Coran 2:153", theme: "Patience" },
+  { ar: "لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ", fr: "Si vous êtes reconnaissants, très certainement J'augmenterai [Mes bienfaits] pour vous.", ref: "Coran 14:7", theme: "Gratitude" },
+  { ar: "وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ ۖ أُجِيبُ دَعْوَةَ الدَّاعِ إِذَا دَعَانِ", fr: "Et quand Mes serviteurs t'interrogent sur Moi, alors Je suis tout proche : Je réponds à l'appel de celui qui M'invoque quand il M'invoque.", ref: "Coran 2:186", theme: "Invocation" },
+  { ar: "وَلَا تَهِنُوا وَلَا تَحْزَنُوا وَأَنتُمُ الْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ", fr: "Ne faiblissez pas et ne vous affligez pas, alors que vous êtes les supérieurs, si vous êtes croyants.", ref: "Coran 3:139", theme: "Courage" },
+  { ar: "مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ ۝ وَلَلْآخِرَةُ خَيْرٌ لَّكَ مِنَ الْأُولَىٰ ۝ وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ", fr: "Ton Seigneur ne t'a ni abandonné ni détesté. La vie dernière est meilleure pour toi que la vie présente. Et ton Seigneur te donnera bientôt de quoi te satisfaire.", ref: "Coran 93:3-5", theme: "Réconfort" },
+  { ar: "قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ", fr: "Dis : Ô Mes serviteurs qui avez commis des excès à votre détriment, ne désespérez pas de la miséricorde d'Allah.", ref: "Coran 39:53", theme: "Miséricorde" },
+];
+const HADITHS = [
+  { fr: "Les actes ne valent que par leurs intentions, et chacun n'aura que ce qu'il aura eu l'intention de faire.", ref: "Bukhari 1", theme: "Intention" },
+  { fr: "Aucun de vous ne croit vraiment tant qu'il n'aime pas pour son frère ce qu'il aime pour lui-même.", ref: "Bukhari 13 ; Muslim 45", theme: "Fraternité" },
+  { fr: "Que celui qui croit en Allah et au Jour dernier dise du bien ou se taise.", ref: "Bukhari 6018 ; Muslim 47", theme: "Parole" },
+  { fr: "Le fort n'est pas celui qui terrasse les autres, mais celui qui se maîtrise lorsqu'il est en colère.", ref: "Bukhari 6114 ; Muslim 2609", theme: "Maîtrise" },
+  { fr: "Les actes les plus aimés d'Allah sont les plus réguliers, même s'ils sont peu nombreux.", ref: "Bukhari 6464 ; Muslim 783", theme: "Constance" },
+  { fr: "Le meilleur d'entre vous est celui qui apprend le Coran et l'enseigne.", ref: "Bukhari 5027", theme: "Coran" },
+  { fr: "Facilitez et ne compliquez pas ; annoncez la bonne nouvelle et ne faites pas fuir.", ref: "Bukhari 69 ; Muslim 1734", theme: "Facilité" },
+  { fr: "Le musulman est celui dont les musulmans sont à l'abri de sa langue et de sa main.", ref: "Bukhari 10 ; Muslim 40", theme: "Comportement" },
+  { fr: "Ton sourire à ton frère est une aumône.", ref: "At-Tirmidhi 1956 (hasan)", theme: "Bienveillance" },
+  { fr: "Les meilleurs d'entre vous sont ceux qui ont le meilleur caractère.", ref: "Bukhari 3559 ; Muslim 2321", theme: "Caractère" },
+  { fr: "Celui qui emprunte un chemin pour chercher un savoir, Allah lui facilite un chemin vers le Paradis.", ref: "Muslim 2699", theme: "Savoir" },
+  { fr: "La vérité mène à la bonté, et la bonté mène au Paradis.", ref: "Bukhari 6094 ; Muslim 2607", theme: "Vérité" },
+  { fr: "Celui à qui Allah veut du bien, Il lui donne la compréhension de la religion.", ref: "Bukhari 71 ; Muslim 1037", theme: "Compréhension" },
+  { fr: "La purification est la moitié de la foi.", ref: "Muslim 223", theme: "Pureté" },
+  { fr: "Ta mère, puis ta mère, puis ta mère, puis ton père, puis le plus proche, puis le plus proche.", ref: "Bukhari 5971 ; Muslim 2548", theme: "Parents" },
+];
+const LEXIQUE = [
+  ["صلاة", "Salat", "Prière", "Pratique"], ["زكاة", "Zakat", "Aumône obligatoire", "Pratique"], ["صيام", "Siyam", "Jeûne", "Pratique"], ["حج", "Hajj", "Pèlerinage à La Mecque", "Pratique"],
+  ["عمرة", "'Umra", "Petit pèlerinage", "Pratique"], ["وضوء", "Wudu'", "Ablutions", "Pratique"], ["غسل", "Ghusl", "Purification de tout le corps", "Pratique"], ["تيمم", "Tayammum", "Purification avec de la terre", "Pratique"],
+  ["قبلة", "Qibla", "Direction de la prière", "Pratique"], ["أذان", "Adhan", "Appel à la prière", "Pratique"], ["ركعة", "Rak'a", "Unité de prière", "Pratique"], ["سجود", "Sujud", "Prosternation", "Pratique"],
+  ["ركوع", "Rukou'", "Inclinaison", "Pratique"], ["تكبير", "Takbir", "Dire « Allahu akbar »", "Pratique"], ["تسليم", "Taslim", "Salutation finale de la prière", "Pratique"], ["دعاء", "Du'a", "Invocation", "Pratique"],
+  ["ذكر", "Dhikr", "Évocation d'Allah", "Pratique"], ["صدقة", "Sadaqa", "Charité volontaire", "Pratique"], ["نصاب", "Nissab", "Seuil de la zakat", "Pratique"], ["سحور", "Suhur", "Repas avant l'aube", "Pratique"],
+  ["إفطار", "Iftar", "Repas de rupture du jeûne", "Pratique"], ["تراويح", "Tarawih", "Prière des nuits de Ramadan", "Pratique"], ["إحرام", "Ihram", "État de sacralisation du pèlerin", "Pratique"], ["طواف", "Tawaf", "Tours autour de la Kaaba", "Pratique"],
+  ["سعي", "Sa'i", "Aller-retour entre Safa et Marwa", "Pratique"], ["مسجد", "Masjid", "Mosquée", "Pratique"], ["إمام", "Imam", "Celui qui dirige la prière", "Pratique"], ["مؤذن", "Muezzin", "Celui qui lance l'adhan", "Pratique"],
+  ["حلال", "Halal", "Permis", "Pratique"], ["حرام", "Haram", "Interdit", "Pratique"],
+  ["إيمان", "Iman", "Foi", "Croyance"], ["إسلام", "Islam", "Soumission à Allah", "Croyance"], ["إحسان", "Ihsan", "Excellence, adorer comme si on Le voyait", "Croyance"], ["توحيد", "Tawhid", "Unicité d'Allah", "Croyance"],
+  ["شرك", "Shirk", "Association à Allah", "Croyance"], ["قدر", "Qadar", "Destin", "Croyance"], ["ملك", "Malak", "Ange", "Croyance"], ["نبي", "Nabi", "Prophète", "Croyance"],
+  ["رسول", "Rasul", "Messager", "Croyance"], ["آخرة", "Akhira", "Au-delà", "Croyance"], ["جنة", "Janna", "Paradis", "Croyance"], ["جهنم", "Jahannam", "Enfer", "Croyance"],
+  ["تقوى", "Taqwa", "Piété, conscience d'Allah", "Croyance"], ["صبر", "Sabr", "Patience", "Croyance"], ["شكر", "Shukr", "Gratitude", "Croyance"], ["توبة", "Tawba", "Repentir", "Croyance"],
+  ["إخلاص", "Ikhlas", "Sincérité", "Croyance"], ["توكل", "Tawakkul", "Confiance en Allah", "Croyance"],
+  ["هجرة", "Hijra", "Émigration (l'Hégire)", "Histoire"], ["مهاجرون", "Muhajirun", "Les émigrés de La Mecque", "Histoire"], ["أنصار", "Ansar", "Les habitants de Médine qui ont accueilli les émigrés", "Histoire"],
+  ["جاهلية", "Jahiliyya", "Période d'ignorance avant l'islam", "Histoire"], ["سيرة", "Sira", "Biographie du Prophète ﷺ", "Histoire"], ["خليفة", "Khalifa", "Successeur (calife)", "Histoire"],
+  ["صحابة", "Sahaba", "Compagnons du Prophète ﷺ", "Histoire"], ["غزوة", "Ghazwa", "Expédition militaire", "Histoire"], ["شورى", "Shura", "Consultation", "Histoire"], ["فتنة", "Fitna", "Épreuve, discorde", "Histoire"],
+  ["قرآن", "Qur'an", "Le Coran", "Coran"], ["سورة", "Sura", "Chapitre du Coran", "Coran"], ["آية", "Aya", "Verset, signe", "Coran"], ["جزء", "Juz'", "Une des 30 parties du Coran", "Coran"],
+  ["تفسير", "Tafsir", "Explication du Coran", "Coran"], ["حافظ", "Hafiz", "Celui qui a mémorisé le Coran", "Coran"], ["مصحف", "Mushaf", "Exemplaire écrit du Coran", "Coran"], ["حديث", "Hadith", "Parole rapportée du Prophète ﷺ", "Coran"],
+  ["سنة", "Sunna", "Voie du Prophète ﷺ", "Coran"], ["فقه", "Fiqh", "Droit, compréhension de la religion", "Coran"], ["فتوى", "Fatwa", "Avis juridique d'un savant qualifié", "Coran"],
+  ["بسم الله", "Bismillah", "Au nom d'Allah", "Expressions"], ["الحمد لله", "Al-hamdu lillah", "Louange à Allah", "Expressions"], ["سبحان الله", "Subhanallah", "Gloire à Allah", "Expressions"], ["الله أكبر", "Allahu akbar", "Allah est plus grand", "Expressions"],
+  ["إن شاء الله", "In sha' Allah", "Si Allah le veut", "Expressions"], ["ما شاء الله", "Masha' Allah", "Ce qu'Allah a voulu (admiration)", "Expressions"], ["جزاك الله خيرا", "Jazak Allahu khayran", "Qu'Allah te récompense en bien", "Expressions"],
+  ["السلام عليكم", "As-salamu 'alaykum", "Que la paix soit sur vous", "Expressions"], ["أستغفر الله", "Astaghfirullah", "Je demande pardon à Allah", "Expressions"], ["لا إله إلا الله", "La ilaha illa Allah", "Il n'y a de divinité qu'Allah", "Expressions"],
+].map((r, i) => ({ id: "w" + i, ar: r[0], tr: r[1], fr: r[2], cat: r[3] }));
+const dayNum = () => Math.floor(new Date(E.dayStr() + "T12:00:00") / 864e5);
+const verseOfDay = () => VERSES[dayNum() % VERSES.length];
+const hadithOfDay = () => HADITHS[(dayNum() + 4) % HADITHS.length];
+const storyOfDay = () => { const ids = Object.keys(CHAPTERS); return CHAPTERS[ids[(dayNum() * 7 + 3) % ids.length]]; };
