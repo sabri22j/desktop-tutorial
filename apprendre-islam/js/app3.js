@@ -78,11 +78,11 @@ function downloadICS(time) {
 }
 
 /* ---------- Routage et habillage ---------- */
-const NAV = [["home", "home", "Accueil"], ["path", "path", "Parcours"], ["explore", "explore", "Explorer"], ["quiz", "quiz", "Quiz"], ["ai", "chat", "Assistant"]];
-const TABMAP = { level: "path", chapter: "path", lesson: "path", subjects: "explore", subject: "explore", map: "explore", cards: "explore", lexique: "explore", videos: "explore", free: "quiz", review: "quiz", daily: "quiz", exam: "quiz", today: "home" };
+const NAV = [["home", "home", "Accueil"], ["path", "path", "Parcours"], ["reseau", "network", "Réseau"], ["quiz", "quiz", "Quiz"], ["ai", "chat", "Assistant"]];
+const TABMAP = { level: "path", chapter: "path", lesson: "path", subjects: "home", explore: "home", subject: "home", map: "home", cards: "home", lexique: "home", videos: "reseau", free: "quiz", review: "quiz", daily: "quiz", exam: "quiz", today: "home" };
 const LANTERN = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v2.5" stroke="#0a6546" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 7.5q4.5-6 9 0z" fill="#0f8a5f"/><path d="M7 7.5h10l.8 9q-1 4.5-5.8 4.5T6.2 16.5z" fill="#f4b836"/><path d="M9 9v9M15 9v9" stroke="#c98d10" stroke-width=".8" opacity=".6"/></svg>`;
 function chrome(tab) {
-  $nav.innerHTML = NAV.map(([id, ic, nm]) => `<a class="ni ${tab === id ? "on" : ""}" href="#/${id}"><span class="b">${ico(ic, 23)}</span>${nm}</a>`).join("");
+  $nav.innerHTML = NAV.map(([id, ic, nm]) => `<a class="ni ${tab === id ? "on" : ""}${id === "reseau" ? " center" : ""}" href="#/${id}"><span class="b">${ico(ic, 23)}</span>${nm}</a>`).join("");
   $top.innerHTML = `<div class="tb"><a class="brand" href="#/home">${LANTERN}Sirat</a><div class="chips-top"><a class="tchip flame" href="#/profile">${ico("flame", 18)}${E.streak()}</a><a class="tchip gem" href="#/profile">${ico("gem", 18)}${E.S.xp}</a><button class="tchip snd" id="mtog" aria-label="Son">${ico(E.S.settings.music ? "speaker" : "mute", 18)}</button><a class="tchip snd" href="#/profile" aria-label="Profil">${ico("user", 18)}</a></div></div>`;
 }
 function route() {
@@ -92,18 +92,18 @@ function route() {
   if (r === "welcome" && E.S.onboarded && !ONB.force) r = "home";
   document.body.classList.toggle("onb", r === "welcome");
   if (r === "welcome") { renderOnb(); return; }
-  const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, map: V.map, ai: V.ai, profile: V.profile }[r] || V.home;
+  const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, reseau: V.reseau, map: V.map, ai: V.ai, profile: V.profile }[r] || V.home;
   const html = fn(a, b);
   if (typeof html === "string") $app.innerHTML = html;
   chrome(TABMAP[r] || r);
   if (r === "lexique") lexList("");
-  if (r === "ai") AI.mode().then(m => { const t = document.getElementById("aimode"); if (t) t.textContent = m === "claude" ? "IA Claude · réponses ancrées dans les chapitres" : m === "server" ? "IA connectée · réponses ancrées dans les chapitres" : "Mode hors ligne · réponses préparées"; });
+  if (r === "ai") AI.mode().then(m => { const t = document.getElementById("aimode"); if (t) t.textContent = m === "byok" ? "Ton IA : " + AI.PROVIDERS[AI.getMine().provider].name + " · réponses ancrées dans les chapitres" : m === "claude" ? "IA Claude · réponses ancrées dans les chapitres" : m === "server" ? "IA connectée · réponses ancrées dans les chapitres" : "Mode hors ligne · réponses préparées"; });
   if (r === "path") setTimeout(() => { const c = document.querySelector(".node.cur"); if (c) c.scrollIntoView({ block: "center" }); }, 60); else window.scrollTo(0, 0);
 }
 addEventListener("hashchange", route);
 document.addEventListener("pointerdown", e => { if (e.target.closest("button:not(:disabled), a[href], .opt, .chip, .pill, .node, label.set, .flip")) SND.click(); }, { passive: true });
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync");
+  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-aiprov],#ai-save,#ai-del,[data-rtopic],#resfavf,[data-resfav],[data-resdel],#res-add");
   if (!t) return;
   if (document.querySelector(".onbw") && (t.dataset.o || t.dataset.know || t.dataset.reason !== undefined || (t.dataset.goal && t.classList.contains("opt")))) {
     const tm = () => { const i = document.getElementById("rtime"); if (i && i.value) ONB.time = i.value; };
@@ -123,6 +123,14 @@ document.addEventListener("click", async e => {
   else if (t.dataset.ask) { const q = document.getElementById("askq"); if (q) answer(t.dataset.ask); }
   else if (t.dataset.style) { E.S.settings.style = t.dataset.style; E.S.settings.music = true; E.save(); SND.unlock(); SND.restart(); route(); }
   else if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.copy).then(() => toast("Copié")).catch(() => toast("Copie impossible")); } catch { toast("Copie impossible"); } }
+  else if (t.dataset.aiprov) { aiSel = t.dataset.aiprov; const d = document.getElementById("aipanel"); if (d) { d.outerHTML = aiPanel(); document.getElementById("aipanel").open = true; } }
+  else if (t.id === "ai-save") { const key = document.getElementById("ai-key").value.trim(), model = document.getElementById("ai-model").value.trim(), pv = aiSel || (AI.getMine() || {}).provider || "claude"; if (key.length < 10) { toast("Colle ta clé API complète."); return; } AI.setMine({ provider: pv, key, model }); toast("IA connectée. Pose ta question !"); route(); }
+  else if (t.id === "ai-del") { AI.setMine(null); aiSel = null; toast("Clé retirée de cet appareil."); route(); }
+  else if (t.dataset.rtopic) { resTopic = t.dataset.rtopic; route(); }
+  else if (t.id === "resfavf") { resFav = !resFav; route(); }
+  else if (t.dataset.resfav) { const f = E.S.favres = E.S.favres || {}; if (f[t.dataset.resfav]) delete f[t.dataset.resfav]; else f[t.dataset.resfav] = 1; E.save(); drawRes(); }
+  else if (t.dataset.resdel) { E.S.res = (E.S.res || []).filter(r => r.url !== t.dataset.resdel); E.save(); drawRes(); }
+  else if (t.id === "res-add") { const title = document.getElementById("res-title").value.trim(), u = safeUrl(document.getElementById("res-url").value); if (!title || !u) { toast("Ajoute un titre et un lien qui commence par https://"); return; } (E.S.res = E.S.res || []).push({ title, url: u.href, topic: document.getElementById("res-topic").value, note: document.getElementById("res-note").value.trim(), added: Date.now() }); E.save(); toast("Ressource ajoutée."); route(); }
   else if (t.id === "acc-google") accAuth("google"); else if (t.id === "acc-apple") accAuth("apple"); else if (t.id === "acc-email") accAuth("email");
   else if (t.id === "acc-out") { ACCOUNT.signOut().then(() => { toast("Déconnecté."); route(); }); }
   else if (t.id === "acc-sync") { toast("Synchronisation…"); ACCOUNT.pull().then(r => { toast(r === "pulled" ? "Progression récupérée." : r === "error" ? "Synchronisation impossible." : "Progression synchronisée."); route(); }); }
@@ -148,6 +156,7 @@ document.addEventListener("input", e => {
   else if (id === "set-rate") { E.S.settings.rate = +e.target.value; E.save(); }
   else if (id === "set-pitch") { E.S.settings.pitch = +e.target.value; E.save(); }
   else if (id === "lexq") lexList(e.target.value);
+  else if (id === "resq") { resQ = e.target.value; drawRes(); }
 });
 document.addEventListener("submit", e => { if (e.target.id === "askf") { e.preventDefault(); answer(document.getElementById("askq").value); } });
 if (VOICE.synth) VOICE.synth.onvoiceschanged = () => { if (location.hash === "#/profile") route(); };

@@ -39,3 +39,8 @@ Cette IA reste une aide : elle ne remplace pas un savant.
 
 ## À faire
 Faire relire le contenu ; enregistrer les voix ; ajouter les vidéos ; vrai assistant IA (serveur, sources vérifiables, aucune référence inventée) ; notifications natives (Capacitor) ; comptes et synchronisation.
+
+## Assistant IA personnel et Réseau
+
+- **Ton IA** : dans l'onglet Assistant, chacun colle sa propre clé API (Claude, ChatGPT/OpenAI ou Gemini). La clé reste sur l'appareil (localStorage), elle n'est ni synchronisée ni envoyée à Sirat. L'assistant répond alors à toutes les questions ; ce qui ne vient pas des chapitres est signalé, avec des références à vérifier. Il n'existe pas de connexion « avec son abonnement ChatGPT/Claude » pour les applications tierces : la clé API (paiement à l'usage chez le fournisseur) est la voie réaliste.
+- **Réseau** (onglet central) : répertoire de vidéos, rappels et ressources (TikTok, YouTube, sites). Sources : liste intégrée `SEED_RES` dans `js/reseau.js`, collection partagée `resources` (champs `title`, `url`, `author`, `topic`, `note`) et ressources ajoutées par chaque personne. Les liens externes ne sont pas vérifiés.

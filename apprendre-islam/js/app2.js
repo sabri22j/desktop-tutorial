@@ -18,6 +18,7 @@ V.home = () => {
   <div class="stat3"><div class="stat"><b style="color:#ef7b1a">${E.streak()}</b><span>Série</span></div><div class="stat"><b>${lv}</b><span>Niveau</span></div><div class="stat"><b style="color:var(--green)">${pct(E.progress())}%</b><span>Parcours</span></div></div>
   <div class="card goal">${ring(gp, 76, 9, pct(gp) + "%", "var(--gold)")}<div style="flex:1"><h3>Objectif du jour</h3><div class="muted small">${S.goal} min · Leçons ${Math.min(d.lessons, plan.lessons)}/${plan.lessons} · Questions ${Math.min(d.questions, plan.questions)}/${plan.questions}</div>${gp >= 1 ? `<div class="tag" style="margin-top:6px">Objectif atteint ✓</div>` : `<a class="tag gold" href="${na.href}" style="margin-top:6px">Continuer →</a>`}</div></div>
   ${exams.map(L => `<a class="card row" href="#/exam/${L.n}" style="background:var(--gold-l)"><div class="gap">${ico("trophy", 30)}<div><h3>Examen du niveau ${L.n}</h3><span class="muted small">Facultatif · +50 XP · grande étape</span></div></div>${ico("arrow", 22)}</a>`).join("")}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><a class="pill" href="#/explore">${ico("explore", 14)} Explorer</a><a class="pill" href="#/map">Carte</a><a class="pill" href="#/cards">Cartes</a><a class="pill" href="#/lexique">Lexique</a><a class="pill" href="#/videos">Vidéos</a></div>
   <div class="sec-h"><h3>Aujourd'hui</h3><a href="#/today">Tout voir</a></div>
   <div class="rail">
     <a class="tile v" href="#/today"><h4>${ico("quote", 18)} Verset du jour</h4><div class="t-ar">${arText(v.ar.length > 90 ? v.ar.slice(0, 90) + "…" : v.ar)}</div><p>${esc(v.fr.length > 120 ? v.fr.slice(0, 120) + "…" : v.fr)}</p><div class="ref">${esc(v.ref)}</div></a>
@@ -183,7 +184,15 @@ let aiHist = [], aiBusy = false;
 const paras = t => String(t).split(/\n{2,}|\n/).filter(Boolean).map(p => `<p style="margin:0 0 8px">${esc(p)}</p>`).join("");
 const kbHtml = e => `<b>${esc(e.title)}</b><p>${esc(e.a)}</p>${e.nuance ? `<div class="nuance"><b>Nuance</b> : ${esc(e.nuance)}</div>` : ""}<b>Sources</b>${e.src.map(s => `<div class="src"><span class="tag">${esc(s[0])}</span>${esc(s[1])}</div>`).join("")}`;
 const srcHtml = list => list.length ? `<div class="sec-h" style="margin:10px 0 4px"><b>Sources consultées dans l'application</b></div>${list.map(s => `<div class="src">${s.id ? `<a href="#/chapter/${s.id}" style="color:var(--green);font-weight:800">${esc(s.title)}</a>` : `<b>${esc(s.title)}</b>`} · ${s.refs.map(esc).join(" · ")}</div>`).join("")}` : "";
-V.ai = () => `<h2>Assistant</h2><div class="gap" style="margin:6px 0 10px"><span class="tag" id="aimode">…</span></div><div class="chat" id="chat"><div class="msg">${siraj("happy", 54, "float")}<div class="mb">Pose-moi une question sur ce que tu apprends. Je réponds à partir des chapitres de l'application, avec leurs sources, et je ne réponds pas si je n'ai pas de source. Je ne remplace pas un savant.</div></div></div>
+let aiSel = null;
+const aiPanel = () => { const mine = AI.getMine(), sel = aiSel || (mine && mine.provider) || "claude", P = AI.PROVIDERS;
+  return `<details class="card" id="aipanel" ${mine ? "" : "open"}><summary style="cursor:pointer;font-weight:800">${mine ? "Ton IA : " + esc(P[mine.provider].name) + " ✓" : "Connecte ton IA"}</summary>
+  <p class="muted small" style="margin-top:8px">Pour que l'assistant réponde à toutes tes questions, branche ton propre compte d'IA. Tu paies seulement ce que tu utilises, chez ton fournisseur. Ta clé reste sur cet appareil : elle n'est ni envoyée à Sirat ni synchronisée. Ne la partage jamais.</p>
+  <div>${Object.entries(P).map(([id, p]) => `<button class="pill ${sel === id ? "on" : ""}" data-aiprov="${id}">${esc(p.name)}</button>`).join("")}</div>
+  <p class="muted small">Crée une clé sur <a href="${esc(P[sel].url)}" target="_blank" rel="noopener noreferrer" style="color:var(--green);font-weight:800">${esc(P[sel].url.replace("https://", ""))}</a>, puis colle-la ici.</p>
+  <input type="password" id="ai-key" placeholder="Ta clé API" autocomplete="off" value="${mine && mine.provider === sel ? esc(mine.key) : ""}" style="margin-bottom:8px"><input type="text" id="ai-model" placeholder="Modèle (facultatif) : ${esc(P[sel].model)}" value="${mine && mine.provider === sel && mine.model ? esc(mine.model) : ""}">
+  <div class="gap"><button class="btn" id="ai-save" style="margin:10px 0 0">Enregistrer</button>${mine ? `<button class="btn sec" id="ai-del" style="margin:10px 0 0">Retirer</button>` : ""}</div></details>`; };
+V.ai = () => `<h2>Assistant</h2><div class="gap" style="margin:6px 0 10px"><span class="tag" id="aimode">…</span></div>${aiPanel()}<div class="chat" id="chat"><div class="msg">${siraj("happy", 54, "float")}<div class="mb">Pose-moi une question sur ce que tu apprends. Je réponds à partir des chapitres de l'application, avec leurs sources, et je ne réponds pas si je n'ai pas de source. Je ne remplace pas un savant.</div></div></div>
   <form class="askbar" id="askf"><input type="text" id="askq" placeholder="Ex. : Pourquoi l'Hégire ?" maxlength="160" autocomplete="off"><button class="btn">OK</button></form><div class="sp"></div>
   <div>${KB.slice(0, 10).map(e => `<button class="pill" data-ask="${esc(e.title)}">${esc(e.title)}</button>`).join("")}</div>`;
 async function answer(qs) {
@@ -197,10 +206,11 @@ async function answer(qs) {
     if (r.none) el.textContent = none;
     else if (r.offline) el.innerHTML = kbHtml(r.offline) + srcHtml(r.sources.filter(s => s.id));
     else if (r.mode === "offline") el.innerHTML = `Je n'ai pas de réponse préparée, mais ces chapitres peuvent t'aider :${srcHtml(r.sources)}`;
-    else { el.innerHTML = paras(r.text) + srcHtml(r.sources) + `<div class="muted small" style="margin-top:8px">Réponse générée par IA à partir des chapitres de l'application. Vérifie auprès d'une personne qualifiée.</div>`; aiHist.push({ role: "user", text: qs }, { role: "assistant", text: r.text }); }
+    else { el.innerHTML = paras(r.text) + srcHtml(r.sources) + `<div class="muted small" style="margin-top:8px">${r.general ? "Réponse générale de l'IA, hors des chapitres de l'application : les références sont à vérifier. " : "Réponse générée par IA à partir des chapitres de l'application. "}Vérifie auprès d'une personne qualifiée.</div>`; aiHist.push({ role: "user", text: qs }, { role: "assistant", text: r.text }); }
   } catch (e) {
     const k = askAI(qs);
-    el.innerHTML = (k ? kbHtml(k) : none) + `<div class="muted small" style="margin-top:8px">L'IA n'est pas disponible pour le moment${e && e.code === "not_granted" ? " (autorisation refusée)" : ""} : réponse hors ligne.</div>`;
+    const why = { not_granted: "autorisation refusée", bad_key: "ta clé API n'est pas valide", rate_limited: "limite atteinte chez ton fournisseur", network: "pas de connexion à ton fournisseur" }[e && e.code] || "erreur du fournisseur";
+    el.innerHTML = (k ? kbHtml(k) : none) + `<div class="muted small" style="margin-top:8px">L'IA n'est pas disponible (${why}) : réponse hors ligne.</div>`;
   }
   aiBusy = false; el.scrollIntoView({ behavior: "smooth", block: "end" });
 }

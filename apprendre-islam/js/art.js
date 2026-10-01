@@ -4,6 +4,7 @@ const ICONS = {
   path: '<circle cx="6" cy="18.5" r="2.3"/><circle cx="18" cy="5.5" r="2.3"/><path d="M8.3 18.5H14a3.5 3.5 0 0 0 0-7h-4a3.5 3.5 0 0 1 0-7h5.7"/>',
   explore: '<circle cx="12" cy="12" r="9"/><path d="m15.8 8.2-2 5.6-5.6 2 2-5.6z"/>',
   quiz: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>',
+  network: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
   chat: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4h0A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.5 8.5h7M8.5 11.5h4"/>',
   flame: '<path d="M12 2.5c.6 3.2 4.5 5.2 4.5 10a4.5 4.5 0 0 1-9 0c0-1.7.7-2.8 1.6-3.9.3 1.3 1 2 1.9 2.3C10.3 8.3 10.5 5.3 12 2.5z" fill="currentColor"/>',
   gem: '<path d="M6.5 3.5h11L22 9l-10 12L2 9z" fill="currentColor"/><path d="M2 9h20M9 3.5 7.5 9 12 21M15 3.5 16.5 9 12 21" stroke="#fff" stroke-opacity=".5" fill="none"/>',
