@@ -11,32 +11,44 @@ function avatar(size = 56, m = ME()) {
   return okPhoto(m.photo) ? `<img class="av" src="${m.photo}" alt="" style="${st}">` : `<span class="av ph" style="${st};font-size:${Math.round(size * 0.45)}px">${esc(((m.first || m.name || "?")[0] || "?").toUpperCase())}</span>`;
 }
 const readPhoto = file => new Promise((res, rej) => { const fr = new FileReader(); fr.onerror = rej; fr.onload = () => { const im = new Image(); im.onerror = rej; im.onload = () => { const s = 160, c = document.createElement("canvas"); c.width = c.height = s; const k = Math.max(s / im.width, s / im.height), w = im.width * k, h = im.height * k; c.getContext("2d").drawImage(im, (s - w) / 2, (s - h) / 2, w, h); res(c.toDataURL("image/jpeg", 0.8)); }; im.src = fr.result; }; fr.readAsDataURL(file); });
-const profCard = () => { const m = ME(), has = !!m.first; return `<div class="card prof">${avatar(72)}<div style="flex:1"><h3 style="margin:0">${has ? esc(m.first + (m.last ? " " + m.last : "")) : "Ton profil"}</h3><div class="muted small">${has ? (m.age ? m.age + " ans · " : "") + "Rang " + E.rank().n + " · " + esc(E.rank().title) : "Ajoute ta photo et ton prénom."}</div></div><a class="btn sec sm" href="#/${has ? "profedit" : "signup"}">${has ? "Modifier" : "Créer mon profil"}</a></div>`; };
+const profCard = () => { const m = ME(), has = !!m.first; return `<div class="card prof">${avatar(72)}<div style="flex:1"><h3 style="margin:0">${has ? esc(m.first + (m.last ? " " + m.last : "")) : "Ton profil"}</h3><div class="muted small">${has ? (m.age ? m.age + " ans · " : "") + "Rang " + E.rank().n + " · " + esc(E.rank().title) : "Ajoute ta photo et ton prénom."}</div></div><a class="btn sec sm" href="#/profedit">${has ? "Modifier" : "Créer mon profil"}</a></div>`; };
 
-/* ---------- Formulaire (création, connexion, modification) ---------- */
-let suPhoto = null;
+/* ---------- Connexion (Google, ou e-mail + mot de passe saisi deux fois) ---------- */
+const connected = () => ACCOUNT.state.provider !== "local";
+const firstOf = n => String(n || "").trim().split(/\s+/)[0] || "";
 V.signup = (mode) => {
-  const edit = mode === "edit", login = mode === "login", m = ME(), online = ACCOUNT.canSignIn, P = ACCOUNT.providers; if (suPhoto === null) suPhoto = m.photo || "";
-  const gis = !!APP_CONFIG.googleClientId, social = online && !inAppBrowser() ? [["google", "Google"], ["facebook", "Facebook"], ["apple", "Apple"]].filter(([k]) => P[k]).map(([k, n]) => k === "google" && gis ? `<div class="gbtn" id="gbtn"></div>` : `<button type="button" class="btn sec" data-su="${k}">${login ? "Se connecter" : "Continuer"} avec ${n}</button>`).join("") : "";
-  if (gis && online && !inAppBrowser() && P.google) setTimeout(mountGoogle, 0);
-  return `<a class="back" href="#/profile">${ico("back", 18)} Profil</a>
-  <h2>${edit ? "Mon profil" : login ? "Se connecter" : "Créer mon profil"}</h2>${edit ? "" : inAppNotice()}
-  <form id="signf" class="card" autocomplete="on" novalidate>
-    ${login ? "" : `<div class="phrow"><button type="button" class="phbtn" id="su-photo" aria-label="Choisir une photo"><span id="su-prev">${avatar(88, { first: m.first, photo: suPhoto })}</span><span class="cam">${ico("camera", 16)}</span></button><input type="file" id="su-file" accept="image/*" hidden><div class="muted small" style="flex:1">Ta photo reste facultative. Elle est réduite à 160 px.</div></div>
+  if (connected()) { setTimeout(() => { location.hash = "#/profile"; }, 0); return ""; }
+  if (!ACCOUNT.canSignIn) { setTimeout(() => { location.hash = "#/profedit"; }, 0); return ""; }
+  const login = mode === "login", P = ACCOUNT.providers, gis = !!APP_CONFIG.googleClientId, noApp = !inAppBrowser();
+  const google = P.google && noApp ? (gis ? `<div class="gbtn" id="gbtn"></div>` : `<button type="button" class="btn sec" data-su="google">${login ? "Se connecter" : "Continuer"} avec Google</button>`) : "";
+  if (google && gis) setTimeout(mountGoogle, 0);
+  return `<a class="back" href="#/home">${ico("back", 18)} Accueil</a>
+  <h2>${login ? "Se connecter" : "Créer un compte"}</h2>${inAppNotice()}
+  <div class="card">${google}${google && P.email ? `<div class="or"><span>ou avec ton e-mail</span></div>` : ""}
+  ${P.email ? `<form id="signf" autocomplete="on" novalidate>
+    <label class="fl">Adresse e-mail<input type="email" id="su-mail" autocomplete="email" inputmode="email"></label>
+    <label class="fl">Mot de passe${login ? "" : " (6 caractères minimum)"}<span class="pw"><input type="password" id="su-pass" autocomplete="${login ? "current-password" : "new-password"}"><button type="button" class="pwt" id="su-pwt" aria-label="Afficher le mot de passe">${ico("eye", 18)}</button></span></label>
+    ${login ? "" : `<label class="fl">Confirme le mot de passe<input type="password" id="su-pass2" autocomplete="new-password"></label>`}
+    <button class="btn" type="submit">${login ? "Se connecter" : "Créer mon compte"}</button>
+    ${login ? `<button type="button" class="btn sec" id="su-reset">Mot de passe oublié</button>` : `<p class="muted small">En créant un compte, tu confirmes avoir 13 ans ou plus.</p>`}
+  </form>` : ""}
+  <a class="btn sec" href="#/signup/${login ? "create" : "login"}">${login ? "Créer un compte" : "J'ai déjà un compte"}</a></div>`;
+};
+
+/* ---------- Profil : photo, prénom, nom, âge, classement (facultatif, modifiable à tout moment) ---------- */
+let suPhoto = null;
+V.profedit = () => {
+  const m = ME(), on = connected(); if (suPhoto === null) suPhoto = m.photo || "";
+  return `<a class="back" href="#/profile">${ico("back", 18)} Profil</a><h2>Mon profil</h2>
+  <form id="editf" class="card" novalidate>
+    <div class="phrow"><button type="button" class="phbtn" id="su-photo" aria-label="Choisir une photo"><span id="su-prev">${avatar(88, { first: m.first, photo: suPhoto })}</span><span class="cam">${ico("camera", 16)}</span></button><input type="file" id="su-file" accept="image/*" hidden><div class="muted small" style="flex:1">Ta photo reste facultative. Elle est réduite à 160 px.</div></div>
     <label class="fl">Prénom<input type="text" id="su-first" autocomplete="given-name" value="${esc(m.first)}" maxlength="30"></label>
-    <label class="fl">Nom de famille<input type="text" id="su-last" autocomplete="family-name" value="${esc(m.last)}" maxlength="40"></label>
-    <label class="fl">Âge<input type="number" id="su-age" inputmode="numeric" min="5" max="120" value="${m.age || ""}"></label>`}
-    ${edit ? "" : `<label class="fl">Adresse e-mail<input type="email" id="su-mail" autocomplete="email"></label>
-    <label class="fl">Mot de passe${login ? "" : " (6 caractères minimum)"}<span class="pw"><input type="password" id="su-pass" autocomplete="${login ? "current-password" : "new-password"}"><button type="button" class="pwt" id="su-pwt" aria-label="Afficher le mot de passe">${ico("eye", 18)}</button></span></label>`}
-    ${login ? "" : `<label class="chk"><input type="checkbox" id="su-board" ${m.board ? "checked" : ""}> <span>Apparaître dans le classement mondial (prénom, initiale du nom, photo et XP visibles par tous). Réservé aux 15 ans et plus.</span></label>`}
-    <button class="btn" type="submit">${edit ? "Enregistrer" : login ? "Se connecter" : online && P.email ? "Créer mon compte" : "Créer mon profil"}</button>
-    ${login && online ? `<button type="button" class="btn sec" id="su-reset">Mot de passe oublié</button>` : ""}
-    ${social ? `<div class="or"><span>ou</span></div>${social}` : ""}
-    ${!edit && !online ? `<p class="muted small">Ton profil est enregistré sur cet appareil. La création de compte en ligne (Google, Facebook, Apple, e-mail) et le classement mondial s'activent une fois le serveur branché.</p>` : ""}
-    ${!edit && online ? `<a class="btn sec" href="#/signup/${login ? "create" : "login"}">${login ? "Créer un compte" : "J'ai déjà un compte"}</a>` : ""}
+    <label class="fl">Nom de famille (facultatif)<input type="text" id="su-last" autocomplete="family-name" value="${esc(m.last)}" maxlength="40"></label>
+    <label class="fl">Âge (facultatif)<input type="number" id="su-age" inputmode="numeric" min="5" max="120" value="${m.age || ""}"></label>
+    ${on ? `<label class="chk"><input type="checkbox" id="su-board" ${m.board ? "checked" : ""}> <span>Apparaître dans le classement mondial (prénom, initiale du nom, photo et XP visibles par tous). Réservé aux 15 ans et plus : indique ton âge.</span></label>` : ""}
+    <button class="btn" type="submit">Enregistrer</button>
   </form>`;
 };
-V.profedit = () => V.signup("edit");
 
 /* Bouton Google officiel (Google Identity Services) */
 let gisLoad = null;
@@ -45,45 +57,42 @@ async function mountGoogle() {
   const box = document.getElementById("gbtn"); if (!box) return;
   try {
     await loadGis(); const mode = location.hash.split("/")[2];
-    google.accounts.id.initialize({ client_id: APP_CONFIG.googleClientId, ux_mode: "popup", callback: async resp => {
-      const m = location.hash.split("/")[2] || "create", f = readForm(m === "login" ? "login" : "create"); if (f.err) return toast(f.err);
-      if (m !== "login" && f.age < 13) return toast("Pour créer un compte en ligne, il faut avoir 13 ans ou plus.");
-      try { toast("Connexion…"); await ACCOUNT.signInGoogleToken(resp.credential);
-        if (m === "login") { const me = ME(); if (me.first) welcome(me.first, true); else { toast("Connecté."); location.hash = "#/profile"; } return; }
-        saveMe(f); await ACCOUNT.push(); welcome(f.first); } catch (e) { toast(authMsg(e)); } } });
+    google.accounts.id.initialize({ client_id: APP_CONFIG.googleClientId, ux_mode: "popup", callback: async resp => { try { toast("Connexion…"); await ACCOUNT.signInGoogleToken(resp.credential); afterSignIn(false); } catch (e) { toast(authMsg(e)); } } });
     google.accounts.id.renderButton(box, { theme: "outline", size: "large", shape: "pill", text: mode === "login" ? "signin_with" : "continue_with", locale: "fr", width: Math.min(320, box.clientWidth || 300) });
   } catch { box.innerHTML = `<button type="button" class="btn sec" data-su="google">Continuer avec Google</button>`; }
 }
 const val = id => { const e = document.getElementById(id); return e ? e.value.trim() : ""; };
-function readForm(mode) {
-  const first = val("su-first"), last = val("su-last"), age = parseInt(val("su-age"), 10), board = !!(document.getElementById("su-board") || {}).checked;
-  if (mode !== "login") { if (!first) return { err: "Écris ton prénom." }; if (!(age >= 5 && age <= 120)) return { err: "Indique ton âge (entre 5 et 120 ans)." }; }
-  return { first, last, age, board };
-}
-function saveMe(f) { const m = ME(); Object.assign(m, { first: f.first, last: f.last, age: f.age, photo: suPhoto || "", board: f.board && f.age >= 15 }); E.save(); }
+const authMsg = e => { const c = e && (e.code || e.message || "");
+  if (/missing initial state|web-storage-unsupported|operation-not-supported|storage/i.test(String(c))) return "Ce navigateur bloque la connexion Google. Ouvre le site dans Safari ou Chrome, ou utilise ton e-mail.";
+  return /email-already-in-use/.test(c) ? "Un compte existe déjà avec cet e-mail : connecte-toi." : /user-not-found|invalid-credential|wrong-password/.test(c) ? "E-mail ou mot de passe incorrect." : /account-exists/.test(c) ? "Un compte existe déjà avec cet e-mail via une autre méthode." : authError(e); };
 function welcome(first, back) {
-  const d = document.createElement("div"); d.className = "endscr light"; d.innerHTML = `<div class="eh">${siraj3d("proud", 190)}</div><h1 class="et">${back ? "Content de te revoir" : "Bienvenue"} ${esc(first)} !</h1><p class="es">${back ? "Ta progression est retrouvée." : "Ton profil est prêt. Bismillah, on commence !"}</p><div class="ebar"><button class="btn" id="wk-ok">C'est parti</button></div>`;
+  const name = first ? " " + esc(first) : "";
+  const d = document.createElement("div"); d.className = "endscr light"; d.innerHTML = `<div class="eh">${siraj3d("proud", 190)}</div><h1 class="et">${back ? "Content de te revoir" : "Bienvenue"}${name} !</h1><p class="es">${back ? "Ta progression est retrouvée." : "Tu es connecté. Bismillah, on commence !"}</p><div class="ebar"><button class="btn" id="wk-ok">C'est parti</button></div>`;
   document.body.appendChild(d); SND.win(); confetti(); d.querySelector("#wk-ok").onclick = () => { d.classList.add("out"); setTimeout(() => d.remove(), 300); location.hash = "#/home"; };
 }
-const authMsg = e => { const c = e && (e.code || e.message || "");
-  if (/missing initial state|web-storage-unsupported|operation-not-supported|storage/i.test(String(c))) return "Ce navigateur bloque la connexion Google. Ouvre le site dans Safari ou Chrome, ou utilise ton e-mail."; return /email-already-in-use/.test(c) ? "Un compte existe déjà avec cet e-mail : connecte-toi." : /user-not-found|invalid-credential|wrong-password/.test(c) ? "E-mail ou mot de passe incorrect." : /account-exists/.test(c) ? "Un compte existe déjà avec cet e-mail via une autre méthode." : authError(e); };
-
-async function submitForm(kind) {
-  const mode = location.hash.split("/")[2] || (location.hash.startsWith("#/profedit") ? "edit" : "create");
-  const f = readForm(mode); if (f.err) return toast(f.err);
-  if (mode === "edit") { saveMe(f); if (ACCOUNT.state.provider === "firebase") ACCOUNT.push(); toast("Profil enregistré."); location.hash = "#/profile"; return; }
-  if (kind !== "email" && kind !== "local" && inAppBrowser()) return toast("La connexion Google ne marche pas ici : ouvre le site dans Safari ou Chrome, ou utilise ton e-mail.");
-  const online = ACCOUNT.canSignIn && (kind !== "local");
-  if (!online) { saveMe(f); welcome(f.first); return; }
-  if (mode !== "login" && f.age < 13) return toast("Pour créer un compte en ligne, il faut avoir 13 ans ou plus. Demande à un parent, ou apprends sans compte.");
-  const email = val("su-mail"), password = (document.getElementById("su-pass") || {}).value || "";
-  if (kind === "email") { if (!email) return toast("Écris ton adresse e-mail."); if (mode !== "login" && password.length < 6) return toast("Mot de passe trop court (6 caractères minimum)."); if (mode === "login" && !password) return toast("Écris ton mot de passe."); }
-  try {
-    toast("Connexion…"); const before = !!ME().first;
-    const r = await ACCOUNT.signIn(kind, { email, password, mode: mode === "login" ? "login" : "create", displayName: (f.first + " " + (f.last || "")).trim() });
-    if (mode === "login") { const m = ME(); if (m.first) welcome(m.first, true); else toast("Connecté."), location.hash = "#/profile"; return; }
-    saveMe(f); await ACCOUNT.push(); welcome(f.first);
-  } catch (e) { toast(authMsg(e)); }
+/* Après une connexion : on reprend le prénom du compte Google s'il n'y en a pas encore, puis message de bienvenue */
+function afterSignIn(wasLogin) {
+  const m = ME(), nm = ACCOUNT.state.user && ACCOUNT.state.user.name; if (!m.first && nm && !/@/.test(nm)) { m.first = firstOf(nm); m.last = String(nm).trim().split(/\s+/).slice(1).join(" "); E.save(); }
+  welcome(m.first, wasLogin && !!m.first);
+}
+async function submitAuth(kind) {
+  const mode = location.hash.split("/")[2] === "login" ? "login" : "create";
+  if (kind !== "email" && inAppBrowser()) return toast("La connexion Google ne marche pas ici : ouvre le site dans Safari ou Chrome, ou utilise ton e-mail.");
+  const email = val("su-mail"), password = (document.getElementById("su-pass") || {}).value || "", pass2 = (document.getElementById("su-pass2") || {}).value || "";
+  if (kind === "email") {
+    if (!email) return toast("Écris ton adresse e-mail.");
+    if (mode === "create") { if (password.length < 6) return toast("Mot de passe trop court (6 caractères minimum)."); if (password !== pass2) return toast("Les deux mots de passe ne sont pas identiques."); }
+    else if (!password) return toast("Écris ton mot de passe.");
+  }
+  try { toast("Connexion…"); await ACCOUNT.signIn(kind, { email, password, mode }); afterSignIn(mode === "login"); } catch (e) { toast(authMsg(e)); }
+}
+async function submitEdit() {
+  const first = val("su-first"), last = val("su-last"), age = parseInt(val("su-age"), 10), board = !!(document.getElementById("su-board") || {}).checked;
+  if (!first) return toast("Écris ton prénom.");
+  if (val("su-age") && !(age >= 5 && age <= 120)) return toast("Âge : entre 5 et 120 ans.");
+  const m = ME(); Object.assign(m, { first, last, age: age || null, photo: suPhoto || "", board: board && age >= 15 });
+  if (board && !(age >= 15)) toast("Il faut indiquer un âge de 15 ans ou plus pour le classement."); else toast("Profil enregistré.");
+  E.save(); if (connected()) ACCOUNT.push(); location.hash = "#/profile";
 }
 
 document.addEventListener("click", async e => {
@@ -91,13 +100,13 @@ document.addEventListener("click", async e => {
   if (t.id === "su-photo") document.getElementById("su-file").click();
   else if (t.id === "su-pwt") { const i = document.getElementById("su-pass"); i.type = i.type === "password" ? "text" : "password"; }
   else if (t.id === "su-reset") { const m = val("su-mail"); if (!m) return toast("Écris d'abord ton e-mail."); try { await ACCOUNT.resetPassword(m); toast("E-mail de réinitialisation envoyé."); } catch (er) { toast(authMsg(er)); } }
-  else if (t.dataset.su) submitForm(t.dataset.su);
+  else if (t.dataset.su) submitAuth(t.dataset.su);
 });
 document.addEventListener("change", async e => {
   if (e.target.id !== "su-file" || !e.target.files[0]) return;
   try { suPhoto = await readPhoto(e.target.files[0]); document.getElementById("su-prev").innerHTML = avatar(88, { first: val("su-first"), photo: suPhoto }); } catch { toast("Impossible de lire cette image."); }
 });
-document.addEventListener("submit", e => { if (e.target.id !== "signf") return; e.preventDefault(); const mode = location.hash.split("/")[2]; submitForm(mode === "login" ? "email" : (ACCOUNT.canSignIn && ACCOUNT.providers.email ? "email" : "local")); });
+document.addEventListener("submit", e => { if (e.target.id === "signf") { e.preventDefault(); submitAuth("email"); } else if (e.target.id === "editf") { e.preventDefault(); submitEdit(); } });
 addEventListener("hashchange", () => { if (!/^#\/(signup|profedit)/.test(location.hash)) suPhoto = null; });
 
 /* ---------- Classement mondial ---------- */
