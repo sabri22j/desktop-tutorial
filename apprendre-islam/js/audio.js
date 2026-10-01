@@ -1,5 +1,5 @@
 /* Sons générés par le navigateur (Web Audio). AUCUN instrument ni mélodie, et pas de musique de fond :
-   uniquement de petits bruits d'interaction (« tic » des boutons), des gouttes d'eau (juste) et un bruit sourd (faux). */
+   des gouttes d'eau (juste), un bruit sourd (faux), l'allumage de la série et les gains d'XP ; les simples gestes (boutons, onglets) donnent de mini vibrations. */
 const SND = (() => {
   let ctx, master;
   const noiseBufs = {};
@@ -35,11 +35,9 @@ const SND = (() => {
   const fxGain = () => 1.1 + cfg().vol * 0.6;
   const buzz = p => { try { if (cfg().sfx && navigator.vibrate) navigator.vibrate(p); } catch {} };
   /* Un bruit pour chaque geste. Les petits haut-parleurs de téléphone ne rendent pas les graves : les sons « faux » restent dans le médium. */
-  function click() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.035, "bandpass", 2400, 1.2, 0.7 * k); burst(t, 0.06, "lowpass", 600, 0.7, 0.45 * k); }
-  function select() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 700, 1100, 0.09, 0.6 * k); burst(t, 0.03, "bandpass", 3000, 1.5, 0.4 * k); }
-  function nav() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.16, "bandpass", 1200, 0.6, 0.45 * k); drop(t + 0.04, 500, 900, 0.12, 0.35 * k); }
-  function flip() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.09, "bandpass", 1800, 0.8, 0.6 * k); burst(t + 0.07, 0.05, "bandpass", 2800, 1.2, 0.45 * k); }
-  function pop() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 900, 1500, 0.12, 0.55 * k); }
+  /* Gestes (boutons, choix, changement d'onglet, carte retournée, message) : de mini vibrations, sans bruit. */
+  const tick = p => { try { if (cfg().click && navigator.vibrate) navigator.vibrate(p); } catch {} };
+  const click = () => tick(8), select = () => tick(12), nav = () => tick(10), flip = () => tick([8, 40, 8]), pop = () => tick(8);
   function xp() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); [0, 0.07, 0.14].forEach((d, i) => drop(t + d, 1100 + i * 250, 2200 + i * 400, 0.14, 0.5 * k)); }
   function correct() { buzz(30); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 600, 1300, 0.2, 1.1 * k); drop(t + 0.1, 800, 1700, 0.22, 1 * k); drop(t + 0.21, 1000, 2100, 0.3, 0.95 * k); }
   function wrong() { buzz([70, 50, 70]); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain();
