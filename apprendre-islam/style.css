@@ -274,3 +274,5 @@ body.focus #toast{bottom:auto;top:24px}
 .fbig{flex:1;display:flex;align-items:center;justify-content:center}
 .fcard .favb{color:#fff}
 .fcard .favb{background:#ffffff22;border-radius:12px;padding:8px;border:0}.fcard .favb.on{color:#f4b836}
+
+.rkc{display:block;margin-bottom:12px}.rkc .row{margin-bottom:6px}
