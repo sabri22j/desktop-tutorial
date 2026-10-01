@@ -24,12 +24,15 @@ const NAMES = (() => {
   const FR = [["Abu", "Abou"], ["Muhammad", "Mouhammad"], ["Mohammed", "Mouhammad"], ["Umar", "Oumar"], ["Uthman", "Outhmane"], ["Khadija", "Radidja"], ["Khalid", "Ralid"], ["Ja'far", "Djafar"], ["Sa'd", "Saad"], ["Mus'ab", "Moussab"], ["Mu'awiya", "Mouawiya"],
     ["Mu'adh", "Mouadh"], ["Zubayr", "Zoubaïr"], ["Yusuf", "Youssouf"], ["Musa", "Moussa"], ["Jibril", "Djibril"], ["Quraysh", "Qouraïch"], ["Hasan", "Hassane"], ["Husayn", "Houssaïne"], ["Hafsa", "Hafça"], ["Hud", "Houd"], ["Ishaq", "Ishak"], ["Yaqub", "Yaqoub"],
     ["Sulayman", "Souleymane"], ["Dawud", "Daoud"], ["Nuh", "Nouh"], ["Ayyub", "Ayyoub"], ["Yunus", "Younous"], ["Shu'ayb", "Choaïb"], ["Zakariyya", "Zakariya"]];
+  const slugify = k => k.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const SAL = "ﷺ", SAL_AR = "صلى الله عليه وسلم", SAL_FR = "salla Llahou alayhi wa sallam";
+  const slugOfAr = new Map(); AR.forEach(([k, v]) => { if (!slugOfAr.has(v)) slugOfAr.set(v, slugify(k)); });
   const esc = x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), sorted = AR.slice().sort((a, b) => b[0].length - a[0].length), map = new Map(sorted.map(([k, v]) => [k, v]));
   const re = new RegExp("(" + SAL + "|(?<![\\p{L}'’\\-])(?:" + sorted.map(([k]) => esc(k)).join("|") + ")(?![\\p{L}'’\\-]))", "gu");
   const reFr = new RegExp("(?<![\\p{L}'’\\-])(" + FR.map(([k]) => esc(k)).sort((a, b) => b.length - a.length).join("|") + ")(?![\\p{L}'’\\-])", "gu"), mapFr = new Map(FR.map(([k, v]) => [k, v]));
   /* [{t:"texte"}, {t:"محمد", ar:true}, …] */
-  function split(text) { const out = []; let last = 0; text.replace(re, (m, _g, i) => { if (i > last) out.push({ t: text.slice(last, i) }); out.push({ t: m === SAL ? SAL_AR : map.get(m), ar: true }); last = i + m.length; return m; }); if (last < text.length) out.push({ t: text.slice(last) }); return out.filter(s => s.t.trim()); }
+  function split(text) { const out = []; let last = 0; text.replace(re, (m, _g, i) => { if (i > last) out.push({ t: text.slice(last, i) }); out.push({ t: m === SAL ? SAL_AR : map.get(m), ar: true, o: m, slug: m === SAL ? "salla-allahu-alayhi-wa-sallam" : slugOfAr.get(map.get(m)) }); last = i + m.length; return m; }); if (last < text.length) out.push({ t: text.slice(last) }); return out.filter(s => s.t.trim()); }
   const respell = text => text.split(SAL).join(" " + SAL_FR + " ").replace(reFr, m => mapFr.get(m) || m);
-  return { split, respell };
+  const list = () => [...slugOfAr.entries()].map(([ar, slug]) => ({ slug, ar, ecrit: AR.filter(x => x[1] === ar).map(x => x[0]).join(" / ") })).concat([{ slug: "salla-allahu-alayhi-wa-sallam", ar: SAL_AR, ecrit: SAL }]);
+  return { split, respell, list };
 })();

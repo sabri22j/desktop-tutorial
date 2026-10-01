@@ -21,11 +21,14 @@ const VOICE = (() => {
   const arScore = v => (/google|natural|neural|premium|enhanced|siri|microsoft/i.test(v.name || "") ? 10 : 0) + (/ar[-_]SA/i.test(v.lang) ? 2 : 0) - (/compact|espeak/i.test(v.name || "") ? 8 : 0);
   const arVoice = () => voices().filter(v => /^ar/i.test(v.lang)).sort((a, b) => arScore(b) - arScore(a))[0] || null;
   const isRobotic = v => !v || /compact|espeak|eloquence/i.test(v.name || "") || score(v) < 22;
+  /* Enregistrements de noms (audio/noms/<nom>.mp3, liste dans audio/noms/index.json générée à la publication) : lus à la place de la voix synthétique. */
+  let clips = new Set(), chainEl = null; try { fetch("audio/noms/index.json").then(r => r.ok ? r.json() : []).then(a => { clips = new Set(a); }).catch(() => {}); } catch {}
   function chunks(text) { return (text.match(/[^.!?;:]+[.!?;:]?/g) || [text]).map(s => s.trim()).filter(Boolean); }
   function speakTTS(text) {
     if (!synth) return false;
     try {
       synth.cancel(); const my = ++token, v = pick(), s = E.S.settings, parts = chunks(text), av = s.arNames === false ? null : arVoice(), us = [];
+      if (clips.size) { const all = parts.flatMap(p => NAMES.split(p)); if (all.some(g => g.slug && clips.has(g.slug))) return speakChain(all, my, v, av, s); }
       parts.forEach(p => { // toutes les phrases sont mises en file immédiatement : indispensable sur téléphone (geste de l'utilisateur)
         (av ? NAMES.split(p) : [{ t: NAMES.respell(p) }]).forEach(seg => {
           const u = new SpeechSynthesisUtterance(seg.t);
@@ -41,12 +44,28 @@ const VOICE = (() => {
       return true;
     } catch { return false; }
   }
+  /* Mode mixte : phrases en voix synthétique, noms en enregistrement. Lu segment par segment (peut s'interrompre sur certains iPhone : à vérifier). */
+  function speakChain(segs, my, v, av, s) {
+    let i = 0; const el = chainEl = new Audio();
+    const speakSeg = (g, done) => {
+      const u = new SpeechSynthesisUtterance(g.ar ? (av ? g.t : NAMES.respell(g.o)) : g.t);
+      if (g.ar && av) { u.voice = av; u.lang = av.lang; u.rate = Math.min(s.rate, 0.9); } else { if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "fr-FR"; u.rate = s.rate; u.pitch = s.pitch; }
+      u.onend = u.onerror = done; synth.speak(u);
+    };
+    const next = () => {
+      if (my !== token) return; if (i >= segs.length) return onState("idle");
+      const g = segs[i++];
+      if (g.slug && clips.has(g.slug)) { el.onended = next; el.onerror = () => speakSeg(g, next); el.src = `audio/noms/${g.slug}.mp3`; el.play().catch(() => speakSeg(g, next)); }
+      else speakSeg(g, next);
+    };
+    onState("playing"); next(); return true;
+  }
   /* Un mot ou une phrase en arabe (écrit en lettres arabes) lu par la voix arabe de l'appareil ; renvoie false s'il n'y en a pas. */
   function playAr(text) {
     const av = arVoice(); if (!synth || !av) return false;
     try { synth.cancel(); token++; const my = token, u = new SpeechSynthesisUtterance(text); u.voice = av; u.lang = av.lang; u.rate = 0.8; u.onend = u.onerror = () => { if (my === token) onState("idle"); }; synth.speak(u); onState("playing"); return true; } catch { return false; }
   }
-  function stop() { token++; if (audio) { try { audio.pause(); } catch {} audio = null; } if (synth) { try { synth.cancel(); } catch {} } onState("idle"); }
+  function stop() { token++; if (chainEl) { try { chainEl.pause(); } catch {} chainEl = null; } if (audio) { try { audio.pause(); } catch {} audio = null; } if (synth) { try { synth.cancel(); } catch {} } onState("idle"); }
   /* Joue l'enregistrement s'il est connu, sinon la synthèse (immédiatement, dans le geste de l'utilisateur). */
   function play(id, idx, text) {
     stop(); const my = token, key = `${id}-${idx}`;
