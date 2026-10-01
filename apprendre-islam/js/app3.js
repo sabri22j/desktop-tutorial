@@ -95,7 +95,7 @@ function route() {
   if (r === "welcome") { renderOnb(); return; }
   const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, reseau: V.reseau, map: V.map, ai: V.ai, profile: V.profile }[r] || V.home;
   const html = fn(a, b);
-  if (typeof html === "string") $app.innerHTML = html;
+  if (typeof html === "string") { $app.innerHTML = html; FX.enter($app); }
   chrome(TABMAP[r] || r);
   if (r === "lexique") lexList("");
   if (r === "ai") AI.mode().then(m => { const t = document.getElementById("aimode"); if (t) t.textContent = m === "byok" ? "Ton IA : " + AI.PROVIDERS[AI.getMine().provider].name + " · réponses ancrées dans les chapitres" : m === "claude" ? "IA Claude · réponses ancrées dans les chapitres" : m === "server" ? "IA connectée · réponses ancrées dans les chapitres" : "Mode hors ligne · réponses préparées"; });

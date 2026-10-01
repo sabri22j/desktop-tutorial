@@ -276,3 +276,30 @@ body.focus #toast{bottom:auto;top:24px}
 .fcard .favb{background:#ffffff22;border-radius:12px;padding:8px;border:0}.fcard .favb.on{color:#f4b836}
 
 .rkc{display:block;margin-bottom:12px}.rkc .row{margin-bottom:6px}
+
+/* ---- Animations ---- */
+.rise{animation:rise .45s cubic-bezier(.2,.8,.25,1) both}@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+.fxgain{position:fixed;z-index:80;transform:translateX(-50%);font-family:var(--fd);font-weight:800;font-size:1.5rem;color:var(--gold-d);background:#fff;border:3px solid var(--gold);border-radius:999px;padding:6px 16px;box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:none;animation:fxgain 1.4s ease-out forwards}
+@keyframes fxgain{0%{opacity:0;transform:translate(-50%,10px) scale(.5)}15%{opacity:1;transform:translate(-50%,0) scale(1.15)}30%{transform:translate(-50%,-6px) scale(1)}100%{opacity:0;transform:translate(-50%,-110px) scale(1)}}
+.tchip.bump{animation:bump .6s ease-out}@keyframes bump{0%{transform:scale(1)}30%{transform:scale(1.3) rotate(-4deg)}60%{transform:scale(.95)}100%{transform:scale(1)}}
+.fxstar{position:fixed;z-index:80;pointer-events:none;transform:translate(-50%,-50%);animation:starfly .85s ease-out forwards}
+@keyframes starfly{0%{opacity:1;transform:translate(-50%,-50%) scale(.3) rotate(0)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.2) rotate(180deg)}}
+.opt.ok{animation:okpop .55s cubic-bezier(.3,1.6,.5,1)}@keyframes okpop{0%{transform:scale(1)}40%{transform:scale(1.05);box-shadow:0 0 0 8px rgba(39,183,124,.25)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(39,183,124,0)}}
+.opt.ko{animation:shakeX .5s ease-out}
+.fxrank{position:fixed;inset:0;z-index:90;background:rgba(7,28,22,.9);display:flex;align-items:center;justify-content:center;animation:fadein .3s ease-out;overflow:hidden}
+.fxrank.out{animation:fadeout .35s ease-in forwards}@keyframes fadein{from{opacity:0}to{opacity:1}}@keyframes fadeout{to{opacity:0}}
+.fxrank .rays{position:absolute;width:160vmax;height:160vmax;background:repeating-conic-gradient(from 0deg,rgba(244,184,54,.22) 0 10deg,transparent 10deg 20deg);animation:spin 14s linear infinite;mask-image:radial-gradient(circle,#000 0,transparent 55%);-webkit-mask-image:radial-gradient(circle,#000 0,transparent 55%)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fxrank .box{position:relative;text-align:center;color:#fff;padding:20px;animation:rankpop .7s cubic-bezier(.3,1.5,.5,1)}
+@keyframes rankpop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.fxrank .big{font-family:var(--fd);font-size:6rem;line-height:1;color:var(--gold);text-shadow:0 6px 0 rgba(0,0,0,.25),0 0 40px rgba(244,184,54,.7);animation:glowtxt 1.6s ease-in-out infinite}
+@keyframes glowtxt{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.fxrank h2{color:#fff;margin:6px 0 18px}
+.tchip.flame svg{animation:flick 1.6s ease-in-out infinite;transform-origin:50% 90%}@keyframes flick{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.15) rotate(3deg)}}
+.btn{transition:transform .12s,box-shadow .12s}.btn:active{transform:translateY(3px) scale(.98)}
+.card.row:active,.chcard:active,.tile:active{transform:scale(.98)}
+#nav .ni.on span.b{animation:tabpop .4s cubic-bezier(.3,1.6,.5,1)}@keyframes tabpop{from{transform:scale(.7)}to{transform:translateY(-1px)}}
+.lvlup{animation:rankpop .6s cubic-bezier(.3,1.5,.5,1)}
+.xpchip{animation:rankpop .5s .2s cubic-bezier(.3,1.5,.5,1) both}
+.bar i{transition:width .9s cubic-bezier(.2,.8,.25,1)}
+@media (prefers-reduced-motion:reduce){.rise,.fxgain,.fxstar,.fxrank *,.tchip.flame svg,.opt.ok,.opt.ko{animation:none!important}}

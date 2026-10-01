@@ -7,7 +7,7 @@ const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "
 let toastT;
 function toast(msg) { SND.pop(); $toast.textContent = msg; $toast.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => $toast.classList.remove("show"), 3000); }
 const go = h => { location.hash = h; };
-const celebrate = () => { E.evalBadges().forEach(b => toast("Nouveau badge : " + b)); const r = E.popRankUp(); if (r) { SND.win(); toast("⭐ Rang " + r.n + " : " + r.title + " !"); } };
+const celebrate = () => { E.evalBadges().forEach(b => toast("Nouveau badge : " + b)); const r = E.popRankUp(); if (r) FX.rankUp(r); };
 const ring = (p, size = 64, st = 8, label = "", col = "var(--green)") => { const r = (size - st) / 2, c = 2 * Math.PI * r;
   return `<span class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="${st}"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${st}" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - Math.max(0, Math.min(1, p)))).toFixed(1)}"/></svg><span class="rt" style="font-size:${(size * .26).toFixed(0)}px">${label}</span></span>`; };
 const arText = s => esc(s).replace(/\s*۝\s*/g, " • ");
@@ -115,7 +115,7 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
       checked = true; el.classList.add("locked-q"); el.querySelectorAll("select,input").forEach(x => x.disabled = true); api.reveal(ok);
       if (!item.retry) { answered++; if (ok) correct++; else wrong.push(item.q); if (item.q.id && QINDEX[item.q.id]) E.answer(item.q.id, ok); }
       if (!ok && cfg.retry !== false && !item.retry) queue.push({ q: item.q, retry: true });
-      ok ? SND.correct() : SND.wrong(); react(ok);
+      ok ? SND.correct() : SND.wrong(); react(ok); if (ok) FX.burst(el.querySelector(".opt.ok, .opt.sel") || btn);
       const ch = CHAPTERS[item.q.chapter], srcs = ch ? `<div class="src">📚 <b>Sources</b> : ${ch.sources.map(esc).join(" · ")}</div>` : "";
       dock.className = "dock " + (ok ? "ok" : "ko");
       dock.innerHTML = `<div class="in"><div class="fbh"><div class="fbt">${ok ? "✓ Correct !" : "✗ Pas tout à fait"}</div></div>${ok ? "" : `<div class="fbx">Bonne réponse : <b>${esc(api.answerText)}</b></div>`}${item.q.e ? `<div class="fbx muted">${esc(item.q.e)}</div>` : ""}${srcs}<button class="btn" id="go">Continuer</button></div>`;
@@ -124,7 +124,7 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
   };
   const finish = () => {
     const dock = document.getElementById("dock"); if (dock) dock.remove(); document.body.classList.remove("focus");
-    if (cfg.kind === "check") { if (correct) { E.addXP(E.XP.check); toast("+5 XP"); } return cfg.after(); }
+    if (cfg.kind === "check") { if (correct) { E.addXP(E.XP.check); { toast("+5 XP"); FX.gain("+5 XP"); } } return cfg.after(); }
     const score = correct / total, res = { score, correct, total, wrong, xp: 0 }, S = E.S;
     if (cfg.kind === "quiz") { S.stats.quizzes++; res.xp = E.addXP(score >= 0.6 ? E.XP.quiz : 5); if (score === 1) S.perfect = true; }
     else if (cfg.kind === "review") { S.stats.reviews++; res.xp = E.addXP(E.XP.review); }
@@ -134,11 +134,12 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
     E.save(); celebrate();
     const newly = E.newLevelsCompleted(), stages = [...new Set(newly.map(E.stageOf))].filter(s => { const p = E.stageProgress(s); return p.total && p.done === p.total; });
     const m = cfg.chapter ? E.mastery(cfg.chapter) : null, great = score >= 0.8 || res.pass;
-    if (res.xp) setTimeout(SND.xp, 350); if (great || newly.length) { confetti(); SND.win(); }
+    if (res.xp) setTimeout(() => { SND.xp(); FX.count(document.getElementById("xpn"), res.xp); FX.gain("+" + res.xp + " XP", document.querySelector(".xpchip")); if (up) FX.rankUp(up); }, 450); if (great || newly.length) { confetti(); SND.win(); }
     const title = cfg.kind === "exam" ? (res.pass ? "Examen réussi !" : "Examen non validé (65 % pour réussir). Révise puis réessaie.") : score >= 0.8 ? "Bravo !" : score >= 0.6 ? "Bien joué, continue !" : "Il faut réviser un peu.";
+    const up = E.popRankUp();
     $app.innerHTML = `<div class="resc"><div class="sp"></div>${siraj(great ? "proud" : score >= 0.6 ? "happy" : "think", 130, great ? "jump" : "float")}<div class="sp"></div>
       <h2>${title}</h2><div class="sp"></div>${ring(score, 120, 12, `${correct}/${total}`, score >= 0.6 ? "var(--green)" : "var(--gold)")}<div class="sp"></div>
-      <div class="xpchip">${ico("gem", 20)} +${res.xp} XP</div>${(() => { const r = E.rank(); return `<div class="rkc"><div class="row"><b>Rang ${r.n} · ${esc(r.title)}</b><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}</div>`; })()}${(() => { const u = E.popRankUp(); return u ? `<div class="lvlup">⭐ Nouveau rang : ${u.n} · ${esc(u.title)} !</div>` : ""; })()}
+      <div class="xpchip">${ico("gem", 20)} +<span id="xpn">0</span> XP</div>${(() => { const r = E.rank(); return `<div class="rkc"><div class="row"><b>Rang ${r.n} · ${esc(r.title)}</b><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}</div>`; })()}${up ? `<div class="lvlup">⭐ Nouveau rang : ${up.n} · ${esc(up.title)} !</div>` : ""}
       ${newly.map(n => `<div class="lvlup">🎉 Niveau ${n} validé !</div>`).join("")}${stages.map(s => `<div class="lvlup">🎓 Étape terminée : ${esc(STAGES[s])}</div>`).join("")}
       ${m !== null ? `<div class="card" style="text-align:left"><div class="row"><b>Maîtrise du chapitre</b><b>${pct(m)} %</b></div>${bar(m)}<span class="muted small">${m >= E.UNLOCK ? "🔓 Suite débloquée. Les révisions l'amèneront vers 100 %." : "60 % pour débloquer la suite. Les questions ratées reviendront en révision."}</span></div>` : ""}
       ${wrong.length ? `<p class="muted">🔄 ${wrong.length} question${wrong.length > 1 ? "s" : ""} à revoir : ajoutée${wrong.length > 1 ? "s" : ""} à tes révisions.</p>` : ""}</div>

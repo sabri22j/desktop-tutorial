@@ -91,7 +91,7 @@ V.lesson = (id, i) => {
   btn.onclick = () => { if (btn.classList.contains("pl")) VOICE.stop(); else VOICE.play(id, +i, l.body + (l.fr ? " " + l.fr : "")); };
   document.getElementById("cont").onclick = () => {
     VOICE.stop();
-    const after = () => { const xp = E.completeLesson(id, +i); if (xp) { SND.xp(); toast("+10 XP"); } celebrate(); go(+i + 1 < c.lessons.length ? `#/lesson/${id}/${+i + 1}` : `#/quiz/${id}`); };
+    const after = () => { const xp = E.completeLesson(id, +i); if (xp) { SND.xp(); toast("+10 XP"); FX.gain("+10 XP"); } celebrate(); go(+i + 1 < c.lessons.length ? `#/lesson/${id}/${+i + 1}` : `#/quiz/${id}`); };
     if (!l.check) return after();
     runSession({ kind: "check", title: "Question rapide", questions: [l.check], retry: false, back: `#/chapter/${id}`, after });
   };
