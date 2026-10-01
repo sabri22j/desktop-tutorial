@@ -34,9 +34,9 @@ const E = (() => {
   }
   const streak = () => { const t = dayStr(); return (S.streak.last === t || S.streak.last === addDays(t, -1)) ? S.streak.count : 0; };
   function logDay() { const t = dayStr(); return (S.log[t] = S.log[t] || { xp: 0, q: 0 }); }
-  /* Rang d'XP : indépendant des 101 niveaux du parcours. Le rang n demande 25·n·(n−1) XP au total (50, 150, 300, 500…). */
+  /* Rang d'XP : indépendant des 101 niveaux du parcours. Le rang n demande 100·n·(n−1) XP au total (200, 600, 1 200, 2 000…). */
   const RANKS = ["Curieux", "Apprenti", "Persévérant", "Studieux", "Assidu", "Passionné", "Érudit en herbe", "Lumière", "Gardien du savoir", "Sage"];
-  const rankStart = n => 25 * n * (n - 1);
+  const rankStart = n => 100 * n * (n - 1);
   function rank(xp = S.xp) { let n = 1; while (xp >= rankStart(n + 1)) n++; const a = rankStart(n), b = rankStart(n + 1); return { n, title: RANKS[Math.min(RANKS.length - 1, n - 1)], cur: xp - a, need: b - a, left: b - xp, pct: (xp - a) / (b - a) }; }
   let rankUp = null;
   const popRankUp = () => { const r = rankUp; rankUp = null; return r; };
