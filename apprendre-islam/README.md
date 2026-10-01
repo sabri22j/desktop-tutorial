@@ -14,6 +14,8 @@ XP ≠ maîtrise. Un niveau se valide à 60 % de maîtrise ; les chapitres d'un 
 ## Voix
 
 Les noms arabes (Muhammad ﷺ, Abu Bakr, Umar, Uthman, Ali, Khadija, les prophètes…) sont lus par une voix arabe si l'appareil en a une ; sinon ils sont adaptés pour la voix française (approximation). Voir `js/names.js`.
+
+**Tes propres enregistrements de noms** : dépose des fichiers `.mp3` dans `apprendre-islam/audio/noms/` en suivant la liste de `audio/NOMS.md` (30 noms à faire en premier). Le site lit ton enregistrement à la place de la voix synthétique, dans toutes les leçons ; les noms sans fichier gardent la voix de l'appareil. La liste des fichiers présents est générée à chaque publication (`tools/gen-noms-index.js`).
 La lecture des leçons utilise **en priorité un enregistrement humain** `audio/<chapitre>-<leçon>.mp3` s'il existe, sinon la voix de synthèse la plus naturelle de l'appareil, lue phrase par phrase. Voir `audio/README.md` et `audio/SCRIPT.md` (texte de chaque leçon, généré par `node tools/gen-audio-script.js`).
 
 ## Sons

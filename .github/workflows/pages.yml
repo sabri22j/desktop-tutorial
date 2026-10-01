@@ -21,6 +21,8 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Liste des enregistrements de noms
+        run: node apprendre-islam/tools/gen-noms-index.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apprendre-islam
