@@ -2,6 +2,9 @@
    Le mot de passe n'est jamais stocké par l'application : il est confié à Firebase Authentication.
    Le classement n'affiche que : prénom + initiale du nom, photo (facultative), XP, rang. Réservé aux comptes de 15 ans et plus qui l'activent. */
 const ME = () => E.S.me || (E.S.me = { first: "", last: "", age: null, photo: "", board: false });
+/* Navigateurs intégrés (Snapchat, Instagram, TikTok, Facebook…) : la connexion Google par fenêtre y échoue (« missing initial state »). On guide vers Safari ou Chrome. */
+const inAppBrowser = () => { const u = navigator.userAgent || ""; return /Snapchat|Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|BytedanceWebview|Line\/|MicroMessenger|Twitter|LinkedInApp|Pinterest|GSA\//i.test(u) || (/iPhone|iPad|iPod/.test(u) && !/Safari\//.test(u) && !/CriOS|FxiOS|EdgiOS/.test(u)); };
+const inAppNotice = () => inAppBrowser() ? `<div class="card" style="background:var(--gold-l)"><h3>Ouvre le site dans ton navigateur</h3><p class="small">Tu es dans le navigateur d'une application (Snapchat, Instagram, TikTok…). La connexion avec Google n'y marche pas. Touche <b>•••</b> en haut à droite, puis <b>« Ouvrir dans Safari »</b> (ou Chrome). Ou inscris-toi ici avec ton e-mail.</p><button class="btn sec sm" data-copy="https://sirat-islam.fr">Copier le lien du site</button></div>` : "";
 const okPhoto = p => typeof p === "string" && p.startsWith("data:image/jpeg;base64,") && p.length < 60000;
 function avatar(size = 56, m = ME()) {
   const st = `width:${size}px;height:${size}px`;
@@ -14,9 +17,9 @@ const profCard = () => { const m = ME(), has = !!m.first; return `<div class="ca
 let suPhoto = null;
 V.signup = (mode) => {
   const edit = mode === "edit", login = mode === "login", m = ME(), online = ACCOUNT.canSignIn, P = ACCOUNT.providers; if (suPhoto === null) suPhoto = m.photo || "";
-  const social = online ? [["google", "Google"], ["facebook", "Facebook"], ["apple", "Apple"]].filter(([k]) => P[k]).map(([k, n]) => `<button type="button" class="btn sec" data-su="${k}">${login ? "Se connecter" : "Continuer"} avec ${n}</button>`).join("") : "";
+  const social = online && !inAppBrowser() ? [["google", "Google"], ["facebook", "Facebook"], ["apple", "Apple"]].filter(([k]) => P[k]).map(([k, n]) => `<button type="button" class="btn sec" data-su="${k}">${login ? "Se connecter" : "Continuer"} avec ${n}</button>`).join("") : "";
   return `<a class="back" href="#/profile">${ico("back", 18)} Profil</a>
-  <h2>${edit ? "Mon profil" : login ? "Se connecter" : "Créer mon profil"}</h2>
+  <h2>${edit ? "Mon profil" : login ? "Se connecter" : "Créer mon profil"}</h2>${edit ? "" : inAppNotice()}
   <form id="signf" class="card" autocomplete="on" novalidate>
     ${login ? "" : `<div class="phrow"><button type="button" class="phbtn" id="su-photo" aria-label="Choisir une photo"><span id="su-prev">${avatar(88, { first: m.first, photo: suPhoto })}</span><span class="cam">${ico("camera", 16)}</span></button><input type="file" id="su-file" accept="image/*" hidden><div class="muted small" style="flex:1">Ta photo reste facultative. Elle est réduite à 160 px.</div></div>
     <label class="fl">Prénom<input type="text" id="su-first" autocomplete="given-name" value="${esc(m.first)}" maxlength="30"></label>
@@ -45,12 +48,14 @@ function welcome(first, back) {
   const d = document.createElement("div"); d.className = "endscr light"; d.innerHTML = `<div class="eh">${siraj3d("proud", 190)}</div><h1 class="et">${back ? "Content de te revoir" : "Bienvenue"} ${esc(first)} !</h1><p class="es">${back ? "Ta progression est retrouvée." : "Ton profil est prêt. Bismillah, on commence !"}</p><div class="ebar"><button class="btn" id="wk-ok">C'est parti</button></div>`;
   document.body.appendChild(d); SND.win(); confetti(); d.querySelector("#wk-ok").onclick = () => { d.classList.add("out"); setTimeout(() => d.remove(), 300); location.hash = "#/home"; };
 }
-const authMsg = e => { const c = e && (e.code || ""); return /email-already-in-use/.test(c) ? "Un compte existe déjà avec cet e-mail : connecte-toi." : /user-not-found|invalid-credential|wrong-password/.test(c) ? "E-mail ou mot de passe incorrect." : /account-exists/.test(c) ? "Un compte existe déjà avec cet e-mail via une autre méthode." : authError(e); };
+const authMsg = e => { const c = e && (e.code || e.message || "");
+  if (/missing initial state|web-storage-unsupported|operation-not-supported|storage/i.test(String(c))) return "Ce navigateur bloque la connexion Google. Ouvre le site dans Safari ou Chrome, ou utilise ton e-mail."; return /email-already-in-use/.test(c) ? "Un compte existe déjà avec cet e-mail : connecte-toi." : /user-not-found|invalid-credential|wrong-password/.test(c) ? "E-mail ou mot de passe incorrect." : /account-exists/.test(c) ? "Un compte existe déjà avec cet e-mail via une autre méthode." : authError(e); };
 
 async function submitForm(kind) {
   const mode = location.hash.split("/")[2] || (location.hash.startsWith("#/profedit") ? "edit" : "create");
   const f = readForm(mode); if (f.err) return toast(f.err);
   if (mode === "edit") { saveMe(f); if (ACCOUNT.state.provider === "firebase") ACCOUNT.push(); toast("Profil enregistré."); location.hash = "#/profile"; return; }
+  if (kind !== "email" && kind !== "local" && inAppBrowser()) return toast("La connexion Google ne marche pas ici : ouvre le site dans Safari ou Chrome, ou utilise ton e-mail.");
   const online = ACCOUNT.canSignIn && (kind !== "local");
   if (!online) { saveMe(f); welcome(f.first); return; }
   if (mode !== "login" && f.age < 13) return toast("Pour créer un compte en ligne, il faut avoir 13 ans ou plus. Demande à un parent, ou apprends sans compte.");
