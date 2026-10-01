@@ -386,3 +386,7 @@ main.p3d{animation:p3d .5s cubic-bezier(.2,.8,.25,1)}@keyframes p3d{from{opacity
 .rkrow{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}.rkrow:last-child{border:0}
 .rkrow.me{background:var(--green-l)}.rkrow .pos{width:28px;text-align:center;font-family:var(--fd)}
 .rkrow .nm{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rkrow .xp{color:#e0a82e;display:flex;gap:4px;align-items:center;font-family:var(--fd)}
+
+.seg{display:flex;gap:6px;background:var(--line);padding:5px;border-radius:16px;margin:8px 0 14px}
+.seg a{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 6px;border-radius:12px;font-weight:800;color:var(--muted);transition:.2s}
+.seg a.on{background:var(--surface);color:var(--green);box-shadow:0 2px 0 rgba(0,0,0,.08)}
