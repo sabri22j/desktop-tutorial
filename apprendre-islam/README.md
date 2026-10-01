@@ -15,7 +15,7 @@ XP ≠ maîtrise. Un niveau se valide à 60 % de maîtrise ; les chapitres d'un 
 La lecture des leçons utilise **en priorité un enregistrement humain** `audio/<chapitre>-<leçon>.mp3` s'il existe, sinon la voix de synthèse la plus naturelle de l'appareil, lue phrase par phrase. Voir `audio/README.md` et `audio/SCRIPT.md` (texte de chaque leçon, généré par `node tools/gen-audio-script.js`).
 
 ## Sons
-Pas de musique de fond. Uniquement de petits bruits (aucun instrument ni mélodie) : gouttes pour « juste », bruit sourd pour « faux », « tic » des boutons. Tout est réglable dans Profil → Paramètres.
+Pas de musique de fond. Uniquement de petits bruits (aucun instrument ni mélodie) : gouttes pour « juste », bruit sourd pour « faux », mini vibrations pour les boutons (sans bruit). Tout est réglable dans Profil → Paramètres.
 
 ## Vidéos (à venir)
 Chaque chapitre accepte `video: { title, url }` (8e argument de `ch(...)`) : un bouton « Vidéo » s'affiche alors. Fournir les liens de sources fiables pour les brancher.
