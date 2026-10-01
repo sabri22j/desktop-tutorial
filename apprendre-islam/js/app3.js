@@ -1,11 +1,13 @@
 /* Interface Sirat, partie 3 : profil, introduction, rappels, routage. */
-V.profile = () => {
+V.profile = (tab) => {
+  const pt = tab === "param" ? "param" : "profil";
   const S = E.S, n = E.currentLevel(), wk = E.weekLog(), mx = Math.max(10, ...wk.map(w => w.xp)), done = Object.keys(CHAPTERS).filter(id => E.mastery(id) >= E.UNLOCK).length, best = VOICE.best(), cur = VOICE.pick();
   const allV = VOICE.voices(), fr = allV.filter(v => /^fr/i.test(v.lang)).sort((a, b) => (b === best) - (a === best)), rest = allV.filter(v => !/^fr/i.test(v.lang));
   const vopt = v => `<option value="${esc(v.voiceURI)}" ${cur && v.voiceURI === cur.voiceURI && S.settings.voice ? "selected" : ""}>${v === best ? "★ " : ""}${esc(v.name)} (${esc(v.lang)})</option>`;
   const sw = (id, label, on) => `<label class="set"><span>${label}</span><input type="checkbox" class="switch" id="${id}" ${on ? "checked" : ""}></label>`;
-  return `<h2>Profil</h2><div class="sp"></div>
-  ${profCard()}
+  return `<h2>${pt === "param" ? "Paramètres" : "Profil"}</h2>
+  <div class="seg"><a class="${pt === "profil" ? "on" : ""}" href="#/profile">${ico("user", 16)} Profil</a><a class="${pt === "param" ? "on" : ""}" href="#/profile/param">${ico("settings", 16)} Paramètres</a></div>
+  ${pt === "profil" ? `${profCard()}
   <a class="card row" href="#/ranking"><div class="gap">${ico("trophy", 26)}<div><h3>Classement mondial</h3><span class="muted small">Compare tes XP avec les autres</span></div></div>${ico("arrow", 20)}</a>
   <div class="card phead">${siraj3d("happy", 96)}<div><div class="muted small">Niveau actuel</div><h2>${n >= LEVELS.length ? "100" : n}</h2><div class="xpchip" style="margin:4px 0 0">${ico("moon", 18)} ${S.xp} XP</div></div></div>
   ${(() => { const r = E.rank(); return `<div class="card rkc"><div class="row"><h3>Rang ${r.n} · ${esc(r.title)}</h3><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}<p class="muted small">Il te manque ${r.left} XP pour le rang ${r.n + 1}. Les XP viennent des leçons (+10), des quiz (+20), des révisions (+15), du quiz du jour (+30) et des examens (+50). Ce rang est séparé des niveaux du parcours, qui, eux, dépendent de ta maîtrise.</p></div>`; })()}
@@ -13,9 +15,8 @@ V.profile = () => {
   <div class="card"><div class="row"><h3>Cette semaine</h3><span class="muted small">XP par jour</span></div><div class="wbars">${wk.map(w => `<div class="wb ${w.active ? "on" : ""}"><i style="height:${Math.max(6, w.xp / mx * 100)}%"></i><span>${w.letter}</span></div>`).join("")}</div></div>
   <div class="card"><h3>Maîtrise par matière</h3><div class="sp"></div>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id) || 0; return `<div class="row" style="padding:6px 0"><div class="gap"><span class="ic-b" style="width:38px;height:38px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center">${ico(LEVEL_ICON[s.id], 20)}</span><b>${esc(s.name)}</b></div><b>${pct(m)} %</b></div>${bar(m)}`; }).join("")}<p class="muted small">Niveau 100 = parcours de l'application terminé, pas « tout l'islam ».</p></div>
   <div class="card"><h3>Badges</h3><div class="sp"></div><div class="badges">${E.BADGES.map(b => `<div class="bdg ${S.badges[b[0]] ? "" : "off"}"><b>${b[1]}</b>${esc(b[2])}</div>`).join("")}</div></div>
-  ${accountCard()}
-  <div class="sec-h"><h3>Paramètres</h3></div>
-  <div class="card"><h3>Sons</h3>
+  ${accountCard()}` : ""}
+  ${pt === "param" ? `  <div class="card"><h3>Sons</h3>
     <label class="set"><span>Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>${sw("set-sfx", "Sons juste / faux", S.settings.sfx)}${sw("set-click", "Bruit des boutons", S.settings.click)}
     <div style="padding-top:8px"><button class="pill" id="t-ok">Écouter « juste »</button><button class="pill" id="t-ko">Écouter « faux »</button></div><p class="muted small">Aucun instrument ni mélodie : uniquement des sons de la nature et de petits bruits.</p></div>
   <div class="card"><h3>Voix de lecture</h3><p class="muted small">${allV.length ? `Voix utilisée : <b>${esc(cur ? cur.name : "automatique")}</b>.` : "Aucune voix détectée sur cet appareil."} ${cur && VOICE.isRobotic(cur) ? "Cette voix peut sembler robotique : choisis une voix marquée « Natural », « Neural », « Enhanced » ou « Google » si ton appareil en propose." : ""}</p>
@@ -24,7 +25,7 @@ V.profile = () => {
     <button class="pill" id="t-voice">Écouter un exemple</button><p class="muted small">Si des enregistrements humains sont ajoutés dans le dossier <code>audio/</code>, ils sont lus en priorité (voir le README).</p></div>
   <div class="card"><h3>Rappel quotidien</h3><div class="row"><input type="time" id="ptime" value="${S.reminder.time}" style="width:auto"><b>${S.reminder.on ? "Activé" : "Désactivé"}</b></div><button class="btn sec" id="prem">Activer / mettre à jour</button><button class="btn sec" id="pics">Ajouter à mon agenda</button></div>
   <div class="card"><h3>Objectif quotidien</h3><div>${[5, 10, 15, 20].map(m => `<button class="pill ${S.goal === m ? "on" : ""}" data-goal="${m}">${m} min</button>`).join("")}</div>${sw("set-free", "Tout débloquer (explorer librement)", S.settings.free)}</div>
-  <button class="btn sec" id="pintro">Revoir l'introduction avec Sirâj</button><button class="btn sec" id="rst">Réinitialiser ma progression</button><p class="muted small" style="text-align:center;margin-top:16px">© 2026 Sabri Jelassi · Sirat · Tous droits réservés</p>`;
+  <button class="btn sec" id="pintro">Revoir l'introduction avec Sirâj</button><button class="btn sec" id="rst">Réinitialiser ma progression</button><p class="muted small" style="text-align:center;margin-top:16px">© 2026 Sabri Jelassi · Sirat · Tous droits réservés</p>` : ""}`;
 };
 
 function accountCard() {
@@ -94,7 +95,7 @@ function downloadICS(time) {
 }
 
 /* ---------- Routage et habillage ---------- */
-const NAV = [["home", "home", "Accueil"], ["path", "path", "Parcours"], ["reseau", "network", "Réseau"], ["quiz", "quiz", "Quiz"], ["profile", "user", "Profil"]];
+const NAV = [["home", "home", "Accueil"], ["path", "path", "Parcours"], ["reseau", "network", "Réseau"], ["quiz", "quiz", "Quiz"], ["profile", "settings", "Paramètres"]];
 const TABMAP = { signup: "home", profedit: "home", ranking: "home", level: "path", chapter: "path", lesson: "path", subjects: "home", explore: "home", subject: "home", map: "home", cards: "home", lexique: "home", videos: "reseau", free: "quiz", review: "quiz", daily: "quiz", exam: "quiz", today: "home" };
 const LANTERN = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v2.5" stroke="#0a6546" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 7.5q4.5-6 9 0z" fill="#0f8a5f"/><path d="M7 7.5h10l.8 9q-1 4.5-5.8 4.5T6.2 16.5z" fill="#f4b836"/><path d="M9 9v9M15 9v9" stroke="#c98d10" stroke-width=".8" opacity=".6"/></svg>`;
 function chrome(tab) {
