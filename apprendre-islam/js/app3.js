@@ -16,7 +16,8 @@ V.profile = (tab) => {
   <div class="card"><h3>Maîtrise par matière</h3><div class="sp"></div>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id) || 0; return `<div class="row" style="padding:6px 0"><div class="gap"><span class="ic-b" style="width:38px;height:38px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center">${ico(LEVEL_ICON[s.id], 20)}</span><b>${esc(s.name)}</b></div><b>${pct(m)} %</b></div>${bar(m)}`; }).join("")}<p class="muted small">Niveau 100 = parcours de l'application terminé, pas « tout l'islam ».</p></div>
   <div class="card"><h3>Badges</h3><div class="sp"></div><div class="badges">${E.BADGES.map(b => `<div class="bdg ${S.badges[b[0]] ? "" : "off"}"><b>${b[1]}</b>${esc(b[2])}</div>`).join("")}</div></div>
   ${accountCard()}` : ""}
-  ${pt === "param" ? `  <div class="card"><h3>Sons</h3>
+  ${pt === "param" ? `  <div class="card"><h3>Thème</h3><p class="muted small">Choisis les couleurs de l'application.</p><div class="skins">${SKINS.map(k => `<button class="skin ${S.settings.skin === k.id ? "on" : ""}" data-skin="${k.id}" aria-label="${k.n}"><i style="background:linear-gradient(135deg,${hexShift("#0a2a23", k.d)},${hexShift("#0f8a5f", k.d)} 55%,#f4b836)"></i><span>${k.n}</span></button>`).join("")}</div></div>
+  <div class="card"><h3>Sons</h3>
     <label class="set"><span>Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>${sw("set-sfx", "Sons juste / faux", S.settings.sfx)}${sw("set-click", "Bruit des boutons", S.settings.click)}
     <div style="padding-top:8px"><button class="pill" id="t-ok">Écouter « juste »</button><button class="pill" id="t-ko">Écouter « faux »</button></div><p class="muted small">Aucun instrument ni mélodie : uniquement des sons de la nature et de petits bruits.</p></div>
   <div class="card"><h3>Voix de lecture</h3><p class="muted small">${allV.length ? `Voix utilisée : <b>${esc(cur ? cur.name : "automatique")}</b>.` : "Aucune voix détectée sur cet appareil."} ${cur && VOICE.isRobotic(cur) ? "Cette voix peut sembler robotique : choisis une voix marquée « Natural », « Neural », « Enhanced » ou « Google » si ton appareil en propose." : ""}</p>
@@ -130,7 +131,7 @@ document.addEventListener("pointerdown", e => { const t = e.target.closest("butt
   if (t.matches(".opt")) SND.select(); else if (t.matches(".flip")) SND.flip(); else if (t.closest("#nav")) SND.nav(); else SND.click(); }, { passive: true });
 let lastKey = 0; document.addEventListener("input", e => { if (e.target.matches("input[type=text],input[type=search],input[type=password],textarea") && Date.now() - lastKey > 70) { lastKey = Date.now(); SND.click(); } else if (e.target.matches("input[type=range]") && Date.now() - lastKey > 120) { lastKey = Date.now(); SND.click(); } });
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-copy],[data-o],[data-know],[data-reason],#mapz,#map3,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
+  const t = e.target.closest("[data-skin],[data-sub],[data-pin],[data-goal],[data-copy],[data-o],[data-know],[data-reason],#mapz,#map3,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
   if (!t) return;
   if (document.querySelector(".onbw") && (t.dataset.o || t.dataset.know || t.dataset.reason !== undefined || (t.dataset.goal && t.classList.contains("opt")))) {
     const tm = () => { const i = document.getElementById("rtime"); if (i && i.value) ONB.time = i.value; };
@@ -143,7 +144,8 @@ document.addEventListener("click", async e => {
     else if (t.dataset.o === "done") { const S = E.S; ONB.force = false; S.onboarded = true; S.goal = ONB.goal; S.profile = { know: ONB.know, reasons: ONB.reasons.map(i => REASONS[i]) }; S.reminder = { on: ONB.remind, time: ONB.time, last: S.reminder.last }; E.save(); go("#/home"); }
     return;
   }
-  if (t.dataset.sub) { quizSubject = t.dataset.sub; route(); }
+  if (t.dataset.skin) { E.S.settings.skin = t.dataset.skin; E.save(); applySkin(); route(); SND.pop(); }
+  else if (t.dataset.sub) { quizSubject = t.dataset.sub; route(); }
   else if (t.dataset.pin) { mapSel = t.dataset.pin; route(); }
   else if (t.id === "map3") { map3 = !map3; route(); }
   else if (t.id === "mapz") { mapZoom = !mapZoom; route(); }
@@ -189,5 +191,5 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.addEventListener("controllerchange", () => { if (had && !reloaded) { reloaded = true; location.reload(); } }); // nouvelle version : rechargement automatique
 }
 ACCOUNT.onChange(() => { if (location.hash === "#/profile") route(); });
-applyPattern(); checkReminder(); route();
+applySkin(); applyPattern(); checkReminder(); route();
 ACCOUNT.init().then(r => { if (r === "pulled") { toast("Progression récupérée depuis ton compte."); route(); } });

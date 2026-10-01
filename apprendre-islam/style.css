@@ -1,7 +1,7 @@
 /* Sirat : identité visuelle. Vert nuit, or, sable ; Baloo 2 (titres), Nunito (texte), Amiri (arabe). */
 :root{
   --bg:#edf3ef;--surface:#fff;--surface2:#f5f9f6;--ink:#10231c;--muted:#5a6f66;--line:#dbe6df;
-  --green:#0f8a5f;--green-d:#0a6546;--green-l:#d7f2e5;--night:#0a2a23;--night2:#14483b;
+  --green:#0f8a5f;--green-2:#3fd39a;--green-d:#0a6546;--green-l:#d7f2e5;--night:#0a2a23;--night2:#14483b;
   --gold:#f4b836;--gold-d:#c98d10;--gold-l:#fff0c8;--coral:#e5584a;--coral-l:#fde3df;--ok-l:#d9f4e4;
   --sea:#cfe3ee;--land:#efe6cf;--coast:#b9a97e;--lbl:#6b5d3a;--lbls:#4a7a94;--shadow:0 2px 0 rgba(16,35,28,.05),0 10px 26px rgba(16,35,28,.08);
   --r:20px;--fd:"Baloo 2","Nunito",system-ui,sans-serif;--fb:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;--far:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;
@@ -50,7 +50,7 @@ a.card{display:block;transition:transform .12s}a.card:active{transform:scale(.98
 .pill.on{border-color:var(--green);background:var(--green-l);color:var(--green)}
 .tag{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--green-l);color:var(--green);margin-right:6px}
 .tag.gold{background:var(--gold-l);color:var(--gold-d)}
-.bar{height:12px;background:var(--line);border-radius:8px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),#3fd39a);border-radius:8px;transition:width .5s}
+.bar{height:12px;background:var(--line);border-radius:8px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--green-2));border-radius:8px;transition:width .5s}
 .bar.gold i{background:linear-gradient(90deg,var(--gold-d),var(--gold))}
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:22px 2px 10px}.sec-h a{color:var(--green);font-weight:800;font-size:.9rem}
 .back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-weight:800;font-size:.9rem;margin-bottom:10px}
@@ -232,7 +232,7 @@ svg.map{width:100%;height:auto;background:var(--sea);border-radius:22px;display:
 /* Profil */
 .phead{display:flex;align-items:center;gap:14px}
 .wbars{display:flex;align-items:flex-end;gap:8px;height:110px;margin-top:10px}.wb{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
-.wb i{display:block;width:100%;border-radius:8px 8px 4px 4px;background:var(--green-l);min-height:6px;transition:height .5s}.wb.on i{background:linear-gradient(0deg,var(--green),#3fd39a)}.wb span{font-size:.72rem;font-weight:800;color:var(--muted)}
+.wb i{display:block;width:100%;border-radius:8px 8px 4px 4px;background:var(--green-l);min-height:6px;transition:height .5s}.wb.on i{background:linear-gradient(0deg,var(--green),var(--green-2))}.wb span{font-size:.72rem;font-weight:800;color:var(--muted)}
 .badges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.bdg{text-align:center;padding:12px 6px;border-radius:18px;background:var(--surface2);border:1px solid var(--line);font-size:.78rem;font-weight:800}.bdg b{display:block;font-size:1.8rem}.bdg.off{opacity:.4;filter:grayscale(1)}
 
 /* Introduction */
@@ -403,3 +403,9 @@ main.p3d{animation:p3d .5s cubic-bezier(.2,.8,.25,1)}@keyframes p3d{from{opacity
 .srow .si{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
 .srow .st{flex:1;display:flex;flex-direction:column}.srow .st b{font-family:var(--fd);font-size:1.15rem}.srow .st small{color:var(--muted);font-weight:700}
 #nav{z-index:50}
+
+/* ---- Choix du thème ---- */
+.skins{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.skin{border:2px solid var(--line);border-bottom-width:5px;background:var(--surface);border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;color:var(--ink);font-weight:800;font-size:.76rem}
+.skin i{width:46px;height:46px;border-radius:50%;display:block;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.skin.on{border-color:var(--green);background:var(--green-l);color:var(--green)}
