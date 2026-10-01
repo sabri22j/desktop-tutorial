@@ -72,8 +72,10 @@ const SND = (() => {
   /* Bruits : boutons, bonne / mauvaise réponse, victoire */
   const fxGain = () => 0.4 + cfg().vol * 0.6;
   function click() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.03, "bandpass", 2600, 1.2, 0.4 * k); burst(t, 0.05, "lowpass", 400, 0.7, 0.22 * k); }
-  function correct() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 500, 1100, 0.16, 0.3 * k); drop(t + 0.11, 700, 1500, 0.2, 0.26 * k); }
-  function wrong() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.22, "lowpass", 180, 0.7, 0.5 * k); drop(t, 170, 70, 0.25, 0.35 * k); }
+  const buzz = p => { try { if (cfg().sfx && navigator.vibrate) navigator.vibrate(p); } catch {} };
+  /* Juste : trois gouttes d'eau claires qui montent. Faux : deux coups sourds et graves. Plus forts qu'avant, pour s'entendre sur un téléphone. */
+  function correct() { buzz(30); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 600, 1300, 0.18, 0.75 * k); drop(t + 0.1, 800, 1700, 0.2, 0.7 * k); drop(t + 0.21, 1000, 2100, 0.28, 0.65 * k); }
+  function wrong() { buzz([70, 50, 70]); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.2, "lowpass", 220, 0.7, 1.1 * k); drop(t, 190, 60, 0.28, 0.9 * k); burst(t + 0.16, 0.2, "lowpass", 180, 0.7, 1 * k); drop(t + 0.16, 150, 50, 0.3, 0.8 * k); }
   function win() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); [0, 0.1, 0.2, 0.32].forEach((d, i) => drop(t + d, 500 + i * 120, 1100 + i * 260, 0.2, 0.26 * k)); }
   /* Démarrage après le premier geste (exigé par les navigateurs) */
   function unlock() { if (cfg().music) apply(); else ensure(); }
