@@ -213,7 +213,7 @@ details.srcs summary::-webkit-details-marker{display:none}
 .fc .hint{position:absolute;bottom:14px;font-size:.8rem;font-weight:800;opacity:.7}
 .lex{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;margin-bottom:8px}.lex .ar{font-size:1.5rem;line-height:1.5;text-align:right;min-width:90px}
 
-/* Explorer, matières, assistant */
+/* Explorer, matières */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .xt{border-radius:22px;padding:16px;min-height:118px;color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow)}
 .xt::after{content:"";position:absolute;inset:0;background:var(--pat);background-size:54px;opacity:.07}.xt>*{position:relative;z-index:1}

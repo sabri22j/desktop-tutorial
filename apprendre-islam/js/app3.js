@@ -94,7 +94,7 @@ function downloadICS(time) {
 }
 
 /* ---------- Routage et habillage ---------- */
-const NAV = [["home", "home", "Accueil"], ["path", "path", "Parcours"], ["reseau", "network", "Réseau"], ["quiz", "quiz", "Quiz"], ["ai", "chat", "Assistant"]];
+const NAV = [["home", "home", "Accueil"], ["path", "path", "Parcours"], ["reseau", "network", "Réseau"], ["quiz", "quiz", "Quiz"], ["profile", "user", "Profil"]];
 const TABMAP = { signup: "home", profedit: "home", ranking: "home", level: "path", chapter: "path", lesson: "path", subjects: "home", explore: "home", subject: "home", map: "home", cards: "home", lexique: "home", videos: "reseau", free: "quiz", review: "quiz", daily: "quiz", exam: "quiz", today: "home" };
 const LANTERN = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v2.5" stroke="#0a6546" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 7.5q4.5-6 9 0z" fill="#0f8a5f"/><path d="M7 7.5h10l.8 9q-1 4.5-5.8 4.5T6.2 16.5z" fill="#f4b836"/><path d="M9 9v9M15 9v9" stroke="#c98d10" stroke-width=".8" opacity=".6"/></svg>`;
 function chrome(tab) {
@@ -108,12 +108,11 @@ function route() {
   if (r === "welcome" && E.S.onboarded && !ONB.force) r = "home";
   document.body.classList.toggle("onb", r === "welcome");
   if (r === "welcome") { renderOnb(); return; }
-  const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, reseau: V.reseau, signup: V.signup, profedit: V.profedit, ranking: V.ranking, map: V.map, ai: V.ai, profile: V.profile }[r] || V.home;
+  const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, reseau: V.reseau, signup: V.signup, profedit: V.profedit, ranking: V.ranking, map: V.map, profile: V.profile }[r] || V.home;
   const html = fn(a, b);
   if (typeof html === "string") { $app.innerHTML = html; FX.enter($app); H3D.scan($app); $app.classList.remove("p3d"); void $app.offsetWidth; $app.classList.add("p3d"); }
   chrome(TABMAP[r] || r);
   if (r === "lexique") lexList("");
-  if (r === "ai") AI.mode().then(m => { const t = document.getElementById("aimode"); if (t) t.textContent = m === "byok" ? "Ton IA : " + AI.PROVIDERS[AI.getMine().provider].name + " · réponses ancrées dans les chapitres" : m === "claude" ? "IA Claude · réponses ancrées dans les chapitres" : m === "server" ? "IA connectée · réponses ancrées dans les chapitres" : "Mode hors ligne · réponses préparées"; });
   if (r === "path") setTimeout(() => { const c = document.querySelector(".node.cur"); if (c) c.scrollIntoView({ block: "center" }); }, 60); else window.scrollTo(0, 0);
 }
 addEventListener("hashchange", route);
@@ -121,7 +120,7 @@ document.addEventListener("pointerdown", e => { const t = e.target.closest("butt
   if (t.matches(".opt")) SND.select(); else if (t.matches(".flip")) SND.flip(); else if (t.closest("#nav")) SND.nav(); else SND.click(); }, { passive: true });
 let lastKey = 0; document.addEventListener("input", e => { if (e.target.matches("input[type=text],input[type=search],input[type=password],textarea") && Date.now() - lastKey > 70) { lastKey = Date.now(); SND.click(); } else if (e.target.matches("input[type=range]") && Date.now() - lastKey > 120) { lastKey = Date.now(); SND.click(); } });
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#map3,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-aiprov],#ai-save,#ai-del,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
+  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#map3,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
   if (!t) return;
   if (document.querySelector(".onbw") && (t.dataset.o || t.dataset.know || t.dataset.reason !== undefined || (t.dataset.goal && t.classList.contains("opt")))) {
     const tm = () => { const i = document.getElementById("rtime"); if (i && i.value) ONB.time = i.value; };
@@ -139,12 +138,8 @@ document.addEventListener("click", async e => {
   else if (t.id === "map3") { map3 = !map3; route(); }
   else if (t.id === "mapz") { mapZoom = !mapZoom; route(); }
   else if (t.dataset.goal) { E.S.goal = +t.dataset.goal; E.save(); route(); }
-  else if (t.dataset.ask) { const q = document.getElementById("askq"); if (q) answer(t.dataset.ask); }
   else if (t.dataset.style) { E.S.settings.style = t.dataset.style; E.S.settings.music = true; E.save(); SND.unlock(); SND.restart(); route(); }
   else if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.copy).then(() => toast("Copié")).catch(() => toast("Copie impossible")); } catch { toast("Copie impossible"); } }
-  else if (t.dataset.aiprov) { aiSel = t.dataset.aiprov; const d = document.getElementById("aipanel"); if (d) { d.outerHTML = aiPanel(); document.getElementById("aipanel").open = true; } }
-  else if (t.id === "ai-save") { const key = document.getElementById("ai-key").value.trim(), model = document.getElementById("ai-model").value.trim(), pv = aiSel || (AI.getMine() || {}).provider || "claude"; if (key.length < 10) { toast("Colle ta clé API complète."); return; } AI.setMine({ provider: pv, key, model }); toast("IA connectée. Pose ta question !"); route(); }
-  else if (t.id === "ai-del") { AI.setMine(null); aiSel = null; toast("Clé retirée de cet appareil."); route(); }
   else if (t.dataset.rtopic) { resTopic = t.dataset.rtopic; route(); }
   else if (t.dataset.rview) { resView = t.dataset.rview; route(); }
   else if (t.id === "resfavf") { resFav = !resFav; route(); }
@@ -178,7 +173,6 @@ document.addEventListener("input", e => {
   else if (id === "lexq") lexList(e.target.value);
   else if (id === "resq") { resQ = e.target.value; drawRes(); }
 });
-document.addEventListener("submit", e => { if (e.target.id === "askf") { e.preventDefault(); answer(document.getElementById("askq").value); } });
 if (VOICE.synth) VOICE.synth.onvoiceschanged = () => { if (location.hash === "#/profile") route(); };
 setInterval(checkReminder, 60000);
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
