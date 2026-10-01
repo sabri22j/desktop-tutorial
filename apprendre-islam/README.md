@@ -47,4 +47,4 @@ Faire relire le contenu ; enregistrer les voix ; ajouter les vidéos ; vrai assi
 
 ## Droits
 
-© 2026 sabri22j. Tous droits réservés (voir LICENSE).
+© 2026 Sabri Jelassi. Tous droits réservés (voir LICENSE).
