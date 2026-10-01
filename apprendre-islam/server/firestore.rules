@@ -1,0 +1,22 @@
+rules_version = '2';
+// Règles Firestore pour Sirat. À coller dans Firebase > Firestore > Règles, puis « Publier ».
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Progression privée : chaque personne lit et écrit uniquement son propre document.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // Classement mondial : lisible par tous ; chacun n'écrit que sa propre ligne, avec des valeurs plausibles.
+    match /leaderboard/{uid} {
+      allow read: if true;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'photo', 'xp', 'rank', 'level', 'streak', 'updatedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 40
+        && request.resource.data.photo is string && request.resource.data.photo.size() <= 60000
+        && request.resource.data.xp is int && request.resource.data.xp >= 0 && request.resource.data.xp < 10000000
+        && request.resource.data.rank is int && request.resource.data.rank >= 1 && request.resource.data.rank <= 200
+        && request.resource.data.level is int && request.resource.data.streak is int;
+    }
+  }
+}

@@ -48,3 +48,14 @@ Faire relire le contenu ; enregistrer les voix ; ajouter les vidéos ; vrai assi
 ## Droits
 
 © 2026 Sabri Jelassi. Tous droits réservés (voir LICENSE).
+
+## Profil, comptes et classement mondial
+
+- **Profil** (fonctionne tout de suite, sans serveur) : prénom, nom, âge, photo (réduite à 160 px). Message « Bienvenue Prénom ! » et « Salam Prénom ! » sur l'accueil.
+- **Comptes en ligne** (Google, Facebook, Apple, e-mail + mot de passe) et **classement mondial** : nécessitent un projet Firebase gratuit. Le mot de passe est géré par Firebase Authentication, jamais stocké par l'application.
+  1. Crée un projet sur console.firebase.google.com, puis ajoute une application Web et copie sa configuration dans `js/config.js` (clé `firebase`).
+  2. Authentication > Méthode de connexion : active « Adresse e-mail/Mot de passe » et « Google » (simple). Facebook demande une application sur developers.facebook.com ; Apple demande un compte Apple Developer payant. Mets ensuite `facebook: true` / `apple: true` dans `providers` de `js/config.js`.
+  3. Authentication > Paramètres > Domaines autorisés : ajoute `sirat-islam.fr` (et `sabri22j.github.io`).
+  4. Firestore Database : crée la base, puis colle `server/firestore.rules` dans l'onglet Règles et publie.
+- **Règles de confidentialité appliquées** : compte en ligne à partir de 13 ans ; classement et photo publics à partir de 15 ans et sur option ; seuls prénom, initiale du nom, photo, XP et rang sont visibles. À faire relire pour le RGPD (mineurs, politique de confidentialité).
+- **Limite connue** : les XP sont envoyés par l'application, donc le classement n'est pas protégé contre la triche sans validation côté serveur.

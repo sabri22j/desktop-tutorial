@@ -12,14 +12,14 @@ V.home = () => {
   const lv = Math.min(n, LEVELS.length - 1), gp = Math.min(1, (Math.min(1, d.lessons / plan.lessons) + Math.min(1, d.questions / plan.questions)) / 2), v = verseOfDay(), h = hadithOfDay(), st = storyOfDay();
   const week = E.weekLog().map(w => `<div class="wd ${w.active ? "on" : ""} ${w.today ? "today" : ""}"><i>${w.active ? ico("flame", 16) : ""}</i>${w.letter}</div>`).join("");
   const exams = LEVELS.filter(L => E.examReady(L.n));
-  return `${artBox("night", 3, `<div class="hello">Salam ! <small>${greeting()}. Prêt à apprendre ?</small></div>
+  return `${artBox("night", 3, `<div class="hello">Salam${ME().first ? " " + esc(ME().first) : ""} ! <small>${greeting()}. Prêt à apprendre ?</small></div>
     <div class="guide">${siraj3d(S.xp ? "happy" : "proud", 120)}<div class="bubble">${esc(dayMessage())}</div></div>
     <div class="week">${week}</div><a class="btn gold" href="${na.href}">${esc(na.label)}</a>${na.sub ? `<div class="small" style="text-align:center;margin-top:8px;opacity:.9">${esc(na.sub)}</div>` : ""}`, "hero")}
   ${(() => { const r = E.rank(); return `<a class="card rkc" href="#/profile"><div class="row"><b>${ico("moon", 18)} Rang ${r.n} · ${esc(r.title)}</b><span class="muted small">${r.left} XP avant le rang ${r.n + 1}</span></div>${bar(r.pct)}</a>`; })()}
   <div class="stat3"><div class="stat"><b style="color:#ef7b1a">${E.streak()}</b><span>Série</span></div><div class="stat"><b>${lv}</b><span>Niveau</span></div><div class="stat"><b style="color:var(--green)">${pct(E.progress())}%</b><span>Parcours</span></div></div>
   <div class="card goal">${ring(gp, 76, 9, pct(gp) + "%", "var(--gold)")}<div style="flex:1"><h3>Objectif du jour</h3><div class="muted small">${S.goal} min · Leçons ${Math.min(d.lessons, plan.lessons)}/${plan.lessons} · Questions ${Math.min(d.questions, plan.questions)}/${plan.questions}</div>${gp >= 1 ? `<div class="tag" style="margin-top:6px">Objectif atteint ✓</div>` : `<a class="tag gold" href="${na.href}" style="margin-top:6px">Continuer →</a>`}</div></div>
   ${exams.map(L => `<a class="card row" href="#/exam/${L.n}" style="background:var(--gold-l)"><div class="gap">${ico("trophy", 30)}<div><h3>Examen du niveau ${L.n}</h3><span class="muted small">Facultatif · +50 XP · grande étape</span></div></div>${ico("arrow", 22)}</a>`).join("")}
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><a class="pill" href="#/explore">${ico("explore", 14)} Explorer</a><a class="pill" href="#/map">Carte</a><a class="pill" href="#/cards">Cartes</a><a class="pill" href="#/lexique">Lexique</a><a class="pill" href="#/videos">Vidéos</a></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><a class="pill" href="#/explore">${ico("explore", 14)} Explorer</a><a class="pill" href="#/map">Carte</a><a class="pill" href="#/cards">Cartes</a><a class="pill" href="#/lexique">Lexique</a><a class="pill" href="#/ranking">Classement</a><a class="pill" href="#/videos">Vidéos</a></div>
   <div class="sec-h"><h3>Aujourd'hui</h3><a href="#/today">Tout voir</a></div>
   <div class="rail">
     <a class="tile v" href="#/today"><h4>${ico("quote", 18)} Verset du jour</h4><div class="t-ar">${arText(v.ar.length > 90 ? v.ar.slice(0, 90) + "…" : v.ar)}</div><p>${esc(v.fr.length > 120 ? v.fr.slice(0, 120) + "…" : v.fr)}</p><div class="ref">${esc(v.ref)}</div></a>
