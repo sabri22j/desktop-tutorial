@@ -1,4 +1,5 @@
 /* Interface Sirat, partie 3 : profil, introduction, rappels, routage. */
+V.settings = () => V.profile("param");
 V.profile = (tab) => {
   const pt = tab === "param" ? "param" : "profil";
   const S = E.S, n = E.currentLevel(), wk = E.weekLog(), mx = Math.max(10, ...wk.map(w => w.xp)), done = Object.keys(CHAPTERS).filter(id => E.mastery(id) >= E.UNLOCK).length, best = VOICE.best(), cur = VOICE.pick();
@@ -6,7 +7,6 @@ V.profile = (tab) => {
   const vopt = v => `<option value="${esc(v.voiceURI)}" ${cur && v.voiceURI === cur.voiceURI && S.settings.voice ? "selected" : ""}>${v === best ? "★ " : ""}${esc(v.name)} (${esc(v.lang)})</option>`;
   const sw = (id, label, on) => `<label class="set"><span>${label}</span><input type="checkbox" class="switch" id="${id}" ${on ? "checked" : ""}></label>`;
   return `<h2>${pt === "param" ? "Paramètres" : "Profil"}</h2>
-  <div class="seg"><a class="${pt === "profil" ? "on" : ""}" href="#/profile">${ico("user", 16)} Profil</a><a class="${pt === "param" ? "on" : ""}" href="#/profile/param">${ico("settings", 16)} Paramètres</a></div>
   ${pt === "profil" ? `${profCard()}
   <a class="card row" href="#/ranking"><div class="gap">${ico("trophy", 26)}<div><h3>Classement mondial</h3><span class="muted small">Compare tes XP avec les autres</span></div></div>${ico("arrow", 20)}</a>
   <div class="card phead">${siraj3d("happy", 96)}<div><div class="muted small">Niveau actuel</div><h2>${n >= LEVELS.length ? "100" : n}</h2><div class="xpchip" style="margin:4px 0 0">${ico("moon", 18)} ${S.xp} XP</div></div></div>
@@ -95,11 +95,11 @@ function downloadICS(time) {
 }
 
 /* ---------- Routage et habillage ---------- */
-const NAV = [["home", "home", "Accueil"], ["path", "path", "Parcours"], ["reseau", "network", "Réseau"], ["quiz", "quiz", "Quiz"], ["profile", "settings", "Paramètres"]];
-const TABMAP = { signup: "home", profedit: "home", ranking: "home", level: "path", chapter: "path", lesson: "path", subjects: "home", explore: "home", subject: "home", map: "home", cards: "home", lexique: "home", videos: "reseau", free: "quiz", review: "quiz", daily: "quiz", exam: "quiz", today: "home" };
+const NAV = [["home", "home", "Accueil"], ["path", "path", "Parcours"], ["reseau", "network", "Réseau"], ["quiz", "quiz", "Quiz"], ["more", "more", "Plus"]];
+const TABMAP = { profile: "more", settings: "more", ranking: "more", signup: "more", profedit: "more", level: "path", chapter: "path", lesson: "path", subjects: "home", explore: "home", subject: "home", map: "home", cards: "home", lexique: "home", videos: "reseau", free: "quiz", review: "quiz", daily: "quiz", exam: "quiz", today: "home" };
 const LANTERN = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v2.5" stroke="#0a6546" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 7.5q4.5-6 9 0z" fill="#0f8a5f"/><path d="M7 7.5h10l.8 9q-1 4.5-5.8 4.5T6.2 16.5z" fill="#f4b836"/><path d="M9 9v9M15 9v9" stroke="#c98d10" stroke-width=".8" opacity=".6"/></svg>`;
 function chrome(tab) {
-  $nav.innerHTML = NAV.map(([id, ic, nm]) => `<a class="ni ${tab === id ? "on" : ""}${id === "reseau" ? " center" : ""}" href="#/${id}"><span class="b">${ico(ic, 23)}</span>${nm}</a>`).join("");
+  $nav.innerHTML = NAV.map(([id, ic, nm]) => id === "more" ? `<button class="ni${tab === "more" ? " on" : ""}" id="morebtn" aria-haspopup="dialog"><span class="b">${ico(ic, 23)}</span>${nm}</button>` : `<a class="ni ${tab === id ? "on" : ""}${id === "reseau" ? " center" : ""}" href="#/${id}"><span class="b">${ico(ic, 23)}</span>${nm}</a>`).join("");
   $top.innerHTML = `<div class="tb"><a class="brand" href="#/home">${LANTERN}Sirat</a><div class="chips-top"><a class="tchip flame" href="#/profile">${ico("flame", 18)}${E.streak()}</a><a class="tchip moon" href="#/profile">${ico("moon", 18)}${E.S.xp}</a><button class="tchip snd" id="mtog" aria-label="Sons">${ico(E.S.settings.sfx ? "speaker" : "mute", 18)}</button><a class="tchip snd" href="#/profile" aria-label="Profil">${ico("user", 18)}</a></div></div>`;
 }
 function route() {
@@ -109,14 +109,23 @@ function route() {
   if (r === "welcome" && E.S.onboarded && !ONB.force) r = "home";
   document.body.classList.toggle("onb", r === "welcome");
   if (r === "welcome") { renderOnb(); return; }
-  const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, reseau: V.reseau, signup: V.signup, profedit: V.profedit, ranking: V.ranking, map: V.map, profile: V.profile }[r] || V.home;
+  const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, reseau: V.reseau, settings: V.settings, signup: V.signup, profedit: V.profedit, ranking: V.ranking, map: V.map, profile: V.profile }[r] || V.home;
   const html = fn(a, b);
   if (typeof html === "string") { $app.innerHTML = html; FX.enter($app); H3D.scan($app); $app.classList.remove("p3d"); void $app.offsetWidth; $app.classList.add("p3d"); }
   chrome(TABMAP[r] || r);
   if (r === "lexique") lexList("");
   if (r === "path") setTimeout(() => { const c = document.querySelector(".node.cur"); if (c) c.scrollIntoView({ block: "center" }); }, 60); else window.scrollTo(0, 0);
 }
-addEventListener("hashchange", route);
+addEventListener("hashchange", () => { closeSheet(); route(); });
+function closeSheet() { const o = document.getElementById("sheet"); if (o) { o.classList.add("out"); setTimeout(() => o.remove(), 250); } }
+function openSheet() {
+  if (document.getElementById("sheet")) return closeSheet();
+  const row = (href, ic, col, label, sub) => `<a class="srow" href="${href}"><span class="si" style="background:${col}">${ico(ic, 24)}</span><span class="st"><b>${label}</b>${sub ? `<small>${sub}</small>` : ""}</span>${ico("arrow", 18)}</a>`;
+  const d = document.createElement("div"); d.id = "sheet"; d.className = "sheet";
+  d.innerHTML = `<div class="bk" data-sheet-close></div><div class="pn" role="dialog" aria-label="Plus"><div class="grab"></div>${row("#/profile", "user", "#4aa8f0", "Profil", "Ta photo, ton rang, tes badges, ton compte")}${row("#/settings", "settings", "#8e6ad8", "Paramètres de l'application", "Sons, voix, rappel, objectif")}${row("#/ranking", "trophy", "#f4b836", "Classement mondial", "Compare tes XP")}</div>`;
+  document.body.appendChild(d);
+}
+document.addEventListener("click", e => { if (e.target.closest("#morebtn")) openSheet(); else if (e.target.closest("[data-sheet-close]")) closeSheet(); });
 document.addEventListener("pointerdown", e => { const t = e.target.closest("button:not(:disabled), a[href], .opt, .chip, .pill, .node, label, .flip, summary, select, input[type=checkbox], input[type=radio], .card.row, .tile"); if (!t) return;
   if (t.matches(".opt")) SND.select(); else if (t.matches(".flip")) SND.flip(); else if (t.closest("#nav")) SND.nav(); else SND.click(); }, { passive: true });
 let lastKey = 0; document.addEventListener("input", e => { if (e.target.matches("input[type=text],input[type=search],input[type=password],textarea") && Date.now() - lastKey > 70) { lastKey = Date.now(); SND.click(); } else if (e.target.matches("input[type=range]") && Date.now() - lastKey > 120) { lastKey = Date.now(); SND.click(); } });
