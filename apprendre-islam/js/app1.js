@@ -44,7 +44,7 @@ function sirajSVG(mood, o = {}) {
   ${eyes}${mouth}${star}${hand}${sparks}</svg>`;
 }
 const siraj3d = (mood = "happy", size = 110, anim = "float", kind = "lantern") => kind === "moon" ? `<span class="s3d" data-k="moon" style="--s:${size}px">${ico("moon", Math.round(size * .6))}</span>` : `<span class="sj3dw" style="--s:${size}px">${siraj(mood, size, anim)}</span>`;
-const siraj = (mood = "happy", size = 110, anim = "float", o = {}) => `<span class="sj ${anim}" style="--s:${size}px">${sirajSVG(mood, o)}</span>`;
+const siraj = (mood = "happy", size = 110, anim = "float", o = {}) => `<span class="sj ${anim}" style="--s:${size}px">${skinSvg(sirajSVG(mood, o))}</span>`;
 function confetti() {
   const cols = ["#f4b836", "#0f8a5f", "#27b77c", "#ffffff", "#e0a82e", "#e5584a"];
   for (let i = 0; i < 44; i++) { const d = document.createElement("i"); d.className = "confetti"; d.style.left = Math.random() * 100 + "vw"; d.style.background = cols[i % cols.length]; d.style.setProperty("--dx", (Math.random() * 140 - 70) + "px"); d.style.animationDelay = Math.random() * .4 + "s"; document.body.appendChild(d); setTimeout(() => d.remove(), 2700); }

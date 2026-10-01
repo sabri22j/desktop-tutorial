@@ -56,7 +56,7 @@ const SCENES = {
   oasis: { sky: ["#0f4a52", "#e7b755"], dune: ["#0d4a3a", "#14735a", "#d6a64a"], moon: false, stars: 4, palm: true, palms: 3, sun: true },
   mountain: { sky: ["#10304a", "#f2b658"], dune: ["#0b2a2c", "#0f4040", "#1a6a5a"], moon: false, stars: 10, peaks: true, sun: true },
 };
-function scene(kind = "night", seed = 7) {
+function sceneBase(kind = "night", seed = 7) {
   const S = SCENES[kind] || SCENES.night, r = rnd(seed * 97 + 13), id = "sc" + kind + seed;
   const stars = Array.from({ length: S.stars }, () => `<circle cx="${(r() * 400).toFixed(0)}" cy="${(r() * 90).toFixed(0)}" r="${(r() * 1.3 + .4).toFixed(1)}" fill="#fff" opacity="${(r() * .6 + .3).toFixed(2)}"/>`).join("");
   const moon = S.moon ? `<g transform="translate(318 34)"><circle r="17" fill="#ffe9a8"/><circle cx="8" cy="-4" r="15" fill="url(#${id}s)"/></g>` : "";
@@ -73,3 +73,30 @@ function scene(kind = "night", seed = 7) {
 const SUBJECT_SCENE = { croyance: "night", histoire: "dunes", coran: "book", pratique: "mosque", prophetes: "sea", compagnons: "oasis" };
 const STAGE_SCENE = ["night", "mosque", "book", "dunes", "oasis", "sea", "oasis", "mosque", "book", "night", "mountain"];
 const LEVEL_ICON = { croyance: "sparkle", histoire: "scroll", coran: "book", pratique: "star", prophetes: "sparkle", compagnons: "user" };
+
+/* ---------- Thèmes orientaux : on décale la teinte des verts (interface et illustrations) ; l'or reste l'or ---------- */
+const SKINS = [
+  { id: "emeraude", n: "Émeraude", d: 0 },
+  { id: "nuit", n: "Nuit d'Orient", d: 62 },
+  { id: "turquoise", n: "Turquoise", d: 30 },
+  { id: "pourpre", n: "Pourpre royal", d: 128 },
+  { id: "marrakech", n: "Marrakech", d: -128 },
+];
+const SKIN_LIGHT = { "--bg": "#edf3ef", "--surface2": "#f5f9f6", "--line": "#dbe6df", "--green": "#0f8a5f", "--green-2": "#3fd39a", "--green-d": "#0a6546", "--green-l": "#d7f2e5", "--night": "#0a2a23", "--night2": "#14483b", "--ok-l": "#d9f4e4" };
+const SKIN_DARK = { "--bg": "#0a1511", "--surface": "#13231d", "--surface2": "#182c25", "--line": "#243a32", "--green": "#21b27c", "--green-2": "#3fd39a", "--green-d": "#0f7a55", "--green-l": "#15382d", "--ok-l": "#153a29" };
+const skinDeg = () => { try { const k = SKINS.find(x => x.id === E.S.settings.skin); return k ? k.d : 0; } catch { return 0; } };
+function hexShift(hex, deg) {
+  const n = parseInt(hex.slice(1), 16), r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, dd = mx - mn;
+  let h = 0, sat = 0; if (dd) { sat = l > .5 ? dd / (2 - mx - mn) : dd / (mx + mn); h = mx === r ? ((g - b) / dd + (g < b ? 6 : 0)) : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; h *= 60; }
+  h = (h + deg + 360) % 360; const a = sat * Math.min(l, 1 - l), f = k => { const kk = (k + h / 30) % 12; return Math.round(255 * (l - a * Math.max(-1, Math.min(kk - 3, 9 - kk, 1)))); };
+  return "#" + [f(0), f(8), f(4)].map(v => v.toString(16).padStart(2, "0")).join("");
+}
+function skinSvg(svg) { const d = skinDeg(); if (!d) return svg; return svg.replace(/#[0-9a-fA-F]{6}\b/g, c => { const n = parseInt(c.slice(1), 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx === mn) return c; let h = mx === r ? ((g - b) / (mx - mn) + (g < b ? 6 : 0)) : mx === g ? (b - r) / (mx - mn) + 2 : (r - g) / (mx - mn) + 4; h *= 60; return h >= 130 && h <= 200 ? hexShift(c, d) : c; }); }
+function scene(kind, seed) { return skinSvg(sceneBase(kind, seed)); }
+function applySkin() {
+  const root = document.documentElement, d = skinDeg(), t = root.dataset.theme, dark = t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme:dark)").matches);
+  [...Object.keys(SKIN_LIGHT), ...Object.keys(SKIN_DARK)].forEach(k => root.style.removeProperty(k));
+  if (d) Object.entries(dark ? SKIN_DARK : SKIN_LIGHT).forEach(([k, v]) => root.style.setProperty(k, hexShift(v, d)));
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = d ? hexShift("#0f8a5f", d) : "#0f8a5f";
+}
+try { matchMedia("(prefers-color-scheme:dark)").addEventListener("change", applySkin); } catch {}
