@@ -183,7 +183,11 @@ document.addEventListener("input", e => {
 });
 if (VOICE.synth) VOICE.synth.onvoiceschanged = () => { if (location.hash === "#/profile") route(); };
 setInterval(checkReminder, 60000);
-if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  const had = !!navigator.serviceWorker.controller; let reloaded = false;
+  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(r => r.update()).catch(() => {});
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (had && !reloaded) { reloaded = true; location.reload(); } }); // nouvelle version : rechargement automatique
+}
 ACCOUNT.onChange(() => { if (location.hash === "#/profile") route(); });
 applyPattern(); checkReminder(); route();
 ACCOUNT.init().then(r => { if (r === "pulled") { toast("Progression récupérée depuis ton compte."); route(); } });
