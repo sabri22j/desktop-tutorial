@@ -43,6 +43,7 @@ function sirajSVG(mood, o = {}) {
   <ellipse cx="62" cy="152" rx="10" ry="6.5" fill="#ff8f7d" opacity=".55"/><ellipse cx="138" cy="152" rx="10" ry="6.5" fill="#ff8f7d" opacity=".55"/>
   ${eyes}${mouth}${star}${hand}${sparks}</svg>`;
 }
+const siraj3d = (mood = "happy", size = 110, anim = "float", kind = "lantern") => `<span class="s3d" data-k="${kind}" style="--s:${size}px">${siraj(mood, size, anim)}</span>`;
 const siraj = (mood = "happy", size = 110, anim = "float", o = {}) => `<span class="sj ${anim}" style="--s:${size}px">${sirajSVG(mood, o)}</span>`;
 function confetti() {
   const cols = ["#f4b836", "#0f8a5f", "#27b77c", "#ffffff", "#e0a82e", "#e5584a"];
@@ -137,7 +138,7 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
     if (res.xp) setTimeout(() => { SND.xp(); FX.count(document.getElementById("xpn"), res.xp); FX.gain("+" + res.xp + " XP", document.querySelector(".xpchip")); if (up) FX.rankUp(up); }, 450); if (great || newly.length) { confetti(); SND.win(); }
     const title = cfg.kind === "exam" ? (res.pass ? "Examen réussi !" : "Examen non validé (65 % pour réussir). Révise puis réessaie.") : score >= 0.8 ? "Bravo !" : score >= 0.6 ? "Bien joué, continue !" : "Il faut réviser un peu.";
     const up = E.popRankUp();
-    $app.innerHTML = `<div class="resc"><div class="sp"></div>${siraj(great ? "proud" : score >= 0.6 ? "happy" : "think", 130, great ? "jump" : "float")}<div class="sp"></div>
+    $app.innerHTML = `<div class="resc"><div class="sp"></div>${score >= 0.6 ? siraj3d("proud", 150) : siraj(great ? "proud" : "think", 130, "float")}<div class="sp"></div>
       <h2>${title}</h2><div class="sp"></div>${ring(score, 120, 12, `${correct}/${total}`, score >= 0.6 ? "var(--green)" : "var(--gold)")}<div class="sp"></div>
       <div class="xpchip">${ico("gem", 20)} +<span id="xpn">0</span> XP</div>${(() => { const r = E.rank(); return `<div class="rkc"><div class="row"><b>Rang ${r.n} · ${esc(r.title)}</b><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}</div>`; })()}${up ? `<div class="lvlup">⭐ Nouveau rang : ${up.n} · ${esc(up.title)} !</div>` : ""}
       ${newly.map(n => `<div class="lvlup">🎉 Niveau ${n} validé !</div>`).join("")}${stages.map(s => `<div class="lvlup">🎓 Étape terminée : ${esc(STAGES[s])}</div>`).join("")}

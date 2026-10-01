@@ -303,3 +303,15 @@ body.focus #toast{bottom:auto;top:24px}
 .xpchip{animation:rankpop .5s .2s cubic-bezier(.3,1.5,.5,1) both}
 .bar i{transition:width .9s cubic-bezier(.2,.8,.25,1)}
 @media (prefers-reduced-motion:reduce){.rise,.fxgain,.fxstar,.fxrank *,.tchip.flame svg,.opt.ok,.opt.ko{animation:none!important}}
+
+/* ---- 3D ---- */
+.s3d{display:inline-block;width:var(--s,110px);height:var(--s,110px);position:relative;flex:none}
+.s3d .h3c{position:absolute;inset:0;width:100%!important;height:100%!important;z-index:2;cursor:pointer;touch-action:manipulation}
+.s3d.on3d>.sj{visibility:hidden}
+.fxrank .duo{display:flex;align-items:center;justify-content:center;gap:4px}
+.hero,.card.next,.rkc{transform-style:preserve-3d;perspective:900px}
+.tilt3d{transition:transform .15s ease-out;transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0)}
+main.p3d{animation:p3d .5s cubic-bezier(.2,.8,.25,1)}@keyframes p3d{from{opacity:0;transform:perspective(1100px) rotateX(7deg) translateY(16px)}to{opacity:1;transform:none}}
+.btn{box-shadow:0 5px 0 rgba(0,0,0,.2),0 10px 18px rgba(0,0,0,.14)}
+.opt{box-shadow:0 3px 0 rgba(0,0,0,.05),0 8px 16px rgba(0,0,0,.06)}
+.node{box-shadow:0 6px 0 rgba(0,0,0,.18),0 12px 20px rgba(0,0,0,.14)}
