@@ -132,7 +132,7 @@ document.addEventListener("pointerdown", e => { const t = e.target.closest("butt
   if (t.matches(".opt")) SND.select(); else if (t.matches(".flip")) SND.flip(); else if (t.closest("#nav")) SND.nav(); else SND.click(); }, { passive: true });
 let lastKey = 0; document.addEventListener("input", e => { if (e.target.matches("input[type=text],input[type=search],input[type=password],textarea") && Date.now() - lastKey > 70) { lastKey = Date.now(); SND.click(); } else if (e.target.matches("input[type=range]") && Date.now() - lastKey > 120) { lastKey = Date.now(); SND.click(); } });
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-mode],[data-skin],[data-sub],[data-pin],[data-goal],[data-copy],[data-o],[data-know],[data-reason],#mapz,#map3,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
+  const t = e.target.closest("[data-say],[data-sayar],[data-mode],[data-skin],[data-sub],[data-pin],[data-goal],[data-copy],[data-o],[data-know],[data-reason],#mapz,#map3,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
   if (!t) return;
   if (document.querySelector(".onbw") && (t.dataset.o || t.dataset.know || t.dataset.reason !== undefined || (t.dataset.goal && t.classList.contains("opt")))) {
     const tm = () => { const i = document.getElementById("rtime"); if (i && i.value) ONB.time = i.value; };
@@ -145,7 +145,9 @@ document.addEventListener("click", async e => {
     else if (t.dataset.o === "done") { const S = E.S; ONB.force = false; S.onboarded = true; S.goal = ONB.goal; S.profile = { know: ONB.know, reasons: ONB.reasons.map(i => REASONS[i]) }; S.reminder = { on: ONB.remind, time: ONB.time, last: S.reminder.last }; E.save(); go("#/home"); }
     return;
   }
-  if (t.dataset.mode) { E.S.settings.mode = t.dataset.mode; E.save(); applySkin(); route(); SND.pop(); }
+  if (t.dataset.say !== undefined) VOICE.play("none", 0, t.dataset.say);
+  else if (t.dataset.sayar !== undefined) { if (!VOICE.playAr(t.dataset.sayar)) toast("Aucune voix arabe sur cet appareil. Ajoute-en une dans les réglages du téléphone."); }
+  else if (t.dataset.mode) { E.S.settings.mode = t.dataset.mode; E.save(); applySkin(); route(); SND.pop(); }
   else if (t.dataset.skin) { E.S.settings.skin = t.dataset.skin; E.save(); applySkin(); route(); SND.pop(); }
   else if (t.dataset.sub) { quizSubject = t.dataset.sub; route(); }
   else if (t.dataset.pin) { mapSel = t.dataset.pin; route(); }

@@ -39,8 +39,8 @@ V.home = () => {
 V.today = () => { const v = verseOfDay(), h = hadithOfDay(), st = storyOfDay();
   return `<a class="back" href="#/home">${ico("back", 18)} Accueil</a><h2>Aujourd'hui</h2><div class="sp"></div>
   <div class="arcard"><div class="qkind" style="color:#7be0b0">Verset du jour · ${esc(v.theme)}</div><div class="ar">${arText(v.ar)}</div><p class="tr"><span style="opacity:.7">Traduction du sens :</span> ${esc(v.fr)}</p><div class="src"><b>${esc(v.ref)}</b></div><button class="btn gold sm" data-copy="${esc(v.ar + "\n" + v.fr + " (" + v.ref + ")")}" style="margin-top:12px">Copier</button></div>
-  <div class="card fun"><h3>${ico("scroll", 22)} Hadith du jour · ${esc(h.theme)}</h3><p style="font-size:1.1rem">« ${esc(h.fr)} »</p><div class="src"><b>${esc(h.ref)}</b> · traduction du sens</div><button class="btn sec sm" data-copy="${esc(h.fr + " (" + h.ref + ")")}" style="margin-top:10px">Copier</button></div>
-  <div class="card"><h3>${ico("bulb", 22)} Histoire du jour</h3><p><b>${esc(st.title)}</b></p><p class="muted">${esc(st.lessons[0].body)}</p><a class="btn sec" href="#/chapter/${st.id}">Lire le chapitre</a></div>
+  <div class="card fun"><h3>${ico("scroll", 22)} Hadith du jour · ${esc(h.theme)} ${sayBtn(h.fr, "inl")}</h3><p style="font-size:1.1rem">« ${esc(h.fr)} »</p><div class="src"><b>${esc(h.ref)}</b> · traduction du sens</div><button class="btn sec sm" data-copy="${esc(h.fr + " (" + h.ref + ")")}" style="margin-top:10px">Copier</button></div>
+  <div class="card"><h3>${ico("bulb", 22)} Histoire du jour ${sayBtn(st.title + ". " + st.lessons[0].body, "inl")}</h3><p><b>${esc(st.title)}</b></p><p class="muted">${esc(st.lessons[0].body)}</p><a class="btn sec" href="#/chapter/${st.id}">Lire le chapitre</a></div>
   <p class="muted small">Références issues de sources classiques ; traductions du sens à faire valider par une personne qualifiée.</p>`; };
 
 V.path = () => {
@@ -72,7 +72,7 @@ V.chapter = id => {
   <div class="sec-h"><h3>Leçons</h3></div><div class="steps">${c.lessons.map((l, i) => `<a class="card stp ${E.S.lessons[id + ":" + i] ? "dn" : ""}" href="#/lesson/${id}/${i}"><span class="n">${E.S.lessons[id + ":" + i] ? ico("check", 18) : i + 1}</span><div style="flex:1"><b>${esc(l.t)}</b></div>${ico("arrow", 18)}</a>`).join("")}
   <a class="card stp" href="#/quiz/${id}"><span class="n" style="background:var(--gold-l);color:var(--gold-d)">${ico("quiz", 18)}</span><div style="flex:1"><b>Quiz du chapitre</b><div class="muted small">${c.quiz.length} questions</div></div>${ico("arrow", 18)}</a></div>
   ${c.video ? `<a class="btn sec" href="${esc(c.video.url)}" target="_blank" rel="noopener">${ico("video", 20)} Vidéo : ${esc(c.video.title)}</a>` : ""}
-  ${c.fun ? `<div class="card fun"><h3>${ico("bulb", 22)} Le savais-tu ?</h3><p>${esc(c.fun)}</p></div>` : ""}
+  ${c.fun ? `<div class="card fun"><h3>${ico("bulb", 22)} Le savais-tu ? ${sayBtn(c.fun, "inl")}</h3><p>${esc(c.fun)}</p></div>` : ""}
   <details class="card srcs"><summary>Sources ${ico("dots", 18)}</summary>${c.sources.map(s => `<div class="src">• ${esc(s)}</div>`).join("")}<p class="muted small">Références issues de sources classiques, à faire valider par une personne qualifiée.</p></details>`;
 };
 
@@ -133,7 +133,7 @@ V.cardsrun = cat => { cat = decodeURIComponent(cat || "all"); const deck = E.car
     if (i >= deck.length) { document.getElementById("dock")?.remove(); document.body.classList.remove("focus"); const xp = E.addXP(10); confetti(); SND.win(); celebrate();
       $app.innerHTML = `<div class="resc"><div class="sp"></div>${siraj("proud", 130, "jump")}<h2>Bravo !</h2><div class="sp"></div>${ring(good / deck.length, 120, 12, `${good}/${deck.length}`)}<div class="sp"></div><div class="xpchip">${ico("moon", 20)} +${xp} XP</div></div><a class="btn gold" href="#/cards/run/${encodeURIComponent(cat)}">Encore 10 cartes</a><a class="btn sec" href="#/cards">Retour</a>`; return; }
     const w = deck[i];
-    $app.innerHTML = `<div class="stop"><button class="x" id="quit">${ico("close", 26)}</button>${bar(i / deck.length)}</div><div class="flip" id="fl"><div class="fi"><div class="fc f"><div class="big">${esc(w.ar)}</div><div class="hint">Touche pour retourner</div></div><div class="fc b"><div class="bigf">${esc(w.tr)}</div><div style="font-size:1.25rem;font-weight:800;margin-top:8px">${esc(w.fr)}</div><div class="tag" style="margin-top:14px">${esc(w.cat)}</div></div></div></div>`;
+    $app.innerHTML = `<div class="stop"><button class="x" id="quit">${ico("close", 26)}</button>${bar(i / deck.length)}</div><div class="flip" id="fl"><div class="fi"><div class="fc f"><div class="big">${esc(w.ar)}</div><div class="hint">Touche pour retourner</div></div><div class="fc b"><div class="bigf">${esc(w.tr)}</div><div style="font-size:1.25rem;font-weight:800;margin-top:8px">${esc(w.fr)}</div><div class="tag" style="margin-top:14px">${esc(w.cat)}</div></div></div></div><div style="text-align:center;margin-top:10px">${sayAr(w.ar)}</div>`;
     const d = document.getElementById("dock") || Object.assign(document.body.appendChild(document.createElement("div")), { id: "dock", className: "dock" });
     d.className = "dock"; d.innerHTML = `<div class="in"><div class="gap"><button class="btn sec" id="kno" style="margin:0" disabled>À revoir</button><button class="btn" id="yes" style="margin:0" disabled>Je savais</button></div></div>`;
     const fl = document.getElementById("fl"), kno = document.getElementById("kno"), yes = document.getElementById("yes");
@@ -145,7 +145,7 @@ V.cardsrun = cat => { cat = decodeURIComponent(cat || "all"); const deck = E.car
   show();
 };
 V.lexique = () => `<a class="back" href="#/explore">${ico("back", 18)} Explorer</a><h2>Lexique</h2><input type="text" id="lexq" placeholder="Rechercher un mot (arabe, phonétique ou français)" style="margin:10px 0"><div id="lexl"></div>`;
-function lexList(q) { const n = norm(q || ""), list = LEXIQUE.filter(w => !n || norm(w.tr + w.fr + w.cat).includes(n) || w.ar.includes(q)); document.getElementById("lexl").innerHTML = list.map(w => `<div class="card lex"><div><b>${esc(w.tr)}</b><div class="muted small">${esc(w.fr)}</div><span class="tag" style="margin-top:4px">${esc(w.cat)}</span></div><div class="ar">${esc(w.ar)}</div></div>`).join("") || `<p class="muted">Aucun mot trouvé.</p>`; }
+function lexList(q) { const n = norm(q || ""), list = LEXIQUE.filter(w => !n || norm(w.tr + w.fr + w.cat).includes(n) || w.ar.includes(q)); document.getElementById("lexl").innerHTML = list.map(w => `<div class="card lex"><div><b>${esc(w.tr)}</b><div class="muted small">${esc(w.fr)}</div><span class="tag" style="margin-top:4px">${esc(w.cat)}</span></div><div class="gap"><div class="ar">${esc(w.ar)}</div>${sayAr(w.ar)}</div></div>`).join("") || `<p class="muted">Aucun mot trouvé.</p>`; }
 V.videos = () => { const withV = Object.values(CHAPTERS).filter(c => c.video);
   return `<a class="back" href="#/explore">${ico("back", 18)} Explorer</a><h2>Vidéos</h2>${withV.length ? withV.map(c => `<a class="card row" href="${esc(c.video.url)}" target="_blank" rel="noopener"><div class="gap">${ico("video", 26)}<div><b>${esc(c.video.title)}</b><div class="muted small">${esc(c.title)}</div></div></div>${ico("arrow", 20)}</a>`).join("") :
   `<div class="card" style="text-align:center">${siraj("think", 110, "float")}<h3>Bientôt des vidéos</h3><p class="muted">Des vidéos pour apprendre l'histoire seront ajoutées chapitre par chapitre, à partir de sources fiables.</p></div>`}`; };
