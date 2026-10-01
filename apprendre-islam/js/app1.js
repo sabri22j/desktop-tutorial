@@ -97,15 +97,18 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
   const hint = (item, n, t) => item.retry ? "On réessaie cette question, tu vas y arriver !" : n === 0 ? "C'est parti ! Prends ton temps." : n === t - 1 ? "Dernière question, courage !" : pickMsg(["Réfléchis bien !", "Tu peux le faire !", "Question " + (n + 1) + " sur " + t + ".", "Bismillah, on continue !"]);
   const react = ok => { // Sirâj réagit : saut + étincelles si juste, secousse + goutte si faux
     const mas = document.getElementById("mas"), qc = document.getElementById("qc"); if (!mas) return;
-    mas.innerHTML = siraj(ok ? "proud" : "oops", 88, ok ? "jump" : "shake") + `<div class="bubble pop">${esc(ok ? pickMsg(OK_MSG) : pickMsg(KO_MSG))}</div>`;
+    const h3 = document.getElementById("mas3"), msg = esc(ok ? pickMsg(OK_MSG) : pickMsg(KO_MSG));
+    if (h3 && h3.classList.contains("on3d") && h3.__h3) { h3.__h3.react(ok); document.getElementById("mb").outerHTML = `<div class="bubble pop" id="mb">${msg}</div>`; }
+    else mas.innerHTML = siraj(ok ? "proud" : "oops", 88, ok ? "jump" : "shake") + `<div class="bubble pop" id="mb">${msg}</div>`;
     if (ok) { for (let k = 0; k < 10; k++) { const s = document.createElement("i"); s.className = "spk"; const ang = (k / 10) * 6.28; s.style.setProperty("--dx", Math.cos(ang) * (50 + Math.random() * 30) + "px"); s.style.setProperty("--dy", Math.sin(ang) * (40 + Math.random() * 30) + "px"); s.style.animationDelay = (k % 3) * 40 + "ms"; mas.appendChild(s); setTimeout(() => s.remove(), 1100); } }
     else { const d = document.createElement("i"); d.className = "sweat"; mas.appendChild(d); setTimeout(() => d.remove(), 1300); if (qc) { qc.classList.add("shk"); setTimeout(() => qc.classList.remove("shk"), 600); } }
   };
   const step = () => {
     if (!queue.length) return finish();
     const item = queue.shift(), dock = dockEl(); dock.className = "dock";
-    $app.innerHTML = `<div class="stop"><button class="x" id="quit" aria-label="Quitter">${ico("close", 26)}</button>${bar(answered / total, "")}</div><div class="mascot" id="mas">${siraj("think", 76, "float")}<div class="bubble">${esc(hint(item, answered, total))}</div></div><div class="card qcard" id="qc"><div id="q"></div></div>`;
+    $app.innerHTML = `<div class="stop"><button class="x" id="quit" aria-label="Quitter">${ico("close", 26)}</button>${bar(answered / total, "")}</div><div class="mascot" id="mas"><span class="s3d" id="mas3" data-k="lantern" style="--s:88px">${siraj("think", 76, "float")}</span><div class="bubble" id="mb">${esc(hint(item, answered, total))}</div></div><div class="card qcard" id="qc"><div id="q"></div></div>`;
     dock.innerHTML = `<div class="in"><button class="btn" id="go" disabled>Vérifier</button></div>`;
+    H3D.scan($app);
     const el = document.getElementById("q"), api = renderQ(item.q, el), btn = document.getElementById("go"); let checked = false;
     const refresh = () => { if (!checked) btn.disabled = api.evaluate() === null; };
     el.addEventListener("click", () => setTimeout(refresh, 0)); el.addEventListener("input", refresh); el.addEventListener("change", refresh);
