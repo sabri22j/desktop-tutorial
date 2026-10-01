@@ -2,6 +2,8 @@
 const $app = document.getElementById("app"), $nav = document.getElementById("nav"), $top = document.getElementById("top"), $toast = document.getElementById("toast");
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pct = x => Math.round(x * 100);
+const sayBtn = (txt, cls = "") => `<button type="button" class="say ${cls}" data-say="${esc(txt)}" aria-label="Écouter">${ico("speaker", 18)}</button>`;
+const sayAr = (txt, cls = "") => `<button type="button" class="say ${cls}" data-sayar="${esc(txt)}" aria-label="Écouter en arabe">${ico("speaker", 18)}</button>`;
 const bar = (x, cls = "") => `<div class="bar ${cls}"><i style="width:${pct(x)}%"></i></div>`;
 const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
 let toastT;
@@ -62,7 +64,7 @@ function dayMessage() {
 /* ---------- Questions ---------- */
 const KIND = { mc: "Choisis la bonne réponse", tf: "Vrai ou faux ?", order: "Remets dans l'ordre", match: "Associe", text: "Écris la réponse" };
 function renderQ(q, el) { // affiche la question, renvoie { evaluate(): true|false|null, reveal, answerText }
-  const head = `<div class="qkind">${KIND[q.t]}</div><h3>${esc(q.q)}</h3>`; let api;
+  const head = `<div class="qkind">${KIND[q.t]}</div><h3>${esc(q.q)} ${sayBtn(q.q, "inl")}</h3>`; let api;
   if (q.t === "mc" || q.t === "tf") {
     const list = q.t === "tf" ? ["Vrai", "Faux"].map((t, i) => ({ t, i })) : E.shuffle(q.o.map((t, i) => ({ t, i }))); let sel = null;
     el.innerHTML = head + list.map((o, k) => `<button class="opt" data-k="${k}"><span class="k">${q.t === "tf" ? (k ? "✗" : "✓") : k + 1}</span>${esc(o.t)}</button>`).join("");

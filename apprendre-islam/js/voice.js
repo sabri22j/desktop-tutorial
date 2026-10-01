@@ -41,6 +41,11 @@ const VOICE = (() => {
       return true;
     } catch { return false; }
   }
+  /* Un mot ou une phrase en arabe (écrit en lettres arabes) lu par la voix arabe de l'appareil ; renvoie false s'il n'y en a pas. */
+  function playAr(text) {
+    const av = arVoice(); if (!synth || !av) return false;
+    try { synth.cancel(); token++; const my = token, u = new SpeechSynthesisUtterance(text); u.voice = av; u.lang = av.lang; u.rate = 0.8; u.onend = u.onerror = () => { if (my === token) onState("idle"); }; synth.speak(u); onState("playing"); return true; } catch { return false; }
+  }
   function stop() { token++; if (audio) { try { audio.pause(); } catch {} audio = null; } if (synth) { try { synth.cancel(); } catch {} } onState("idle"); }
   /* Joue l'enregistrement s'il est connu, sinon la synthèse (immédiatement, dans le geste de l'utilisateur). */
   function play(id, idx, text) {
@@ -58,5 +63,5 @@ const VOICE = (() => {
   }
   /* Détecte si un enregistrement existe (pour l'afficher sur la page de leçon). */
   function probe(id, idx, cb) { const key = `${id}-${idx}`; try { const a = new Audio(); a.preload = "metadata"; a.onloadedmetadata = () => { recorded[key] = true; cb(true); }; a.onerror = () => { recorded[key] = false; cb(false); }; a.src = `audio/${key}.mp3`; } catch { cb(false); } }
-  return { play, stop, probe, pick, best, arVoice, isRobotic, voices, set onState(f) { onState = f; }, set onFail(f) { onFail = f; }, get synth() { return synth; } };
+  return { play, playAr, stop, probe, pick, best, arVoice, isRobotic, voices, set onState(f) { onState = f; }, set onFail(f) { onFail = f; }, get synth() { return synth; } };
 })();
