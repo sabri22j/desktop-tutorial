@@ -82,10 +82,15 @@ const SND = (() => {
   function correct() { buzz(30); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 600, 1300, 0.2, 1.1 * k); drop(t + 0.1, 800, 1700, 0.22, 1 * k); drop(t + 0.21, 1000, 2100, 0.3, 0.95 * k); }
   function wrong() { buzz([70, 50, 70]); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain();
     [0, 0.17].forEach(d => { burst(t + d, 0.16, "bandpass", 420, 0.9, 1.8 * k); drop(t + d, 330, 150, 0.2, 1.3 * k); drop(t + d, 660, 300, 0.12, 0.5 * k); }); }
+  /* Allumage de la série : souffle qui monte, gouttes qui s'élèvent, petits crépitements */
+  function ignite() { buzz([30, 40, 60]); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain();
+    const s = ctx.createBufferSource(); s.buffer = noiseBuf(false); const f = filt("bandpass", 300, 1.2), g = ctx.createGain(); f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3200, t + 0.7);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.9 * k, t + 0.35); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9); s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 1);
+    [0.3, 0.42, 0.54, 0.66].forEach((d, i) => drop(t + d, 700 + i * 200, 1500 + i * 400, 0.2, 0.7 * k)); for (let i = 0; i < 6; i++) burst(t + 0.5 + Math.random() * 0.6, 0.03, "highpass", 3500, 1, 0.5 * k); }
   function win() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); [0, 0.1, 0.2, 0.32, 0.46].forEach((d, i) => drop(t + d, 500 + i * 120, 1100 + i * 260, 0.22, 0.9 * k)); }
   /* Démarrage après le premier geste (exigé par les navigateurs) */
   function unlock() { if (cfg().music) apply(); else ensure(); }
   document.addEventListener("pointerdown", function once() { unlock(); document.removeEventListener("pointerdown", once); }, { passive: true });
   document.addEventListener("visibilitychange", () => { if (!ctx) return; if (document.hidden) ctx.suspend(); else ctx.resume(); });
-  return { apply, restart, correct, wrong, win, click, select, nav, flip, pop, xp, unlock };
+  return { apply, restart, correct, wrong, win, ignite, click, select, nav, flip, pop, xp, unlock };
 })();
