@@ -92,6 +92,7 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
   const total = cfg.questions.length;
   document.body.classList.add("focus");
   if (!total) { $app.innerHTML = `<div class="card"><p>Rien à faire ici pour l'instant. 🎉</p><a class="btn" href="#/home">Retour</a></div>`; return; }
+  const t0 = Date.now(), startedToday = E.S.streak.last === E.dayStr();
   let queue = cfg.questions.map(q => ({ q, retry: false })), answered = 0, correct = 0; const wrong = [];
   const dockEl = () => { let d = document.getElementById("dock"); if (!d) { d = document.createElement("div"); d.id = "dock"; d.className = "dock"; document.body.appendChild(d); } return d; };
   const hint = (item, n, t) => item.retry ? "On réessaie cette question, tu vas y arriver !" : n === 0 ? "C'est parti ! Prends ton temps." : n === t - 1 ? "Dernière question, courage !" : pickMsg(["Réfléchis bien !", "Tu peux le faire !", "Question " + (n + 1) + " sur " + t + ".", "Bismillah, on continue !"]);
@@ -138,16 +139,17 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
     E.save(); celebrate();
     const newly = E.newLevelsCompleted(), stages = [...new Set(newly.map(E.stageOf))].filter(s => { const p = E.stageProgress(s); return p.total && p.done === p.total; });
     const m = cfg.chapter ? E.mastery(cfg.chapter) : null, great = score >= 0.8 || res.pass;
-    if (res.xp) setTimeout(() => { SND.xp(); FX.count(document.getElementById("xpn"), res.xp); FX.gain("+" + res.xp + " XP", document.querySelector(".xpchip")); if (up) FX.rankUp(up); }, 450); if (great || newly.length) { confetti(); SND.win(); }
+    if (newly.length) { confetti(); SND.win(); }
     const title = cfg.kind === "exam" ? (res.pass ? "Examen réussi !" : "Examen non validé (65 % pour réussir). Révise puis réessaie.") : score >= 0.8 ? "Bravo !" : score >= 0.6 ? "Bien joué, continue !" : "Il faut réviser un peu.";
     const up = E.popRankUp();
     $app.innerHTML = `<div class="resc"><div class="sp"></div>${score >= 0.6 ? siraj3d("proud", 150) : siraj(great ? "proud" : "think", 130, "float")}<div class="sp"></div>
       <h2>${title}</h2><div class="sp"></div>${ring(score, 120, 12, `${correct}/${total}`, score >= 0.6 ? "var(--green)" : "var(--gold)")}<div class="sp"></div>
-      <div class="xpchip">${ico("gem", 20)} +<span id="xpn">0</span> XP</div>${(() => { const r = E.rank(); return `<div class="rkc"><div class="row"><b>Rang ${r.n} · ${esc(r.title)}</b><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}</div>`; })()}${up ? `<div class="lvlup">⭐ Nouveau rang : ${up.n} · ${esc(up.title)} !</div>` : ""}
+      <div class="xpchip">${ico("gem", 20)} +${res.xp} XP</div>${(() => { const r = E.rank(); return `<div class="rkc"><div class="row"><b>Rang ${r.n} · ${esc(r.title)}</b><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}</div>`; })()}${up ? `<div class="lvlup">⭐ Nouveau rang : ${up.n} · ${esc(up.title)} !</div>` : ""}
       ${newly.map(n => `<div class="lvlup">🎉 Niveau ${n} validé !</div>`).join("")}${stages.map(s => `<div class="lvlup">🎓 Étape terminée : ${esc(STAGES[s])}</div>`).join("")}
       ${m !== null ? `<div class="card" style="text-align:left"><div class="row"><b>Maîtrise du chapitre</b><b>${pct(m)} %</b></div>${bar(m)}<span class="muted small">${m >= 1 ? "🏅 Maîtrise parfaite !" : "🔓 Tu peux passer à la suite. Les questions ratées reviendront en révision pour atteindre 100 %."}</span></div>` : ""}
       ${wrong.length ? `<p class="muted">🔄 ${wrong.length} question${wrong.length > 1 ? "s" : ""} à revoir : ajoutée${wrong.length > 1 ? "s" : ""} à tes révisions.</p>` : ""}</div>
       <a class="btn gold" href="${E.nextAction().href}">Continuer</a><a class="btn sec" href="${cfg.back || "#/home"}">Retour</a>`;
+    ENDF.run({ xp: res.xp, score, secs: Math.max(1, Math.round((Date.now() - t0) / 1000)), up, streakNew: !startedToday && E.S.streak.last === E.dayStr(), streak: E.streak() });
   };
   step();
 }
