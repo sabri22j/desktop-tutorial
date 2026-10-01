@@ -36,10 +36,18 @@ const SND = (() => {
   const haptic = () => { try { const C = window.Capacitor; return C && C.Plugins && C.Plugins.Haptics ? C.Plugins.Haptics : null; } catch { return null; } };
   const buzz = p => { try { if (!cfg().sfx) return; const H = haptic(); if (H) { H.notification({ type: Array.isArray(p) && p.length > 2 ? "WARNING" : "SUCCESS" }); return; } if (navigator.vibrate) navigator.vibrate(p); } catch {} };
   /* Un bruit pour chaque geste. Les petits haut-parleurs de téléphone ne rendent pas les graves : les sons « faux » restent dans le médium. */
-  /* Gestes (boutons, choix, changement d'onglet, carte retournée, message) : de mini vibrations, sans bruit. */
-  /* Dans une vraie application (Capacitor, iPhone ou Android) on utilise le moteur haptique du téléphone ; sur le site, navigator.vibrate (Android seulement). */
+  /* Gestes (boutons, choix, onglets, cartes, messages) : un petit « bloop » d'eau très doux (sinus, attaque lente, grave, discret) + mini vibration.
+     Rien d'aigu ni de sec : l'ancien « tic » fatiguait. Réglages séparés : sons doux (tap) et vibrations (click). */
   const tick = p => { try { if (!cfg().click) return; const H = haptic(); if (H) { H.impact({ style: Array.isArray(p) || p > 10 ? "MEDIUM" : "LIGHT" }); return; } if (navigator.vibrate) navigator.vibrate(p); } catch {} };
-  const click = () => tick(8), select = () => tick(12), nav = () => tick(10), flip = () => tick([8, 40, 8]), pop = () => tick(8);
+  function soft(f0, f1, dur, gain) { if (!cfg().tap || !ensure()) return; const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain(), lp = filt("lowpass", 1400);
+    o.type = "sine"; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.7);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(gain * (0.8 + cfg().vol * 0.4), t + 0.018); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05); }
+  const click = () => { tick(8); soft(380, 470, 0.13, 0.09); };
+  const select = () => { tick(12); soft(430, 560, 0.15, 0.1); };
+  const nav = () => { tick(10); soft(320, 400, 0.17, 0.09); };
+  const flip = () => { tick([8, 40, 8]); soft(360, 440, 0.12, 0.08); setTimeout(() => soft(430, 520, 0.12, 0.07), 70); };
+  const pop = () => { tick(8); soft(450, 560, 0.12, 0.07); };
   function xp() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); [0, 0.07, 0.14].forEach((d, i) => drop(t + d, 1100 + i * 250, 2200 + i * 400, 0.14, 0.5 * k)); }
   function correct() { buzz(30); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 600, 1300, 0.2, 1.1 * k); drop(t + 0.1, 800, 1700, 0.22, 1 * k); drop(t + 0.21, 1000, 2100, 0.3, 0.95 * k); }
   function wrong() { buzz([70, 50, 70]); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain();

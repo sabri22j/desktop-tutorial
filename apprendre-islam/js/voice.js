@@ -18,17 +18,24 @@ const VOICE = (() => {
   }
   const best = () => voices().filter(v => /^fr/i.test(v.lang)).sort((a, b) => score(b) - score(a))[0] || null;
   function pick() { const id = E.S.settings.voice, all = voices(); return all.find(v => v.voiceURI === id) || best(); }
+  const arScore = v => (/google|natural|neural|premium|enhanced|siri|microsoft/i.test(v.name || "") ? 10 : 0) + (/ar[-_]SA/i.test(v.lang) ? 2 : 0) - (/compact|espeak/i.test(v.name || "") ? 8 : 0);
+  const arVoice = () => voices().filter(v => /^ar/i.test(v.lang)).sort((a, b) => arScore(b) - arScore(a))[0] || null;
   const isRobotic = v => !v || /compact|espeak|eloquence/i.test(v.name || "") || score(v) < 22;
   function chunks(text) { return (text.match(/[^.!?;:]+[.!?;:]?/g) || [text]).map(s => s.trim()).filter(Boolean); }
   function speakTTS(text) {
     if (!synth) return false;
     try {
-      synth.cancel(); const my = ++token, v = pick(), s = E.S.settings, parts = chunks(text);
-      parts.forEach((p, i) => { // toutes les phrases sont mises en file immédiatement : indispensable sur téléphone (geste de l'utilisateur)
-        const u = new SpeechSynthesisUtterance(p); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "fr-FR"; u.rate = s.rate; u.pitch = s.pitch;
-        if (i === parts.length - 1) u.onend = () => { if (my === token) onState("idle"); }; u.onerror = () => { if (my === token) onState("idle"); };
-        synth.speak(u);
+      synth.cancel(); const my = ++token, v = pick(), s = E.S.settings, parts = chunks(text), av = s.arNames === false ? null : arVoice(), us = [];
+      parts.forEach(p => { // toutes les phrases sont mises en file immédiatement : indispensable sur téléphone (geste de l'utilisateur)
+        (av ? NAMES.split(p) : [{ t: NAMES.respell(p) }]).forEach(seg => {
+          const u = new SpeechSynthesisUtterance(seg.t);
+          if (seg.ar) { u.voice = av; u.lang = av.lang; u.rate = Math.min(s.rate, 0.9); u.pitch = 1; }
+          else { if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "fr-FR"; u.rate = s.rate; u.pitch = s.pitch; }
+          u.onerror = () => { if (my === token) onState("idle"); }; us.push(u);
+        });
       });
+      if (us.length) us[us.length - 1].onend = () => { if (my === token) onState("idle"); };
+      us.forEach(u => synth.speak(u));
       onState("playing");
       setTimeout(() => { if (my === token && !synth.speaking && !synth.pending) { onState("idle"); onFail(); } }, 1800);
       return true;
@@ -51,5 +58,5 @@ const VOICE = (() => {
   }
   /* Détecte si un enregistrement existe (pour l'afficher sur la page de leçon). */
   function probe(id, idx, cb) { const key = `${id}-${idx}`; try { const a = new Audio(); a.preload = "metadata"; a.onloadedmetadata = () => { recorded[key] = true; cb(true); }; a.onerror = () => { recorded[key] = false; cb(false); }; a.src = `audio/${key}.mp3`; } catch { cb(false); } }
-  return { play, stop, probe, pick, best, isRobotic, voices, set onState(f) { onState = f; }, set onFail(f) { onFail = f; }, get synth() { return synth; } };
+  return { play, stop, probe, pick, best, arVoice, isRobotic, voices, set onState(f) { onState = f; }, set onFail(f) { onFail = f; }, get synth() { return synth; } };
 })();

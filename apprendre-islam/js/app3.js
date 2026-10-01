@@ -19,12 +19,12 @@ V.profile = (tab) => {
   ${pt === "param" ? `  <div class="card"><h3>Apparence</h3><div>${[["auto", "Automatique"], ["light", "Clair"], ["dark", "Sombre"]].map(([id, nm]) => `<button class="pill ${S.settings.mode === id ? "on" : ""}" data-mode="${id}">${nm}</button>`).join("")}</div><p class="muted small">« Automatique » suit le réglage de ton téléphone.</p></div>
   <div class="card"><h3>Thème</h3><p class="muted small">Choisis les couleurs de l'application.</p><div class="skins">${SKINS.map(k => `<button class="skin ${S.settings.skin === k.id ? "on" : ""}" data-skin="${k.id}" aria-label="${k.n}"><i style="background:linear-gradient(135deg,${hexShift("#0a2a23", k.d)},${hexShift("#0f8a5f", k.d)} 55%,#f4b836)"></i><span>${k.n}</span></button>`).join("")}</div></div>
   <div class="card"><h3>Sons</h3>
-    <label class="set"><span>Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>${sw("set-sfx", "Sons juste / faux", S.settings.sfx)}${sw("set-click", "Mini vibrations (boutons)", S.settings.click)}
+    <label class="set"><span>Volume</span><input type="range" id="set-vol" min="0" max="1" step="0.05" value="${S.settings.vol}"></label>${sw("set-sfx", "Sons juste / faux", S.settings.sfx)}${sw("set-tap", "Sons doux des boutons", S.settings.tap)}${sw("set-click", "Mini vibrations (boutons)", S.settings.click)}
     <div style="padding-top:8px"><button class="pill" id="t-ok">Écouter « juste »</button><button class="pill" id="t-ko">Écouter « faux »</button></div><p class="muted small">Les gestes donnent de mini vibrations (téléphones qui le permettent). Aucun instrument ni mélodie.</p></div>
   <div class="card"><h3>Voix de lecture</h3><p class="muted small">${allV.length ? `Voix utilisée : <b>${esc(cur ? cur.name : "automatique")}</b>.` : "Aucune voix détectée sur cet appareil."} ${cur && VOICE.isRobotic(cur) ? "Cette voix peut sembler robotique : choisis une voix marquée « Natural », « Neural », « Enhanced » ou « Google » si ton appareil en propose." : ""}</p>
     <select id="set-voice"><option value="">★ Automatique (la plus naturelle)</option>${fr.length ? `<optgroup label="Français">${fr.map(vopt).join("")}</optgroup>` : ""}${rest.length ? `<optgroup label="Autres langues">${rest.map(vopt).join("")}</optgroup>` : ""}</select>
     <label class="set"><span>Vitesse</span><input type="range" id="set-rate" min="0.6" max="1.3" step="0.05" value="${S.settings.rate}"></label><label class="set"><span>Grave ↔ aigu</span><input type="range" id="set-pitch" min="0.6" max="1.4" step="0.05" value="${S.settings.pitch}"></label>
-    <button class="pill" id="t-voice">Écouter un exemple</button><p class="muted small">Si des enregistrements humains sont ajoutés dans le dossier <code>audio/</code>, ils sont lus en priorité (voir le README).</p></div>
+    ${sw("set-arnames", "Noms arabes avec l'accent arabe", S.settings.arNames !== false)}<p class="muted small">${VOICE.arVoice() ? `Voix arabe détectée : <b>${esc(VOICE.arVoice().name)}</b>.` : "Aucune voix arabe sur cet appareil : les noms sont adaptés pour la voix française (approximation)."}</p><button class="pill" id="t-voice">Écouter un exemple</button><p class="muted small">Si des enregistrements humains sont ajoutés dans le dossier <code>audio/</code>, ils sont lus en priorité (voir le README).</p></div>
   <div class="card"><h3>Rappel quotidien</h3><div class="row"><input type="time" id="ptime" value="${S.reminder.time}" style="width:auto"><b>${S.reminder.on ? "Activé" : "Désactivé"}</b></div><button class="btn sec" id="prem">Activer / mettre à jour</button><button class="btn sec" id="pics">Ajouter à mon agenda</button></div>
   <div class="card"><h3>Objectif quotidien</h3><div>${[5, 10, 15, 20].map(m => `<button class="pill ${S.goal === m ? "on" : ""}" data-goal="${m}">${m} min</button>`).join("")}</div>${sw("set-free", "Tout débloquer (explorer librement)", S.settings.free)}</div>
   <button class="btn sec" id="pintro">Revoir l'introduction avec Sirâj</button><button class="btn sec" id="rst">Réinitialiser ma progression</button><p class="muted small" style="text-align:center;margin-top:16px">© 2026 Sabri Jelassi · Sirat · Tous droits réservés</p>` : ""}`;
@@ -162,7 +162,7 @@ document.addEventListener("click", async e => {
   else if (t.id === "acc-google") accAuth("google"); else if (t.id === "acc-apple") accAuth("apple"); else if (t.id === "acc-email") accAuth("email");
   else if (t.id === "acc-out") { ACCOUNT.signOut().then(() => { toast("Déconnecté."); route(); }); }
   else if (t.id === "acc-sync") { toast("Synchronisation…"); ACCOUNT.pull().then(r => { toast(r === "pulled" ? "Progression récupérée." : r === "error" ? "Synchronisation impossible." : "Progression synchronisée."); route(); }); }
-  else if (t.id === "t-voice") VOICE.play("none", 0, "Salut ! Moi c'est Sirâj, ta lanterne-guide. Bismillah, on commence ?");
+  else if (t.id === "t-voice") VOICE.play("none", 0, "Salut ! Moi c'est Sirâj, ta lanterne-guide. Le Prophète Muhammad ﷺ, Abu Bakr, Umar, Uthman et Ali. Bismillah, on commence ?");
   else if (t.id === "t-ok") { SND.unlock(); SND.correct(); } else if (t.id === "t-ko") { SND.unlock(); SND.wrong(); }
   else if (t.id === "mtog") { const st = E.S.settings, on = !st.sfx; st.sfx = on; st.click = on; E.save(); chrome(location.hash.split("/")[1] || "home"); if (on) SND.pop(); }
   else if (t.id === "prem") enableReminder(document.getElementById("ptime").value).then(() => route());
@@ -173,6 +173,8 @@ document.addEventListener("click", async e => {
 document.addEventListener("change", e => {
   const S = E.S.settings, id = e.target.id;
   if (id === "set-sfx") { S.sfx = e.target.checked; E.save(); }
+  else if (id === "set-tap") { S.tap = e.target.checked; E.save(); SND.click(); }
+  else if (id === "set-arnames") { S.arNames = e.target.checked; E.save(); VOICE.play("none", 0, "Le Prophète Muhammad ﷺ et ses compagnons : Abu Bakr, Umar, Uthman et Ali."); }
   else if (id === "set-click") { S.click = e.target.checked; E.save(); }
   else if (id === "set-free") { S.free = e.target.checked; E.save(); }
   else if (id === "set-voice") { S.voice = e.target.value; E.save(); VOICE.play("none", 0, "Salut ! Moi c'est Sirâj, ta lanterne-guide."); }
