@@ -10,5 +10,6 @@ const APP_CONFIG = {
     messagingSenderId: "1023883505356",
     appId: "1:1023883505356:web:2afa48f8adae0133f81c69",
   },
+  googleClientId: null, // « ID client Web » du fournisseur Google (Firebase > Authentication > Google > Configuration du SDK Web). Active le bouton Google officiel, fiable sur iPhone.
   providers: { google: true, facebook: false, apple: false, email: true }, // active seulement ceux que tu as configurés dans Firebase
 };
