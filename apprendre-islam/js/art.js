@@ -94,9 +94,11 @@ function hexShift(hex, deg) {
 function skinSvg(svg) { const d = skinDeg(); if (!d) return svg; return svg.replace(/#[0-9a-fA-F]{6}\b/g, c => { const n = parseInt(c.slice(1), 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx === mn) return c; let h = mx === r ? ((g - b) / (mx - mn) + (g < b ? 6 : 0)) : mx === g ? (b - r) / (mx - mn) + 2 : (r - g) / (mx - mn) + 4; h *= 60; return h >= 130 && h <= 200 ? hexShift(c, d) : c; }); }
 function scene(kind, seed) { return skinSvg(sceneBase(kind, seed)); }
 function applySkin() {
-  const root = document.documentElement, d = skinDeg(), t = root.dataset.theme, dark = t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme:dark)").matches);
+  const root = document.documentElement, d = skinDeg(); let md = "auto"; try { md = E.S.settings.mode || "auto"; } catch {}
+  if (md === "auto") delete root.dataset.theme; else root.dataset.theme = md; // clair ou sombre forcé, sinon réglage du téléphone
+  const t = root.dataset.theme, dark = t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme:dark)").matches);
   [...Object.keys(SKIN_LIGHT), ...Object.keys(SKIN_DARK)].forEach(k => root.style.removeProperty(k));
   if (d) Object.entries(dark ? SKIN_DARK : SKIN_LIGHT).forEach(([k, v]) => root.style.setProperty(k, hexShift(v, d)));
-  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = d ? hexShift("#0f8a5f", d) : "#0f8a5f";
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = (dark ? "#0a1511" : (d ? hexShift("#0f8a5f", d) : "#0f8a5f"));
 }
 try { matchMedia("(prefers-color-scheme:dark)").addEventListener("change", applySkin); } catch {}

@@ -409,3 +409,4 @@ main.p3d{animation:p3d .5s cubic-bezier(.2,.8,.25,1)}@keyframes p3d{from{opacity
 .skin{border:2px solid var(--line);border-bottom-width:5px;background:var(--surface);border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;color:var(--ink);font-weight:800;font-size:.76rem}
 .skin i{width:46px;height:46px;border-radius:50%;display:block;box-shadow:0 3px 0 rgba(0,0,0,.15)}
 .skin.on{border-color:var(--green);background:var(--green-l);color:var(--green)}
+.card.prof{flex-wrap:wrap}.card.prof>div{min-width:140px}.card.prof .btn.sm{flex-basis:100%;text-align:center}
