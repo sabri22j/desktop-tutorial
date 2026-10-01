@@ -11,7 +11,8 @@ SEED_RES.push(
   { id: "t-rappel", title: "Recherche TikTok : rappels islam", author: "TikTok", url: "https://www.tiktok.com/discover/rappel-islam?lang=fr", topic: "Rappels", note: "Page de recherche : le contenu varie, juge-le avec discernement." },
   { id: "t-fr", title: "Recherche TikTok : islam en français", author: "TikTok", url: "https://www.tiktok.com/discover/islam-tiktok-fran%C3%A7ais", topic: "Autre", note: "Page de recherche : le contenu varie, juge-le avec discernement." }
 );
-const RES_TOPICS = ["Rappels", "Histoire", "Coran", "Pratique", "Prophètes", "Enfants", "Autre"];
+const RES_TOPICS = ["Rappels", "Histoire", "Coran", "Pratique", "Prophètes", "Compagnons", "Enfants", "Autre"];
+if (typeof VIDEO_SEED !== "undefined") SEED_RES.unshift(...VIDEO_SEED);
 const PCOL = { TikTok: "#111", YouTube: "#e5584a", Instagram: "#b5469c", Podcast: "#6b4bb5", Site: "#0f8a5f" };
 let resView = "feed", resShared = [], resTopic = "Tous", resQ = "", resFav = false;
 const safeUrl = u => { try { const x = new URL(String(u).trim()); return /^https?:$/.test(x.protocol) ? x : null; } catch { return null; } };
