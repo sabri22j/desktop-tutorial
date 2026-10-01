@@ -33,7 +33,20 @@ function accountCard() {
   if (!ACCOUNT.canSignIn) return `<div class="card"><h3>Compte</h3><p class="muted small">Mode invité : ta progression est enregistrée sur cet appareil. La connexion Google, Apple ou e-mail s'active une fois le serveur configuré (voir le README, section Comptes).</p></div>`;
   return `<div class="card"><h3>Compte</h3><p class="muted small">Connecte-toi pour retrouver ta progression sur tous tes appareils.</p><button class="btn sec" id="acc-google">Continuer avec Google</button><button class="btn sec" id="acc-apple">Continuer avec Apple</button><div class="sp"></div><input type="text" id="acc-mail" placeholder="Adresse e-mail" autocomplete="email" style="margin-bottom:8px"><input type="text" id="acc-pass" placeholder="Mot de passe (6 caractères minimum)" autocomplete="current-password"><button class="btn sec" id="acc-email">Connexion ou création par e-mail</button><p class="muted small">Sans connexion, tu restes en mode invité (progression sur cet appareil).</p></div>`;
 }
-const authError = e => { const c = e && (e.code || ""); return /popup-closed|cancelled/.test(c) ? "Connexion annulée." : /network/.test(c) ? "Pas de connexion internet." : /weak-password/.test(c) ? "Mot de passe trop court (6 caractères minimum)." : /invalid-email/.test(c) ? "Adresse e-mail invalide." : /email-already-in-use/.test(c) ? "Cette adresse existe déjà : vérifie le mot de passe." : /not_configured/.test(c) ? "La connexion n'est pas encore configurée." : "Connexion impossible pour le moment."; };
+const authError = e => { const c = String((e && (e.code || e.message)) || "");
+  if (/popup-closed|cancelled/.test(c)) return "Connexion annulée.";
+  if (/operation-not-allowed/.test(c)) return "Cette méthode n'est pas activée dans Firebase (Authentication > Sign-in method).";
+  if (/unauthorized-domain/.test(c)) return "Ce site n'est pas autorisé dans Firebase (Authentication > Paramètres > Domaines autorisés).";
+  if (/popup-blocked/.test(c)) return "Le navigateur a bloqué la fenêtre de connexion. Autorise les fenêtres puis réessaie.";
+  if (/network|Failed to fetch|dynamically imported|import/i.test(c)) return "Pas de connexion à Firebase. Vérifie internet puis réessaie.";
+  if (/weak-password/.test(c)) return "Mot de passe trop court (6 caractères minimum).";
+  if (/invalid-email/.test(c)) return "Adresse e-mail invalide.";
+  if (/email-already-in-use/.test(c)) return "Cette adresse existe déjà : vérifie le mot de passe.";
+  if (/not_configured/.test(c)) return "La connexion n'est pas encore configurée.";
+  if (/api-key|invalid-api-key|configuration-not-found|CONFIGURATION_NOT_FOUND/.test(c)) return "La configuration Firebase est incomplète (Authentication pas encore commencé ?).";
+  if (/permission-denied|insufficient/.test(c)) return "Règles Firestore refusées : publie les règles du fichier server/firestore.rules.";
+  return "Connexion impossible (" + (c.slice(0, 60) || "erreur inconnue") + ").";
+};
 async function accAuth(kind) {
   try { toast("Connexion…"); const r = await ACCOUNT.signIn(kind, { email: (document.getElementById("acc-mail") || {}).value, password: (document.getElementById("acc-pass") || {}).value }); toast(r === "pulled" ? "Progression récupérée depuis ton compte." : "Connecté."); route(); }
   catch (e) { toast(authError(e)); }
