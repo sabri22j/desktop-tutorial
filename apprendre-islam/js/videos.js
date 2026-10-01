@@ -648,4 +648,5 @@ const VIDEO_SEED = [
 "topic": "Rappels",
 "note": "Vidéo TikTok tierce, non vérifiée par Sirat : compare avec des sources fiables."
 }
-];
+,
+{"id":"tt-user1","title":"Vidéo TikTok partagée","author":"TikTok","url":"https://vm.tiktok.com/ZN8hjwXkR/","topic":"Rappels","note":"Vidéo ajoutée à ta demande."}];

@@ -24,15 +24,18 @@ function embedOf(u) { const x = safeUrl(u); if (!x) return null; let m;
   if (/youtube\.com$/.test(x.hostname) && (m = x.searchParams.get("v"))) return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(m);
   if (/youtu\.be$/.test(x.hostname) && (m = x.pathname.slice(1))) return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(m);
   return null; }
+const isShortTT = u => { const x = safeUrl(u); return !!x && (/^vm\.tiktok\.com$|^vt\.tiktok\.com$/.test(x.hostname) || (/tiktok\.com$/.test(x.hostname) && /^\/t\//.test(x.pathname))); };
+const ttCache = {};
+async function resolveTT(u) { if (ttCache[u] !== undefined) return ttCache[u]; ttCache[u] = null; try { const r = await fetch("https://www.tiktok.com/oembed?url=" + encodeURIComponent(u)); const j = await r.json(); const m = String(j.html || "").match(/data-video-id="(\d+)"/); if (m) ttCache[u] = "https://www.tiktok.com/embed/v2/" + m[1]; } catch {} return ttCache[u]; }
 let feedIO = null;
 function drawFeed(el, list, fav) {
   el.innerHTML = `<div class="feed" id="feed">${list.map(r => { const em = embedOf(r.url);
     return `<section class="fi"><div class="fcard" style="background:linear-gradient(160deg,#0d4a3a,#0f4a52)"><div class="gap" style="margin-bottom:8px"><span class="plat" style="background:${PCOL[r.plat]}">${esc(r.plat)}</span>${r.topic ? `<span class="tag">${esc(r.topic)}</span>` : ""}</div>
-    ${em ? `<div class="fvid" data-em="${esc(em)}"></div>` : `<div class="fbig">${siraj("happy", 96, "float")}</div>`}
+    ${em || isShortTT(r.url) ? `<div class="fvid" ${em ? `data-em="${esc(em)}"` : `data-short="${esc(r.url)}"`}></div>` : `<div class="fbig">${siraj("happy", 96, "float")}</div>`}
     <h3>${esc(r.title)}</h3><div class="small" style="opacity:.85">${r.author ? esc(r.author) + " · " : ""}${esc(r.host)}</div>${r.note ? `<p class="small" style="opacity:.9;margin:6px 0 0">${esc(r.note)}</p>` : ""}
     <div class="gap" style="margin-top:10px"><a class="btn gold sm" href="${esc(r.href)}" target="_blank" rel="noopener noreferrer">Ouvrir sur ${esc(r.plat)}</a><button class="favb ${fav[r.href] ? "on" : ""}" data-resfav="${esc(r.href)}" aria-label="Favori">${ico("star", 22)}</button><button class="btn sec sm" data-copy="${esc(r.title + " " + r.href)}">Partager</button></div><div class="small" style="opacity:.7;margin-top:8px;text-align:center">↓ Fais défiler</div></div></section>`; }).join("")}</div>`;
   if (feedIO) feedIO.disconnect(); const root = document.getElementById("feed");
-  if ("IntersectionObserver" in window) { feedIO = new IntersectionObserver(es => es.forEach(en => { const v = en.target.querySelector(".fvid"); if (!v) return; if (en.isIntersecting) { if (!v.firstChild) v.innerHTML = `<iframe src="${v.dataset.em}" loading="lazy" allow="autoplay; encrypted-media; fullscreen" allowfullscreen referrerpolicy="no-referrer-when-downgrade" title="Vidéo"></iframe>`; } else v.innerHTML = ""; }), { root, threshold: .6 }); root.querySelectorAll(".fi").forEach(f => feedIO.observe(f)); }
+  if ("IntersectionObserver" in window) { feedIO = new IntersectionObserver(es => es.forEach(en => { const v = en.target.querySelector(".fvid"); if (!v) return; if (en.isIntersecting) { if (!v.firstChild) { const go = src => { if (src && v.dataset.show !== "0") v.innerHTML = `<iframe src="${src}" loading="lazy" allow="autoplay; encrypted-media; fullscreen" allowfullscreen referrerpolicy="no-referrer-when-downgrade" title="Vidéo"></iframe>`; }; v.dataset.show = ""; if (v.dataset.em) go(v.dataset.em); else resolveTT(v.dataset.short).then(go); } } else { v.dataset.show = "0"; v.innerHTML = ""; } }), { root, threshold: .6 }); root.querySelectorAll(".fi").forEach(f => feedIO.observe(f)); }
 }
 function drawRes() {
   const el = document.getElementById("resl"); if (!el) return; const n = norm(resQ), fav = E.S.favres || {};
