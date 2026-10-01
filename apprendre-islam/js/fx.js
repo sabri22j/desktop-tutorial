@@ -28,7 +28,8 @@ const FX = (() => {
     root.querySelectorAll(".bar i").forEach(b => { const w = b.style.width; b.style.width = "0"; requestAnimationFrame(() => requestAnimationFrame(() => { b.style.width = w; })); });
   }
   /* Inclinaison 3D des grandes cartes qui suit le doigt ou la souris */
-  addEventListener("pointermove", e => { const c = e.target.closest && e.target.closest(".hero,.rkc,.card.next"); document.querySelectorAll(".tilt3d").forEach(x => { if (x !== c) { x.style.setProperty("--rx", "0deg"); x.style.setProperty("--ry", "0deg"); } });
+  addEventListener("pointermove", e => { const c = e.target.closest && e.target.closest(".hero,.rkc,.card.next,.sj3dw"); document.querySelectorAll(".tilt3d").forEach(x => { if (x !== c) { x.style.setProperty("--rx", "0deg"); x.style.setProperty("--ry", "0deg"); } });
     if (!c || still()) return; c.classList.add("tilt3d"); const b = c.getBoundingClientRect(); c.style.setProperty("--ry", ((e.clientX - b.left) / b.width - .5) * 8 + "deg"); c.style.setProperty("--rx", -((e.clientY - b.top) / b.height - .5) * 8 + "deg"); }, { passive: true });
+  addEventListener("pointerdown", e => { const c = e.target.closest && e.target.closest(".sj3dw"); if (!c || still()) return; c.classList.remove("spin3d"); void c.offsetWidth; c.classList.add("spin3d"); }, { passive: true });
   return { gain, burst, rankUp, count, enter };
 })();
