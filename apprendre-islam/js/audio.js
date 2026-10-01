@@ -9,7 +9,7 @@ const SND = (() => {
   function ensure() {
     if (!ctx) {
       const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
-      ctx = new AC(); master = ctx.createGain(); master.connect(ctx.destination);
+      ctx = new AC(); master = ctx.createGain(); const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 10; comp.attack.value = 0.003; comp.release.value = 0.2; master.connect(comp); comp.connect(ctx.destination);
       music = ctx.createGain(); music.gain.value = 0; wet = ctx.createGain(); wet.gain.value = .5;
       const conv = ctx.createConvolver(), len = ctx.sampleRate * 2, buf = ctx.createBuffer(2, len, ctx.sampleRate);
       for (let c = 0; c < 2; c++) { const d = buf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
@@ -42,10 +42,10 @@ const SND = (() => {
     o.connect(g); g.connect(dest || master); o.start(t0); o.stop(t0 + dur + 0.05);
   }
   /* Ambiances naturelles */
-  const wind = () => { const f = filt("lowpass", 500); const g = chain(noiseSrc(true), [f], 0.6, bus); lfo(0.08, 260, f.frequency); lfo(0.05, 0.2, g.gain); };
+  const wind = () => { return; /* retiré : trop agaçant */  const f = filt("lowpass", 500); const g = chain(noiseSrc(true), [f], 0.6, bus); lfo(0.08, 260, f.frequency); lfo(0.05, 0.2, g.gain); };
   const stream = (gain = 0.05) => { const f = filt("bandpass", 1800, 0.8); const g = chain(noiseSrc(false), [f], gain, bus); lfo(0.7, 600, f.frequency); lfo(0.23, gain * 0.4, g.gain); };
   const styles = {
-    nature() { wind(); stream(0.05); },
+    nature() { stream(0.06); },
     pluie() { const g = chain(noiseSrc(false), [filt("highpass", 1200), filt("lowpass", 7500)], 0.11, bus); lfo(0.12, 0.03, g.gain); chain(noiseSrc(true), [filt("lowpass", 250)], 0.35, bus);
       const tick = () => { if (!bus) return; burst(ctx.currentTime, 0.05, "bandpass", 2500 + Math.random() * 3000, 2, 0.05 + Math.random() * 0.05, bus); timer = setTimeout(tick, 80 + Math.random() * 220); }; tick(); },
     mer() { const f = filt("lowpass", 600), g = chain(noiseSrc(true), [f], 0.5, bus); lfo(0.11, 0.35, g.gain); lfo(0.11, 350, f.frequency);
@@ -70,16 +70,22 @@ const SND = (() => {
   function apply() { if (cfg().music) startMusic(); else stopMusic(); if (started) music.gain.setTargetAtTime(vol(), ctx.currentTime, 0.2); }
   function restart() { if (started) stopMusic(); if (cfg().music) { ensure(); setTimeout(startMusic, 50); } }
   /* Bruits : boutons, bonne / mauvaise réponse, victoire */
-  const fxGain = () => 0.4 + cfg().vol * 0.6;
-  function click() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.03, "bandpass", 2600, 1.2, 0.4 * k); burst(t, 0.05, "lowpass", 400, 0.7, 0.22 * k); }
+  const fxGain = () => 1.1 + cfg().vol * 0.6;
   const buzz = p => { try { if (cfg().sfx && navigator.vibrate) navigator.vibrate(p); } catch {} };
-  /* Juste : trois gouttes d'eau claires qui montent. Faux : deux coups sourds et graves. Plus forts qu'avant, pour s'entendre sur un téléphone. */
-  function correct() { buzz(30); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 600, 1300, 0.18, 0.75 * k); drop(t + 0.1, 800, 1700, 0.2, 0.7 * k); drop(t + 0.21, 1000, 2100, 0.28, 0.65 * k); }
-  function wrong() { buzz([70, 50, 70]); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.2, "lowpass", 220, 0.7, 1.1 * k); drop(t, 190, 60, 0.28, 0.9 * k); burst(t + 0.16, 0.2, "lowpass", 180, 0.7, 1 * k); drop(t + 0.16, 150, 50, 0.3, 0.8 * k); }
-  function win() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); [0, 0.1, 0.2, 0.32].forEach((d, i) => drop(t + d, 500 + i * 120, 1100 + i * 260, 0.2, 0.26 * k)); }
+  /* Un bruit pour chaque geste. Les petits haut-parleurs de téléphone ne rendent pas les graves : les sons « faux » restent dans le médium. */
+  function click() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.035, "bandpass", 2400, 1.2, 0.7 * k); burst(t, 0.06, "lowpass", 600, 0.7, 0.45 * k); }
+  function select() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 700, 1100, 0.09, 0.6 * k); burst(t, 0.03, "bandpass", 3000, 1.5, 0.4 * k); }
+  function nav() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.16, "bandpass", 1200, 0.6, 0.45 * k); drop(t + 0.04, 500, 900, 0.12, 0.35 * k); }
+  function flip() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); burst(t, 0.09, "bandpass", 1800, 0.8, 0.6 * k); burst(t + 0.07, 0.05, "bandpass", 2800, 1.2, 0.45 * k); }
+  function pop() { if (!cfg().click || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 900, 1500, 0.12, 0.55 * k); }
+  function xp() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); [0, 0.07, 0.14].forEach((d, i) => drop(t + d, 1100 + i * 250, 2200 + i * 400, 0.14, 0.5 * k)); }
+  function correct() { buzz(30); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 600, 1300, 0.2, 1.1 * k); drop(t + 0.1, 800, 1700, 0.22, 1 * k); drop(t + 0.21, 1000, 2100, 0.3, 0.95 * k); }
+  function wrong() { buzz([70, 50, 70]); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain();
+    [0, 0.17].forEach(d => { burst(t + d, 0.16, "bandpass", 420, 0.9, 1.8 * k); drop(t + d, 330, 150, 0.2, 1.3 * k); drop(t + d, 660, 300, 0.12, 0.5 * k); }); }
+  function win() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); [0, 0.1, 0.2, 0.32, 0.46].forEach((d, i) => drop(t + d, 500 + i * 120, 1100 + i * 260, 0.22, 0.9 * k)); }
   /* Démarrage après le premier geste (exigé par les navigateurs) */
   function unlock() { if (cfg().music) apply(); else ensure(); }
   document.addEventListener("pointerdown", function once() { unlock(); document.removeEventListener("pointerdown", once); }, { passive: true });
   document.addEventListener("visibilitychange", () => { if (!ctx) return; if (document.hidden) ctx.suspend(); else ctx.resume(); });
-  return { apply, restart, correct, wrong, win, click, unlock };
+  return { apply, restart, correct, wrong, win, click, select, nav, flip, pop, xp, unlock };
 })();

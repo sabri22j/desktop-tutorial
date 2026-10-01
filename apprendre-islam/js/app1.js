@@ -5,9 +5,9 @@ const pct = x => Math.round(x * 100);
 const bar = (x, cls = "") => `<div class="bar ${cls}"><i style="width:${pct(x)}%"></i></div>`;
 const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
 let toastT;
-function toast(msg) { $toast.textContent = msg; $toast.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => $toast.classList.remove("show"), 3000); }
+function toast(msg) { SND.pop(); $toast.textContent = msg; $toast.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => $toast.classList.remove("show"), 3000); }
 const go = h => { location.hash = h; };
-const celebrate = () => E.evalBadges().forEach(b => toast("Nouveau badge : " + b));
+const celebrate = () => { E.evalBadges().forEach(b => toast("Nouveau badge : " + b)); const r = E.popRankUp(); if (r) { SND.win(); toast("⭐ Rang " + r.n + " : " + r.title + " !"); } };
 const ring = (p, size = 64, st = 8, label = "", col = "var(--green)") => { const r = (size - st) / 2, c = 2 * Math.PI * r;
   return `<span class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="${st}"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${st}" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - Math.max(0, Math.min(1, p)))).toFixed(1)}"/></svg><span class="rt" style="font-size:${(size * .26).toFixed(0)}px">${label}</span></span>`; };
 const arText = s => esc(s).replace(/\s*۝\s*/g, " • ");
@@ -134,11 +134,11 @@ function runSession(cfg) { // cfg: {kind,title,questions,retry,back,chapter,leve
     E.save(); celebrate();
     const newly = E.newLevelsCompleted(), stages = [...new Set(newly.map(E.stageOf))].filter(s => { const p = E.stageProgress(s); return p.total && p.done === p.total; });
     const m = cfg.chapter ? E.mastery(cfg.chapter) : null, great = score >= 0.8 || res.pass;
-    if (great || newly.length) { confetti(); SND.win(); }
+    if (res.xp) setTimeout(SND.xp, 350); if (great || newly.length) { confetti(); SND.win(); }
     const title = cfg.kind === "exam" ? (res.pass ? "Examen réussi !" : "Examen non validé (65 % pour réussir). Révise puis réessaie.") : score >= 0.8 ? "Bravo !" : score >= 0.6 ? "Bien joué, continue !" : "Il faut réviser un peu.";
     $app.innerHTML = `<div class="resc"><div class="sp"></div>${siraj(great ? "proud" : score >= 0.6 ? "happy" : "think", 130, great ? "jump" : "float")}<div class="sp"></div>
       <h2>${title}</h2><div class="sp"></div>${ring(score, 120, 12, `${correct}/${total}`, score >= 0.6 ? "var(--green)" : "var(--gold)")}<div class="sp"></div>
-      <div class="xpchip">${ico("gem", 20)} +${res.xp} XP</div>
+      <div class="xpchip">${ico("gem", 20)} +${res.xp} XP</div>${(() => { const r = E.rank(); return `<div class="rkc"><div class="row"><b>Rang ${r.n} · ${esc(r.title)}</b><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}</div>`; })()}${(() => { const u = E.popRankUp(); return u ? `<div class="lvlup">⭐ Nouveau rang : ${u.n} · ${esc(u.title)} !</div>` : ""; })()}
       ${newly.map(n => `<div class="lvlup">🎉 Niveau ${n} validé !</div>`).join("")}${stages.map(s => `<div class="lvlup">🎓 Étape terminée : ${esc(STAGES[s])}</div>`).join("")}
       ${m !== null ? `<div class="card" style="text-align:left"><div class="row"><b>Maîtrise du chapitre</b><b>${pct(m)} %</b></div>${bar(m)}<span class="muted small">${m >= E.UNLOCK ? "🔓 Suite débloquée. Les révisions l'amèneront vers 100 %." : "60 % pour débloquer la suite. Les questions ratées reviendront en révision."}</span></div>` : ""}
       ${wrong.length ? `<p class="muted">🔄 ${wrong.length} question${wrong.length > 1 ? "s" : ""} à revoir : ajoutée${wrong.length > 1 ? "s" : ""} à tes révisions.</p>` : ""}</div>

@@ -6,6 +6,7 @@ V.profile = () => {
   const sw = (id, label, on) => `<label class="set"><span>${label}</span><input type="checkbox" class="switch" id="${id}" ${on ? "checked" : ""}></label>`;
   return `<h2>Profil</h2><div class="sp"></div>
   <div class="card phead">${siraj("happy", 84, "float")}<div><div class="muted small">Niveau actuel</div><h2>${n >= LEVELS.length ? "100" : n}</h2><div class="xpchip" style="margin:4px 0 0">${ico("gem", 18)} ${S.xp} XP</div></div></div>
+  ${(() => { const r = E.rank(); return `<div class="card rkc"><div class="row"><h3>Rang ${r.n} · ${esc(r.title)}</h3><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}<p class="muted small">Il te manque ${r.left} XP pour le rang ${r.n + 1}. Les XP viennent des leçons (+10), des quiz (+20), des révisions (+15), du quiz du jour (+30) et des examens (+50). Ce rang est séparé des niveaux du parcours, qui, eux, dépendent de ta maîtrise.</p></div>`; })()}
   <div class="stat3" style="grid-template-columns:repeat(3,1fr)"><div class="stat"><b style="color:#ef7b1a">${E.streak()}</b><span>Série</span></div><div class="stat"><b>${S.stats.total ? pct(S.stats.ok / S.stats.total) : 0}%</b><span>Réussite</span></div><div class="stat"><b>${done}</b><span>Chapitres</span></div></div>
   <div class="card"><div class="row"><h3>Cette semaine</h3><span class="muted small">XP par jour</span></div><div class="wbars">${wk.map(w => `<div class="wb ${w.active ? "on" : ""}"><i style="height:${Math.max(6, w.xp / mx * 100)}%"></i><span>${w.letter}</span></div>`).join("")}</div></div>
   <div class="card"><h3>Maîtrise par matière</h3><div class="sp"></div>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id) || 0; return `<div class="row" style="padding:6px 0"><div class="gap"><span class="ic-b" style="width:38px;height:38px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center">${ico(LEVEL_ICON[s.id], 20)}</span><b>${esc(s.name)}</b></div><b>${pct(m)} %</b></div>${bar(m)}`; }).join("")}<p class="muted small">Niveau 100 = parcours de l'application terminé, pas « tout l'islam ».</p></div>
@@ -101,7 +102,9 @@ function route() {
   if (r === "path") setTimeout(() => { const c = document.querySelector(".node.cur"); if (c) c.scrollIntoView({ block: "center" }); }, 60); else window.scrollTo(0, 0);
 }
 addEventListener("hashchange", route);
-document.addEventListener("pointerdown", e => { if (e.target.closest("button:not(:disabled), a[href], .opt, .chip, .pill, .node, label.set, .flip")) SND.click(); }, { passive: true });
+document.addEventListener("pointerdown", e => { const t = e.target.closest("button:not(:disabled), a[href], .opt, .chip, .pill, .node, label, .flip, summary, select, input[type=checkbox], input[type=radio], .card.row, .tile"); if (!t) return;
+  if (t.matches(".opt")) SND.select(); else if (t.matches(".flip")) SND.flip(); else if (t.closest("#nav")) SND.nav(); else SND.click(); }, { passive: true });
+let lastKey = 0; document.addEventListener("input", e => { if (e.target.matches("input[type=text],input[type=search],input[type=password],textarea") && Date.now() - lastKey > 70) { lastKey = Date.now(); SND.click(); } else if (e.target.matches("input[type=range]") && Date.now() - lastKey > 120) { lastKey = Date.now(); SND.click(); } });
 document.addEventListener("click", async e => {
   const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-aiprov],#ai-save,#ai-del,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
   if (!t) return;
