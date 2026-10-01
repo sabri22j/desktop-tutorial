@@ -390,3 +390,16 @@ main.p3d{animation:p3d .5s cubic-bezier(.2,.8,.25,1)}@keyframes p3d{from{opacity
 .seg{display:flex;gap:6px;background:var(--line);padding:5px;border-radius:16px;margin:8px 0 14px}
 .seg a{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 6px;border-radius:12px;font-weight:800;color:var(--muted);transition:.2s}
 .seg a.on{background:var(--surface);color:var(--green);box-shadow:0 2px 0 rgba(0,0,0,.08)}
+
+/* ---- Onglet « Plus » : feuille en bas de l'écran ---- */
+#nav button.ni{background:none;border:0;cursor:pointer;font-family:inherit}
+.sheet{position:fixed;inset:0;z-index:45;display:flex;align-items:flex-end;animation:fadein .2s ease-out}
+.sheet.out{animation:fadeout .25s ease-in forwards}.sheet.out .pn{transform:translateY(100%)}
+.sheet .bk{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.sheet .pn{position:relative;width:100%;background:var(--surface);border-radius:26px 26px 0 0;padding:8px 8px calc(96px + env(safe-area-inset-bottom));animation:sheetup .3s cubic-bezier(.2,.8,.25,1);transition:transform .25s}
+@keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
+.sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:6px auto 10px}
+.srow{display:flex;align-items:center;gap:16px;padding:16px 14px;border-bottom:2px solid var(--line);color:var(--ink)}.srow:last-child{border:0}
+.srow .si{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.srow .st{flex:1;display:flex;flex-direction:column}.srow .st b{font-family:var(--fd);font-size:1.15rem}.srow .st small{color:var(--muted);font-weight:700}
+#nav{z-index:50}
