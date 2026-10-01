@@ -103,7 +103,7 @@ function route() {
 addEventListener("hashchange", route);
 document.addEventListener("pointerdown", e => { if (e.target.closest("button:not(:disabled), a[href], .opt, .chip, .pill, .node, label.set, .flip")) SND.click(); }, { passive: true });
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-aiprov],#ai-save,#ai-del,[data-rtopic],#resfavf,[data-resfav],[data-resdel],#res-add");
+  const t = e.target.closest("[data-sub],[data-pin],[data-goal],[data-ask],[data-style],[data-copy],[data-o],[data-know],[data-reason],#mapz,#rst,#prem,#pics,#pintro,#mtog,#t-voice,#t-ok,#t-ko,#acc-google,#acc-apple,#acc-email,#acc-out,#acc-sync,[data-aiprov],#ai-save,#ai-del,[data-rtopic],[data-rview],#resfavf,[data-resfav],[data-resdel],#res-add");
   if (!t) return;
   if (document.querySelector(".onbw") && (t.dataset.o || t.dataset.know || t.dataset.reason !== undefined || (t.dataset.goal && t.classList.contains("opt")))) {
     const tm = () => { const i = document.getElementById("rtime"); if (i && i.value) ONB.time = i.value; };
@@ -127,6 +127,7 @@ document.addEventListener("click", async e => {
   else if (t.id === "ai-save") { const key = document.getElementById("ai-key").value.trim(), model = document.getElementById("ai-model").value.trim(), pv = aiSel || (AI.getMine() || {}).provider || "claude"; if (key.length < 10) { toast("Colle ta clé API complète."); return; } AI.setMine({ provider: pv, key, model }); toast("IA connectée. Pose ta question !"); route(); }
   else if (t.id === "ai-del") { AI.setMine(null); aiSel = null; toast("Clé retirée de cet appareil."); route(); }
   else if (t.dataset.rtopic) { resTopic = t.dataset.rtopic; route(); }
+  else if (t.dataset.rview) { resView = t.dataset.rview; route(); }
   else if (t.id === "resfavf") { resFav = !resFav; route(); }
   else if (t.dataset.resfav) { const f = E.S.favres = E.S.favres || {}; if (f[t.dataset.resfav]) delete f[t.dataset.resfav]; else f[t.dataset.resfav] = 1; E.save(); drawRes(); }
   else if (t.dataset.resdel) { E.S.res = (E.S.res || []).filter(r => r.url !== t.dataset.resdel); E.save(); drawRes(); }
