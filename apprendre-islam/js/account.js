@@ -48,7 +48,8 @@ const ACCOUNT = (() => {
     emit(); return "local";
   }
   async function signIn(kind, cred = {}) {
-    const f = await loadFb(), A = f.au; let c;
+    /* Safari (iPhone) n'autorise la fenêtre de connexion que si elle s'ouvre tout de suite, dans le geste de l'utilisateur : pas d'attente avant signInWithPopup quand Firebase est déjà chargé. */
+    const f = fb || await loadFb(), A = f.au; let c;
     if (kind === "google") c = await A.signInWithPopup(f.auth, new A.GoogleAuthProvider());
     else if (kind === "facebook") c = await A.signInWithPopup(f.auth, new A.FacebookAuthProvider());
     else if (kind === "apple") { const p = new A.OAuthProvider("apple.com"); p.addScope("email"); p.addScope("name"); c = await A.signInWithPopup(f.auth, p); }
@@ -56,6 +57,8 @@ const ACCOUNT = (() => {
     else c = await A.signInWithEmailAndPassword(f.auth, cred.email, cred.password);
     setFbUser(c.user); emit(); return pull();
   }
+  /* Connexion Google « bouton officiel » (Google Identity Services) : n'utilise pas la page de Firebase qui échoue sur Safari iPhone. */
+  async function signInGoogleToken(idToken) { const f = await loadFb(), A = f.au, c = await A.signInWithCredential(f.auth, A.GoogleAuthProvider.credential(idToken)); setFbUser(c.user); emit(); return pull(); }
   /* Classement mondial : on y apparaît seulement avec un compte, 15 ans ou plus et l'option activée. */
   const eligible = () => { const m = E.S.me; return state.provider === "firebase" && !!m && m.board && m.age >= 15 && !!m.first; };
   const publicName = m => m.first + (m.last ? " " + m.last[0].toUpperCase() + "." : "");
@@ -73,5 +76,5 @@ const ACCOUNT = (() => {
   }
   async function resetPassword(email) { const f = await loadFb(); await f.au.sendPasswordResetEmail(f.auth, email); }
   async function signOut() { if (state.provider === "firebase") { await fb.au.signOut(fb.auth); state = { provider: "local", user: null }; emit(); } }
-  return { init, signIn, signOut, leaderboard, resetPassword, pushBoard, pull, push, get state() { return state; }, get canSignIn() { return !!APP_CONFIG.firebase; }, get providers() { return Object.assign({ google: true, facebook: false, apple: false, email: true }, APP_CONFIG.providers || {}); }, onChange(f) { listeners.push(f); } };
+  return { init, signIn, signInGoogleToken, signOut, leaderboard, resetPassword, pushBoard, pull, push, get state() { return state; }, get canSignIn() { return !!APP_CONFIG.firebase; }, get providers() { return Object.assign({ google: true, facebook: false, apple: false, email: true }, APP_CONFIG.providers || {}); }, onChange(f) { listeners.push(f); } };
 })();

@@ -17,7 +17,8 @@ const profCard = () => { const m = ME(), has = !!m.first; return `<div class="ca
 let suPhoto = null;
 V.signup = (mode) => {
   const edit = mode === "edit", login = mode === "login", m = ME(), online = ACCOUNT.canSignIn, P = ACCOUNT.providers; if (suPhoto === null) suPhoto = m.photo || "";
-  const social = online && !inAppBrowser() ? [["google", "Google"], ["facebook", "Facebook"], ["apple", "Apple"]].filter(([k]) => P[k]).map(([k, n]) => `<button type="button" class="btn sec" data-su="${k}">${login ? "Se connecter" : "Continuer"} avec ${n}</button>`).join("") : "";
+  const gis = !!APP_CONFIG.googleClientId, social = online && !inAppBrowser() ? [["google", "Google"], ["facebook", "Facebook"], ["apple", "Apple"]].filter(([k]) => P[k]).map(([k, n]) => k === "google" && gis ? `<div class="gbtn" id="gbtn"></div>` : `<button type="button" class="btn sec" data-su="${k}">${login ? "Se connecter" : "Continuer"} avec ${n}</button>`).join("") : "";
+  if (gis && online && !inAppBrowser() && P.google) setTimeout(mountGoogle, 0);
   return `<a class="back" href="#/profile">${ico("back", 18)} Profil</a>
   <h2>${edit ? "Mon profil" : login ? "Se connecter" : "Créer mon profil"}</h2>${edit ? "" : inAppNotice()}
   <form id="signf" class="card" autocomplete="on" novalidate>
@@ -37,6 +38,22 @@ V.signup = (mode) => {
 };
 V.profedit = () => V.signup("edit");
 
+/* Bouton Google officiel (Google Identity Services) */
+let gisLoad = null;
+const loadGis = () => gisLoad || (gisLoad = new Promise((res, rej) => { if (window.google && google.accounts && google.accounts.id) return res(); const t = document.createElement("script"); t.src = "https://accounts.google.com/gsi/client"; t.async = true; t.onload = res; t.onerror = rej; document.head.appendChild(t); }));
+async function mountGoogle() {
+  const box = document.getElementById("gbtn"); if (!box) return;
+  try {
+    await loadGis(); const mode = location.hash.split("/")[2];
+    google.accounts.id.initialize({ client_id: APP_CONFIG.googleClientId, ux_mode: "popup", callback: async resp => {
+      const m = location.hash.split("/")[2] || "create", f = readForm(m === "login" ? "login" : "create"); if (f.err) return toast(f.err);
+      if (m !== "login" && f.age < 13) return toast("Pour créer un compte en ligne, il faut avoir 13 ans ou plus.");
+      try { toast("Connexion…"); await ACCOUNT.signInGoogleToken(resp.credential);
+        if (m === "login") { const me = ME(); if (me.first) welcome(me.first, true); else { toast("Connecté."); location.hash = "#/profile"; } return; }
+        saveMe(f); await ACCOUNT.push(); welcome(f.first); } catch (e) { toast(authMsg(e)); } } });
+    google.accounts.id.renderButton(box, { theme: "outline", size: "large", shape: "pill", text: mode === "login" ? "signin_with" : "continue_with", locale: "fr", width: Math.min(320, box.clientWidth || 300) });
+  } catch { box.innerHTML = `<button type="button" class="btn sec" data-su="google">Continuer avec Google</button>`; }
+}
 const val = id => { const e = document.getElementById(id); return e ? e.value.trim() : ""; };
 function readForm(mode) {
   const first = val("su-first"), last = val("su-last"), age = parseInt(val("su-age"), 10), board = !!(document.getElementById("su-board") || {}).checked;
