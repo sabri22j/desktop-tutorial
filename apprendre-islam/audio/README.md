@@ -8,3 +8,8 @@ L'application lit **en priorité** un enregistrement humain s'il existe, sinon e
 4. Déposer les fichiers dans ce dossier `audio/`. Aucun code à modifier.
 
 Règles importantes : n'utiliser que des voix dont vous avez les droits (vous-même, une personne qui vous autorise, ou une licence claire). Pour la récitation du Coran, demander l'autorisation du récitant ou utiliser une source libre de droits.
+
+
+## Voix actuelles
+
+Les fichiers `.mp3` présents ont été générés avec une voix neuronale française (Kokoro, licence Apache-2.0), les noms arabes étant écrits en phonétique française (voir `js/names.js`). Ils sont remplaçables à tout moment par de vraies voix humaines portant le même nom de fichier.
