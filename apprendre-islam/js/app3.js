@@ -7,7 +7,7 @@ V.profile = (tab) => {
   const vopt = v => `<option value="${esc(v.voiceURI)}" ${cur && v.voiceURI === cur.voiceURI && S.settings.voice ? "selected" : ""}>${v === best ? "★ " : ""}${esc(v.name)} (${esc(v.lang)})</option>`;
   const sw = (id, label, on) => `<label class="set"><span>${label}</span><input type="checkbox" class="switch" id="${id}" ${on ? "checked" : ""}></label>`;
   return `<h2>${pt === "param" ? "Paramètres" : "Profil"}</h2>
-  ${pt === "profil" ? `${profCard()}
+  ${pt === "profil" ? `${connected() ? accountCard() : ""}${profCard()}
   <a class="card row" href="#/ranking"><div class="gap">${ico("trophy", 26)}<div><h3>Classement mondial</h3><span class="muted small">Compare tes XP avec les autres</span></div></div>${ico("arrow", 20)}</a>
   <div class="card phead">${siraj3d("happy", 96)}<div><div class="muted small">Niveau actuel</div><h2>${n >= LEVELS.length ? "100" : n}</h2><div class="xpchip" style="margin:4px 0 0">${ico("moon", 18)} ${S.xp} XP</div></div></div>
   ${(() => { const r = E.rank(); return `<div class="card rkc"><div class="row"><h3>Rang ${r.n} · ${esc(r.title)}</h3><span class="muted small">${r.cur}/${r.need} XP</span></div>${bar(r.pct)}<p class="muted small">Il te manque ${r.left} XP pour le rang ${r.n + 1}. Les XP viennent des leçons (+10), des quiz (+20), des révisions (+15), du quiz du jour (+30) et des examens (+50). Ce rang est séparé des niveaux du parcours, qui, eux, dépendent de ta maîtrise.</p></div>`; })()}
@@ -15,7 +15,7 @@ V.profile = (tab) => {
   <div class="card"><div class="row"><h3>Cette semaine</h3><span class="muted small">XP par jour</span></div><div class="wbars">${wk.map(w => `<div class="wb ${w.active ? "on" : ""}"><i style="height:${Math.max(6, w.xp / mx * 100)}%"></i><span>${w.letter}</span></div>`).join("")}</div></div>
   <div class="card"><h3>Maîtrise par matière</h3><div class="sp"></div>${SUBJECTS.map(s => { const m = E.subjectMastery(s.id) || 0; return `<div class="row" style="padding:6px 0"><div class="gap"><span class="ic-b" style="width:38px;height:38px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center">${ico(LEVEL_ICON[s.id], 20)}</span><b>${esc(s.name)}</b></div><b>${pct(m)} %</b></div>${bar(m)}`; }).join("")}<p class="muted small">Niveau 100 = parcours de l'application terminé, pas « tout l'islam ».</p></div>
   <div class="card"><h3>Badges</h3><div class="sp"></div><div class="badges">${E.BADGES.map(b => `<div class="bdg ${S.badges[b[0]] ? "" : "off"}"><b>${b[1]}</b>${esc(b[2])}</div>`).join("")}</div></div>
-  ${accountCard()}` : ""}
+  ${connected() ? "" : accountCard()}` : ""}
   ${pt === "param" ? `  <div class="card"><h3>Apparence</h3><div>${[["auto", "Automatique"], ["light", "Clair"], ["dark", "Sombre"]].map(([id, nm]) => `<button class="pill ${S.settings.mode === id ? "on" : ""}" data-mode="${id}">${nm}</button>`).join("")}</div><p class="muted small">« Automatique » suit le réglage de ton téléphone.</p></div>
   <div class="card"><h3>Thème</h3><p class="muted small">Choisis les couleurs de l'application.</p><div class="skins">${SKINS.map(k => `<button class="skin ${S.settings.skin === k.id ? "on" : ""}" data-skin="${k.id}" aria-label="${k.n}"><i style="background:linear-gradient(135deg,${hexShift("#0a2a23", k.d)},${hexShift("#0f8a5f", k.d)} 55%,#f4b836)"></i><span>${k.n}</span></button>`).join("")}</div></div>
   <div class="card"><h3>Sons</h3>
@@ -32,7 +32,7 @@ V.profile = (tab) => {
 
 function accountCard() {
   const a = ACCOUNT.state;
-  if (a.provider !== "local") return `<div class="card"><h3>Compte</h3><p><b>${esc(a.user.name)}</b>${a.user.email ? `<br><span class="muted small">${esc(a.user.email)}</span>` : ""}</p><p class="muted small">${a.provider === "claude" ? "Connecté avec ton compte Claude." : "Connecté."} Ta progression est synchronisée entre tes appareils.</p><button class="btn sec" id="acc-sync">Synchroniser maintenant</button>${a.provider === "firebase" ? `<button class="btn sec" id="acc-out">Se déconnecter</button>` : ""}</div>`;
+  if (a.provider !== "local") { const m = ME(), nm = m.first || a.user.name || a.user.email || "Compte"; return `<div class="card conn"><div class="gap"><span class="av-wrap">${avatar(56, { first: nm, photo: m.photo })}<i class="cdot"></i></span><div style="flex:1;min-width:0"><div class="tag" style="background:#d9f4e4;color:#0a6546">${ico("check", 14)} Connecté</div><b style="display:block;margin-top:4px">${esc(nm)}</b>${a.user.email ? `<span class="muted small">${esc(a.user.email)}</span>` : ""}</div></div><p class="muted small" style="margin:10px 0 0">${a.provider === "claude" ? "Compte Claude." : ""} Ta progression est synchronisée entre tes appareils.</p><div class="gap" style="margin-top:8px"><button class="btn sec sm" id="acc-sync">Synchroniser</button>${a.provider === "firebase" ? `<button class="btn sec sm" id="acc-out">Se déconnecter</button>` : ""}</div></div>`; }
   if (!ACCOUNT.canSignIn) return `<div class="card"><h3>Compte</h3><p class="muted small">Mode invité : ta progression est enregistrée sur cet appareil. La connexion Google, Apple ou e-mail s'active une fois le serveur configuré (voir le README, section Comptes).</p></div>`;
   return `${inAppNotice()}<div class="card"><h3>Compte</h3><p class="muted small">Connecte-toi pour retrouver ta progression sur tous tes appareils. Sans connexion, tu restes en mode invité (progression sur cet appareil).</p><a class="btn" href="#/signup">Créer un compte</a><a class="btn sec" href="#/signup/login">J'ai déjà un compte</a></div>`;
 }
@@ -102,7 +102,7 @@ const TABMAP = { profile: "more", settings: "more", ranking: "more", signup: "mo
 const LANTERN = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v2.5" stroke="#0a6546" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 7.5q4.5-6 9 0z" fill="#0f8a5f"/><path d="M7 7.5h10l.8 9q-1 4.5-5.8 4.5T6.2 16.5z" fill="#f4b836"/><path d="M9 9v9M15 9v9" stroke="#c98d10" stroke-width=".8" opacity=".6"/></svg>`;
 function chrome(tab) {
   $nav.innerHTML = NAV.map(([id, ic, nm]) => id === "more" ? `<button class="ni${tab === "more" ? " on" : ""}" id="morebtn" aria-haspopup="dialog"><span class="b">${ico(ic, 23)}</span>${nm}</button>` : `<a class="ni ${tab === id ? "on" : ""}${id === "reseau" ? " center" : ""}" href="#/${id}"><span class="b">${ico(ic, 23)}</span>${nm}</a>`).join("");
-  $top.innerHTML = `<div class="tb"><a class="brand" href="#/home">${LANTERN}Sirat</a><div class="chips-top"><a class="tchip flame" href="#/profile">${ico("flame", 18)}${E.streak()}</a><a class="tchip moon" href="#/profile">${ico("moon", 18)}${E.S.xp}</a><button class="tchip snd" id="mtog" aria-label="Sons">${ico(E.S.settings.sfx ? "speaker" : "mute", 18)}</button><a class="tchip snd" href="#/profile" aria-label="Profil">${ico("user", 18)}</a></div></div>`;
+  $top.innerHTML = `<div class="tb"><a class="brand" href="#/home">${LANTERN}Sirat</a><div class="chips-top"><a class="tchip flame" href="#/profile">${ico("flame", 18)}${E.streak()}</a><a class="tchip moon" href="#/profile">${ico("moon", 18)}${E.S.xp}</a><button class="tchip snd" id="mtog" aria-label="Sons">${ico(E.S.settings.sfx ? "speaker" : "mute", 18)}</button><a class="tchip snd" href="#/profile" aria-label="Profil">${ACCOUNT.state.provider !== "local" ? `<span class="av-wrap">${avatar(24, { first: ME().first || (ACCOUNT.state.user && ACCOUNT.state.user.name) || "?", photo: ME().photo })}<i class="cdot"></i></span>` : ico("user", 18)}</a></div></div>`;
 }
 function route() {
   let [r, a, b] = (location.hash.slice(2) || "home").split("/");
@@ -124,7 +124,7 @@ function openSheet() {
   if (document.getElementById("sheet")) return closeSheet();
   const row = (href, ic, col, label, sub) => `<a class="srow" href="${href}"><span class="si" style="background:${col}">${ico(ic, 24)}</span><span class="st"><b>${label}</b>${sub ? `<small>${sub}</small>` : ""}</span>${ico("arrow", 18)}</a>`;
   const d = document.createElement("div"); d.id = "sheet"; d.className = "sheet";
-  d.innerHTML = `<div class="bk" data-sheet-close></div><div class="pn" role="dialog" aria-label="Plus"><div class="grab"></div>${row("#/profile", "user", "#4aa8f0", "Profil", "Ta photo, ton rang, tes badges, ton compte")}${row("#/settings", "settings", "#8e6ad8", "Paramètres de l'application", "Sons, voix, rappel, objectif")}${row("#/ranking", "trophy", "#f4b836", "Classement mondial", "Compare tes XP")}</div>`;
+  d.innerHTML = `<div class="bk" data-sheet-close></div><div class="pn" role="dialog" aria-label="Plus"><div class="grab"></div>${ACCOUNT.state.provider !== "local" ? row("#/profile", "check", "#27b77c", "Connecté", esc(ME().first || (ACCOUNT.state.user && (ACCOUNT.state.user.email || ACCOUNT.state.user.name)) || "Ton compte")) : (ACCOUNT.canSignIn ? row("#/signup/login", "user", "#27b77c", "Se connecter", "Google ou e-mail") : "")}${row("#/profile", "user", "#4aa8f0", "Profil", "Ta photo, ton rang, tes badges")}${row("#/settings", "settings", "#8e6ad8", "Paramètres de l'application", "Sons, voix, rappel, objectif")}${row("#/ranking", "trophy", "#f4b836", "Classement mondial", "Compare tes XP")}</div>`;
   document.body.appendChild(d);
 }
 document.addEventListener("click", e => { if (e.target.closest("#morebtn")) openSheet(); else if (e.target.closest("[data-sheet-close]")) closeSheet(); });
@@ -196,6 +196,6 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(r => r.update()).catch(() => {});
   navigator.serviceWorker.addEventListener("controllerchange", () => { if (had && !reloaded) { reloaded = true; location.reload(); } }); // nouvelle version : rechargement automatique
 }
-ACCOUNT.onChange(() => { if (location.hash === "#/profile") route(); });
+ACCOUNT.onChange(() => route());
 applySkin(); applyPattern(); checkReminder(); route();
 ACCOUNT.init().then(r => { if (r === "pulled") { toast("Progression récupérée depuis ton compte."); route(); } });

@@ -416,3 +416,7 @@ main.p3d{animation:p3d .5s cubic-bezier(.2,.8,.25,1)}@keyframes p3d{from{opacity
 .say.inl{width:30px;height:30px;margin-left:6px}.say:active{transform:scale(.92)}
 
 .gbtn{display:flex;justify-content:center;min-height:44px;margin:6px 0}
+
+.av-wrap{position:relative;display:inline-flex;flex:none}.cdot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#27b77c;border:2px solid var(--surface)}
+.tchip .av-wrap .av{border-width:2px}
+.card.conn{border:2px solid #27b77c55}
