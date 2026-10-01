@@ -29,7 +29,7 @@ const ACCOUNT = (() => {
     if (state.provider === "local" || syncing) return; syncing = true;
     try { const s = JSON.stringify(E.exportState());
       if (state.provider === "claude") await cdb.set({ state: s, updatedAt: Date.now() });
-      else await fb.fs.setDoc(fb.fs.doc(fb.db, "users", state.user.id), { state: s, updatedAt: Date.now() }); }
+      else { await fb.fs.setDoc(fb.fs.doc(fb.db, "users", state.user.id), { state: s, updatedAt: Date.now() }); await pushBoard(); } }
     catch {} finally { syncing = false; }
   }
   async function pull() {
@@ -50,10 +50,28 @@ const ACCOUNT = (() => {
   async function signIn(kind, cred = {}) {
     const f = await loadFb(), A = f.au; let c;
     if (kind === "google") c = await A.signInWithPopup(f.auth, new A.GoogleAuthProvider());
+    else if (kind === "facebook") c = await A.signInWithPopup(f.auth, new A.FacebookAuthProvider());
     else if (kind === "apple") { const p = new A.OAuthProvider("apple.com"); p.addScope("email"); p.addScope("name"); c = await A.signInWithPopup(f.auth, p); }
-    else { try { c = await A.signInWithEmailAndPassword(f.auth, cred.email, cred.password); } catch (e) { if (e.code === "auth/user-not-found" || e.code === "auth/invalid-credential") c = await A.createUserWithEmailAndPassword(f.auth, cred.email, cred.password); else throw e; } }
+    else if (cred.mode === "create") { c = await A.createUserWithEmailAndPassword(f.auth, cred.email, cred.password); if (cred.displayName) await A.updateProfile(c.user, { displayName: cred.displayName }); }
+    else c = await A.signInWithEmailAndPassword(f.auth, cred.email, cred.password);
     setFbUser(c.user); emit(); return pull();
   }
+  /* Classement mondial : on y apparaît seulement avec un compte, 15 ans ou plus et l'option activée. */
+  const eligible = () => { const m = E.S.me; return state.provider === "firebase" && !!m && m.board && m.age >= 15 && !!m.first; };
+  const publicName = m => m.first + (m.last ? " " + m.last[0].toUpperCase() + "." : "");
+  async function pushBoard() {
+    if (state.provider !== "firebase") return; const d = fb.fs.doc(fb.db, "leaderboard", state.user.id);
+    if (!eligible()) { try { await fb.fs.deleteDoc(d); } catch {} return; }
+    const m = E.S.me; await fb.fs.setDoc(d, { name: publicName(m), photo: m.photo || "", xp: E.S.xp, rank: E.rank().n, level: E.currentLevel(), streak: E.streak(), updatedAt: Date.now() });
+  }
+  async function leaderboard() {
+    const f = await loadFb(); if (state.provider === "firebase") await pushBoard();
+    const col = f.fs.collection(f.db, "leaderboard"), snap = await f.fs.getDocs(f.fs.query(col, f.fs.orderBy("xp", "desc"), f.fs.limit(50)));
+    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); let pos = null;
+    if (eligible()) { try { const c = await f.fs.getCountFromServer(f.fs.query(col, f.fs.where("xp", ">", E.S.xp))); pos = c.data().count + 1; } catch {} }
+    return { rows, pos, me: state.user ? state.user.id : null };
+  }
+  async function resetPassword(email) { const f = await loadFb(); await f.au.sendPasswordResetEmail(f.auth, email); }
   async function signOut() { if (state.provider === "firebase") { await fb.au.signOut(fb.auth); state = { provider: "local", user: null }; emit(); } }
-  return { init, signIn, signOut, pull, push, get state() { return state; }, get canSignIn() { return !!APP_CONFIG.firebase; }, onChange(f) { listeners.push(f); } };
+  return { init, signIn, signOut, leaderboard, resetPassword, pushBoard, pull, push, get state() { return state; }, get canSignIn() { return !!APP_CONFIG.firebase; }, get providers() { return Object.assign({ google: true, facebook: false, apple: false, email: true }, APP_CONFIG.providers || {}); }, onChange(f) { listeners.push(f); } };
 })();
