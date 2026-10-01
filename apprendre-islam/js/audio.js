@@ -33,10 +33,12 @@ const SND = (() => {
   }
   /* Bruits : boutons, bonne / mauvaise réponse, victoire */
   const fxGain = () => 1.1 + cfg().vol * 0.6;
-  const buzz = p => { try { if (cfg().sfx && navigator.vibrate) navigator.vibrate(p); } catch {} };
+  const haptic = () => { try { const C = window.Capacitor; return C && C.Plugins && C.Plugins.Haptics ? C.Plugins.Haptics : null; } catch { return null; } };
+  const buzz = p => { try { if (!cfg().sfx) return; const H = haptic(); if (H) { H.notification({ type: Array.isArray(p) && p.length > 2 ? "WARNING" : "SUCCESS" }); return; } if (navigator.vibrate) navigator.vibrate(p); } catch {} };
   /* Un bruit pour chaque geste. Les petits haut-parleurs de téléphone ne rendent pas les graves : les sons « faux » restent dans le médium. */
   /* Gestes (boutons, choix, changement d'onglet, carte retournée, message) : de mini vibrations, sans bruit. */
-  const tick = p => { try { if (cfg().click && navigator.vibrate) navigator.vibrate(p); } catch {} };
+  /* Dans une vraie application (Capacitor, iPhone ou Android) on utilise le moteur haptique du téléphone ; sur le site, navigator.vibrate (Android seulement). */
+  const tick = p => { try { if (!cfg().click) return; const H = haptic(); if (H) { H.impact({ style: Array.isArray(p) || p > 10 ? "MEDIUM" : "LIGHT" }); return; } if (navigator.vibrate) navigator.vibrate(p); } catch {} };
   const click = () => tick(8), select = () => tick(12), nav = () => tick(10), flip = () => tick([8, 40, 8]), pop = () => tick(8);
   function xp() { if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); [0, 0.07, 0.14].forEach((d, i) => drop(t + d, 1100 + i * 250, 2200 + i * 400, 0.14, 0.5 * k)); }
   function correct() { buzz(30); if (!cfg().sfx || !ensure()) return; const t = ctx.currentTime, k = fxGain(); drop(t, 600, 1300, 0.2, 1.1 * k); drop(t + 0.1, 800, 1700, 0.22, 1 * k); drop(t + 0.21, 1000, 2100, 0.3, 0.95 * k); }
