@@ -21,7 +21,7 @@ V.profile = () => {
     <button class="pill" id="t-voice">Écouter un exemple</button><p class="muted small">Si des enregistrements humains sont ajoutés dans le dossier <code>audio/</code>, ils sont lus en priorité (voir le README).</p></div>
   <div class="card"><h3>Rappel quotidien</h3><div class="row"><input type="time" id="ptime" value="${S.reminder.time}" style="width:auto"><b>${S.reminder.on ? "Activé" : "Désactivé"}</b></div><button class="btn sec" id="prem">Activer / mettre à jour</button><button class="btn sec" id="pics">Ajouter à mon agenda</button></div>
   <div class="card"><h3>Objectif quotidien</h3><div>${[5, 10, 15, 20].map(m => `<button class="pill ${S.goal === m ? "on" : ""}" data-goal="${m}">${m} min</button>`).join("")}</div>${sw("set-free", "Tout débloquer (explorer librement)", S.settings.free)}</div>
-  <button class="btn sec" id="pintro">Revoir l'introduction avec Sirâj</button><button class="btn sec" id="rst">Réinitialiser ma progression</button><p class="muted small" style="text-align:center;margin-top:16px">© 2026 sabri22j · Sirat · Tous droits réservés</p>`;
+  <button class="btn sec" id="pintro">Revoir l'introduction avec Sirâj</button><button class="btn sec" id="rst">Réinitialiser ma progression</button><p class="muted small" style="text-align:center;margin-top:16px">© 2026 Sabri Jelassi · Sirat · Tous droits réservés</p>`;
 };
 
 function accountCard() {
