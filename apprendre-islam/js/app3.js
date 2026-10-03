@@ -100,9 +100,9 @@ function downloadICS(time) {
 
 /* ---------- Routage et habillage ---------- */
 const NAV = [["home", "home", "Accueil"], ["path", "path", "Parcours"], ["reseau", "network", "Réseau"], ["quiz", "quiz", "Quiz"], ["more", "more", "Plus"]];
-const KNAV = [["kids", "home", "Accueil"], ["kdaily", "quiz", "Défi"], ["album", "user", "Sirâj"], ["more", "more", "Plus"]];
+const KNAV = [["kids", "home", "Accueil"], ["kgames", "bolt", "Jeux"], ["kdaily", "quiz", "Défi"], ["album", "user", "Sirâj"], ["more", "more", "Plus"]];
 const navList = () => E.S.settings.kid ? KNAV : NAV;
-const TABMAP = { kids: "kids", kdaily: "kdaily", album: "album", profile: "more", settings: "more", ranking: "more", signup: "more", profedit: "more", level: "path", chapter: "path", lesson: "path", subjects: "home", explore: "home", subject: "home", map: "home", cards: "home", lexique: "home", videos: "reseau", free: "quiz", review: "quiz", daily: "quiz", exam: "quiz", today: "home" };
+const TABMAP = { kids: "kids", kdaily: "kdaily", album: "album", kgames: "kgames", kmem: "kgames", kfast: "kgames", ksoura: "kgames", kdico: "kgames", profile: "more", settings: "more", ranking: "more", signup: "more", profedit: "more", level: "path", chapter: "path", lesson: "path", subjects: "home", explore: "home", subject: "home", map: "home", cards: "home", lexique: "home", videos: "reseau", free: "quiz", review: "quiz", daily: "quiz", exam: "quiz", today: "home" };
 const LANTERN = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v2.5" stroke="#0a6546" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 7.5q4.5-6 9 0z" fill="#0f8a5f"/><path d="M7 7.5h10l.8 9q-1 4.5-5.8 4.5T6.2 16.5z" fill="#f4b836"/><path d="M9 9v9M15 9v9" stroke="#c98d10" stroke-width=".8" opacity=".6"/></svg>`;
 function chrome(tab) {
   $nav.innerHTML = navList().map(([id, ic, nm]) => id === "more" ? `<button class="ni${tab === "more" ? " on" : ""}" id="morebtn" aria-haspopup="dialog"><span class="b">${ico(ic, 23)}</span>${nm}</button>` : `<a class="ni ${tab === id ? "on" : ""}${id === "reseau" ? " center" : ""}" href="#/${id}"><span class="b">${ico(ic, 23)}</span>${nm}</a>`).join("");
@@ -116,7 +116,7 @@ function route() {
   if (r === "home" && E.S.settings.kid) r = "kids";
   document.body.classList.toggle("onb", r === "welcome");
   if (r === "welcome") { renderOnb(); return; }
-  const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, reseau: V.reseau, settings: V.settings, kids: V.kids, kdaily: V.kdaily, album: V.album, signup: V.signup, profedit: V.profedit, ranking: V.ranking, map: V.map, profile: V.profile }[r] || V.home;
+  const fn = { home: V.home, today: V.today, path: V.path, level: V.level, chapter: V.chapter, lesson: V.lesson, quiz: a ? V.quiz : V.quizhub, review: V.review, daily: V.daily, exam: V.exam, free: V.free, explore: V.explore, subjects: V.explore, subject: V.subject, cards: a === "run" ? () => V.cardsrun(b) : V.cards, lexique: V.lexique, videos: V.videos, reseau: V.reseau, settings: V.settings, kids: V.kids, kdaily: V.kdaily, album: V.album, kgames: V.kgames, kmem: V.kmem, kfast: V.kfast, ksoura: V.ksoura, kdico: V.kdico, signup: V.signup, profedit: V.profedit, ranking: V.ranking, map: V.map, profile: V.profile }[r] || V.home;
   const html = fn(a, b);
   if (typeof html === "string") { $app.innerHTML = html; FX.enter($app); H3D.scan($app); $app.classList.remove("p3d"); void $app.offsetWidth; $app.classList.add("p3d"); }
   chrome(TABMAP[r] || r);

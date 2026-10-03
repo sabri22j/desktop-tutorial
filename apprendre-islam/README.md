@@ -67,3 +67,10 @@ Sirâj est interactif (yeux qui suivent le doigt, clignements, réactions au tou
 - Interface : `js/kids.js` ; personnage : `js/kidchar.js`.
 - Voix : `audio/kids/*.mp3`, générées avec `tools/kids-audio/` (voir son README). Remplaçables par de vraies voix du même nom.
 - Réglage « Mode enfant » dans Paramètres ; le parcours des grands (100 niveaux) reste disponible.
+
+### Nouveautés enfants (jeux et apprentissage)
+- **Jeux** : mémoire (paires mot / sens), vrai ou faux éclair (60 s), « Mes erreurs » (questions ratées à revoir), bonus d'étoiles quotidien.
+- **Sourates à apprendre** : Al-Fatiha, Al-Ikhlas, Al-Falaq, An-Nas, Al-Kawthar, Al-'Asr (arabe, phonétique, sens, test du mot manquant).
+- **Mes mots arabes** : le dico de Sirâj, débloqué au fil des aventures.
+- **Plus facile** : bouton précédent, indice, « revoir la leçon », récapitulatif de fin d'aventure, grand texte, mode d'emploi.
+- **Sirâj** : s'endort après un moment, se réveille au toucher, câlin (appui long), conseils qui tournent, accompagne le joueur sur la carte.

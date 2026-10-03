@@ -25,13 +25,15 @@ const KC = (() => {
   function svg(mood = "happy", o = {}) {
     const w = Object.assign({}, worn(), o.worn || {});
     const brow = { think: `<path d="M64 106q16-10 32-2M104 104q16-8 32 2" stroke="#23170a" stroke-width="4.5" fill="none" stroke-linecap="round"/>`, oops: `<path d="M66 116l26-8M134 116l-26-8" stroke="#23170a" stroke-width="4.5" stroke-linecap="round"/>`, wow: `<path d="M66 108q14-9 28-4M106 104q14-5 28 4" stroke="#23170a" stroke-width="4" fill="none" stroke-linecap="round"/>` }[mood] || "";
-    const joy = mood === "proud";
-    const eyes = joy
+    const joy = mood === "proud", sleepy = mood === "sleepy";
+    const eyes = sleepy
+      ? `<g class="eyes"><path d="M68 132q12 10 24 0M108 132q12 10 24 0" stroke="#23170a" stroke-width="6" fill="none" stroke-linecap="round"/></g>`
+      : joy
       ? `<g class="eyes"><path class="joy" d="M68 132q12-18 24 0M108 132q12-18 24 0" stroke="#23170a" stroke-width="6" fill="none" stroke-linecap="round"/></g>`
       : `<g class="eyes"><ellipse cx="80" cy="128" rx="13" ry="16" fill="#fff"/><ellipse cx="120" cy="128" rx="13" ry="16" fill="#fff"/>
          <g class="pu pl"><ellipse cx="82" cy="130" rx="7.5" ry="10" fill="#23170a"/><circle cx="85" cy="125" r="3.4" fill="#fff"/></g><g class="pu pr"><ellipse cx="122" cy="130" rx="7.5" ry="10" fill="#23170a"/><circle cx="125" cy="125" r="3.4" fill="#fff"/></g>
          <ellipse class="lid" cx="80" cy="128" rx="14" ry="17" fill="url(#gBody)"/><ellipse class="lid" cx="120" cy="128" rx="14" ry="17" fill="url(#gBody)"/></g>`;
-    const mouth = `<g class="mouth">
+    const mouth = sleepy ? `<g class="mouth"><ellipse cx="100" cy="160" rx="7" ry="8" fill="#7a2b1e" stroke="#23170a" stroke-width="3.5"/></g><g class="zzz"><text x="138" y="70" font-size="26" font-weight="900" fill="#fff" stroke="#6a5bd6" stroke-width="1.5" paint-order="stroke">Z</text><text x="154" y="46" font-size="20" font-weight="900" fill="#fff" stroke="#6a5bd6" stroke-width="1.5" paint-order="stroke">z</text><text x="166" y="28" font-size="14" font-weight="900" fill="#fff" stroke="#6a5bd6" stroke-width="1.2" paint-order="stroke">z</text></g>` : `<g class="mouth">
       <path class="m-smile" d="${mood === "oops" ? "M88 164q12-10 24 0" : "M84 154q16 18 32 0z"}" fill="${mood === "oops" ? "none" : "#7a2b1e"}" stroke="#23170a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
       ${mood === "oops" ? "" : `<path class="m-tongue" d="M90 158q10 7 20 0" fill="#ff8f7d"/>`}
       <ellipse class="m-open" cx="100" cy="160" rx="11" ry="12" fill="#7a2b1e" stroke="#23170a" stroke-width="4"/><ellipse class="m-open" cx="100" cy="166" rx="6" ry="4" fill="#ff8f7d"/></g>`;
@@ -65,7 +67,7 @@ const KC = (() => {
     ["Allez, un petit saut !", "sj-t4"], ["Tu as de beaux yeux, toi !", "sj-t5"], ["Bismillah, on y va !", "sj-t6"], ["Je brille pour toi !", "sj-t7"],
     ["Chuut… je réfléchis.", "sj-t8"], ["Tu apprends vite, machaa Allah !", "sj-t9"], ["Et hop, une pirouette !", "sj-t10"], ["Waouh, quelle aventure !", "sj-t11"],
   ];
-  const TRICKS = ["hop", "spin", "wiggle", "dance", "wave", "laugh", "shy", "flip"];
+  const TRICKS = ["hop", "spin", "wiggle", "dance", "wave", "laugh", "shy", "flip", "peek", "bounce"];
   let lineIdx = 0, audioCb = null;
   const setAudio = f => { audioCb = f; };
 
@@ -80,6 +82,8 @@ const KC = (() => {
     else if (trick === "wave") cls("kc-wave", 1300);
     else if (trick === "laugh") { run([{ transform: "scale(1,1)" }, { transform: "scale(1.06,.94)", offset: .15 }, { transform: "scale(.96,1.05)", offset: .3 }, { transform: "scale(1.05,.95)", offset: .45 }, { transform: "scale(.97,1.04)", offset: .6 }, { transform: "scale(1,1)" }], 900); cls("kc-talk", 900); }
     else if (trick === "shy") { cls("kc-shy", 1500); run([{ transform: "rotate(0)" }, { transform: "rotate(-7deg) translateY(2px)", offset: .3 }, { transform: "rotate(-7deg) translateY(2px)", offset: .7 }, { transform: "rotate(0)" }], 1500, "ease-in-out"); }
+    else if (trick === "peek") run([{ transform: "translateY(0)" }, { transform: "translateY(75%)", offset: .3 }, { transform: "translateY(75%)", offset: .55 }, { transform: "translateY(-8px)", offset: .8 }, { transform: "translateY(0)" }], 1100, "ease-in-out");
+    else if (trick === "bounce") run([{ transform: "translateY(0) scale(1,1)" }, { transform: "translateY(-26px) scale(.95,1.08)", offset: .25 }, { transform: "translateY(0) scale(1.08,.9)", offset: .5 }, { transform: "translateY(-14px) scale(.98,1.04)", offset: .72 }, { transform: "translateY(0) scale(1,1)" }], 900);
     else if (trick === "flip") run([{ transform: "rotateY(0)" }, { transform: "rotateY(180deg) scale(1.08)", offset: .5 }, { transform: "rotateY(360deg)" }], 800, "ease-in-out");
   }
   function say(el, text, ms = 2600) {
@@ -114,8 +118,26 @@ const KC = (() => {
     idleT = setTimeout(idle, nextIn());
   }
   idleT = setTimeout(idle, 1500);
+  /* Sommeil après un moment sans toucher ; réveil au premier geste. */
+  let lastAct = Date.now();
+  const wake = () => { lastAct = Date.now(); live().forEach(el => { if (el.dataset.sleep === "1") { el.dataset.sleep = "0"; el.classList.remove("kc-asleep"); const w = el.querySelector(".kc-in"); if (w) w.innerHTML = svg(el.dataset.kc); animate(el, "hop"); say(el, "Hein ? Je suis là !", 1800); } }); };
+  ["pointerdown", "keydown", "scroll", "touchstart"].forEach(ev => addEventListener(ev, () => { if (live().some(e => e.dataset.sleep === "1")) wake(); else lastAct = Date.now(); }, { passive: true }));
+  setInterval(() => { if (Date.now() - lastAct < 30000) return; live().forEach(el => { if (el.dataset.sleep !== "1" && el.dataset.tap !== "0" && !el.classList.contains("kd-mini")) { el.dataset.sleep = "1"; el.classList.add("kc-asleep"); const w = el.querySelector(".kc-in"); if (w) w.innerHTML = svg("sleepy"); say(el, "Zzz…", 2500); } }); }, 4000);
+  /* Appui long = câlin : des cœurs s'envolent. */
+  let hold = 0;
+  document.addEventListener("pointerdown", e => { const el = e.target.closest(".kc[data-kc]"); if (!el || el.dataset.tap === "0") return; clearTimeout(hold); hold = setTimeout(() => { hug(el); el.dataset.hugged = "1"; }, 650); });
+  ["pointerup", "pointercancel", "pointermove"].forEach(ev => document.addEventListener(ev, e => { if (ev === "pointermove" && e.pressure === 0) return; clearTimeout(hold); }, { passive: true }));
+  document.addEventListener("click", e => { const el = e.target.closest(".kc[data-kc]"); if (el && el.dataset.hugged === "1") { el.dataset.hugged = "0"; e.stopImmediatePropagation(); } }, true);
+  function hug(el) {
+    const r = el.getBoundingClientRect(); animate(el, "laugh"); say(el, "Câlin ! Merci, tu es gentil 💚", 2400); if (typeof SND !== "undefined") SND.win && SND.pop();
+    for (let i = 0; i < 9; i++) { const h = document.createElement("i"); h.className = "kc-heart"; h.textContent = ["❤️", "💚", "💛", "✨"][i % 4]; h.style.cssText = `left:${r.left + r.width * (.2 + Math.random() * .6)}px;top:${r.top + r.height * .45}px;--dx:${(Math.random() * 90 - 45).toFixed(0)}px;animation-delay:${(i * .07).toFixed(2)}s`; document.body.appendChild(h); setTimeout(() => h.remove(), 2200); }
+    try { if (navigator.vibrate) navigator.vibrate(18); } catch {}
+  }
+  /* Conseils qui tournent au-dessus d'un personnage (s'arrêtent quand il quitte la page). */
+  function tips(el, list, every = 9000) { let i = 0; const t = setInterval(() => { if (!document.body.contains(el)) return clearInterval(t); if (el.dataset.sleep === "1") return; say(el, list[i++ % list.length], 4200); animate(el, "wiggle"); }, every); setTimeout(() => { if (document.body.contains(el)) say(el, list[i++ % list.length], 4200); }, 1600); }
+  const setMood = (el, mood) => { const w = el && el.querySelector(".kc-in"); if (w) { el.dataset.kc = mood; w.innerHTML = svg(mood); } };
   /* Parole : la bouche bouge pendant qu'une voix joue. */
   const talk = on => live().forEach(el => el.classList.toggle("kc-talking", !!on));
   const wear = (slot, id) => { const D = E.S.kids = E.S.kids || {}; D.worn = D.worn || {}; if (!id) delete D.worn[slot]; else { const it = ITEMS.find(x => x.id === id); if (!it || !owned(id)) return false; D.worn[slot] = id; } E.save(); return true; };
-  return { html, svg, ITEMS, SLOTS, owned, worn, wear, react, animate, say, talk, setAudio, LINES };
+  return { html, svg, ITEMS, SLOTS, owned, worn, wear, react, animate, say, talk, setAudio, LINES, tips, setMood, hug };
 })();
