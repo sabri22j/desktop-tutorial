@@ -32,12 +32,20 @@ const ACCOUNT = (() => {
       else { await fb.fs.setDoc(fb.fs.doc(fb.db, "users", state.user.id), { state: s, updatedAt: Date.now() }); await pushBoard(); } }
     catch {} finally { syncing = false; }
   }
+  /* Fusion local + cloud : on ne perd jamais de progression (nombres : le plus grand ; objets : réunion ; texte : le non vide, sinon le plus récent). */
+  const empty = v => v === "" || v == null || (Array.isArray(v) && !v.length);
+  function merge(a, b, newerA = (a && a.updatedAt || 0) >= (b && b.updatedAt || 0)) {
+    if (empty(a)) return b; if (empty(b)) return a;
+    if (typeof a === "number" && typeof b === "number") return Math.max(a, b);
+    if (Array.isArray(a) && Array.isArray(b)) { const seen = new Set(), out = []; [...a, ...b].forEach(x => { const k = JSON.stringify(x); if (!seen.has(k)) { seen.add(k); out.push(x); } }); return out; }
+    if (a && b && typeof a === "object" && typeof b === "object" && !Array.isArray(a) && !Array.isArray(b)) { const o = {}; new Set([...Object.keys(a), ...Object.keys(b)]).forEach(k => { o[k] = k in a ? (k in b ? merge(a[k], b[k], newerA) : a[k]) : b[k]; }); return o; }
+    return newerA ? a : b;
+  }
   async function pull() {
     if (state.provider === "local") return "local";
     try { const remote = await fetchRemote(), local = E.exportState();
       if (!remote) { await push(); return "pushed"; }
-      if ((remote.updatedAt || 0) > (local.updatedAt || 0)) { E.importState(remote); return "pulled"; }
-      await push(); return "pushed";
+      const merged = merge(local, remote); merged.updatedAt = Date.now(); E.importState(merged); await push(); return "merged";
     } catch { return "error"; }
   }
   function schedule() { if (state.provider === "local") return; clearTimeout(timer); timer = setTimeout(push, 2500); }
@@ -60,20 +68,24 @@ const ACCOUNT = (() => {
   /* Connexion Google « bouton officiel » (Google Identity Services) : n'utilise pas la page de Firebase qui échoue sur Safari iPhone. */
   async function signInGoogleToken(idToken) { const f = await loadFb(), A = f.au, c = await A.signInWithCredential(f.auth, A.GoogleAuthProvider.credential(idToken)); setFbUser(c.user); emit(); return pull(); }
   /* Classement mondial : on y apparaît seulement avec un compte, 15 ans ou plus et l'option activée. */
-  const eligible = () => { const m = E.S.me, nm = state.user && state.user.name; return state.provider === "firebase" && !!m && m.board !== false && !(m.age && m.age < 15) && !!(m.first || (nm && !/@/.test(nm))); };
+  const eligible = () => { const m = E.S.me || {}, nm = state.user && state.user.name; return state.provider === "firebase" && m.board !== false && !(m.age && m.age < 15) && !!(m.first || (nm && !/@/.test(nm))); };
   const publicName = m => m.first + (m.last ? " " + m.last[0].toUpperCase() + "." : "");
-  async function pushBoard() {
+  async function pushBoard(strict) {
     if (state.provider !== "firebase") return; const d = fb.fs.doc(fb.db, "leaderboard", state.user.id);
     if (!eligible()) { try { await fb.fs.deleteDoc(d); } catch {} return; }
-    const m = E.S.me; if (!m.first) { const nm = String(state.user.name).trim().split(/\s+/); m.first = nm[0]; m.last = m.last || nm.slice(1).join(" "); }
+    if (strict) return pushBoardDoc(d);
+    try { await pushBoardDoc(d); } catch {}
+  }
+  async function pushBoardDoc(d) {
+    const m = E.S.me = E.S.me || {}; if (!m.first) { const nm = String(state.user.name).trim().split(/\s+/); m.first = nm[0]; m.last = m.last || nm.slice(1).join(" "); }
     await fb.fs.setDoc(d, { name: publicName(m), photo: m.photo || "", xp: E.S.xp, rank: E.rank().n, level: E.currentLevel(), streak: E.streak(), updatedAt: Date.now() });
   }
   async function leaderboard() {
-    const f = await loadFb(); if (state.provider === "firebase") await pushBoard();
+    const f = await loadFb(); let werr = null; if (state.provider === "firebase") { try { await pushBoard(true); } catch (e) { werr = e; } }
     const col = f.fs.collection(f.db, "leaderboard"), snap = await f.fs.getDocs(f.fs.query(col, f.fs.orderBy("xp", "desc"), f.fs.limit(50)));
     const rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); let pos = null;
     if (eligible()) { try { const c = await f.fs.getCountFromServer(f.fs.query(col, f.fs.where("xp", ">", E.S.xp))); pos = c.data().count + 1; } catch {} }
-    return { rows, pos, me: state.user ? state.user.id : null };
+    return { rows, pos, werr, me: state.user ? state.user.id : null };
   }
   async function resetPassword(email) { const f = await loadFb(); await f.au.sendPasswordResetEmail(f.auth, email); }
   async function signOut() { if (state.provider === "firebase") { await fb.au.signOut(fb.auth); state = { provider: "local", user: null }; emit(); } }

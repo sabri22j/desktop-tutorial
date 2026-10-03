@@ -116,12 +116,13 @@ async function drawRanking() {
   const note = txt => `<div class="card" style="text-align:center">${siraj("think", 90, "float")}<p>${txt}</p></div>`;
   if (!ACCOUNT.canSignIn) { box.innerHTML = note("Le classement mondial s'active quand le serveur est branché. En attendant, ton rang et tes XP restent visibles dans ton profil.") + `<a class="btn" href="#/profile">Voir mon profil</a>`; return; }
   try {
-    const { rows, pos, me } = await ACCOUNT.leaderboard(); if (!box.isConnected) return;
+    const { rows, pos, me, werr } = await ACCOUNT.leaderboard(); if (!box.isConnected) return;
     const mineIn = rows.some(r => r.id === me);
     let msg = "";
     if (ACCOUNT.state.provider !== "firebase") msg = `<div class="card"><b>Rejoins le classement</b><p class="muted small">Crée un compte (15 ans ou plus) et active « Apparaître dans le classement ».</p><a class="btn sm" href="#/signup">Créer mon compte</a></div>`;
     else if (m.board === false || (m.age && m.age < 15)) msg = `<div class="card"><b>Tu n'es pas dans le classement.</b><p class="muted small">${m.age && m.age < 15 ? "Il faut avoir 15 ans ou plus pour apparaître." : "Active « Apparaître dans le classement » dans ton profil."}</p>${m.age && m.age < 15 ? "" : `<a class="btn sm" href="#/profedit">Modifier mon profil</a>`}</div>`;
     else if (pos) msg = `<div class="card rkc"><div class="row"><b>Ta position</b><b>${mineIn ? "" : "n° "}${pos}</b></div><div class="muted small">${E.S.xp} XP</div></div>`;
+    if (werr) msg = `<div class="card"><b>Ton score n'a pas pu être envoyé.</b><p class="muted small">${/permission/i.test(werr.code || werr.message || "") ? "Le serveur refuse l'écriture : les règles Firestore du classement ne sont pas publiées." : "Erreur : " + esc(werr.code || werr.message || "inconnue")}</p></div>` + msg;
     box.innerHTML = msg + (rows.length ? `<div class="card" style="padding:6px 0">${rows.map((r, i) => `<div class="rkrow ${r.id === me ? "me" : ""}"><b class="pos">${i + 1 <= 3 ? ["🥇", "🥈", "🥉"][i] : i + 1}</b>${avatar(40, { first: r.name, photo: r.photo })}<div style="flex:1;min-width:0"><div class="nm">${esc(r.name || "Anonyme")}</div><div class="muted small">Rang ${r.rank || 1}${r.streak ? " · 🔥 " + r.streak : ""}</div></div><b class="xp">${ico("moon", 16)} ${r.xp}</b></div>`).join("")}</div>` : note("Personne n'est encore dans le classement. Sois le premier !")) + `<p class="muted small">Les XP sont envoyés par l'application ; le classement n'est pas à l'abri de la triche.</p>`;
-  } catch { if (box.isConnected) box.innerHTML = note("Impossible de charger le classement pour le moment. Vérifie ta connexion."); }
+  } catch (e) { if (box.isConnected) box.innerHTML = note("Impossible de charger le classement pour le moment." + (e && e.code ? " (" + esc(e.code) + ")" : " Vérifie ta connexion.")); }
 }
