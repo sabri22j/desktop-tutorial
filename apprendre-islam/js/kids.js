@@ -1,160 +1,209 @@
-/* Espace enfants : petites leçons illustrées lues par Sirâj, quiz sans pression, étoiles et album d'autocollants.
-   Contenu simple et prudent ; à faire relire par une personne qualifiée avant diffusion large.
-   Audio : audio/kids/<clé>.mp3 (voix de Sirâj) ; sinon, voix de l'appareil. */
-const KIDS = [
-  { id: "allah", e: "🌍", n: "Allah", c: "#0f8a5f", st: "🌟", cards: [
-    { e: "🌍", t: "Le Créateur", x: "Allah a créé le ciel, la terre, les montagnes, les animaux… et toi aussi !" },
-    { e: "☝️", t: "Allah est Un", x: "Il n'y a qu'un seul Dieu : Allah. Il n'a pas d'associé et personne ne Lui ressemble." },
-    { e: "💚", t: "Allah est bon", x: "Allah nous voit, nous entend et nous aime beaucoup. Il est très miséricordieux." }],
-    quiz: [
-      { q: "Qui a créé le ciel et la terre ?", o: [["☝️", "Allah"], ["👑", "Un roi"], ["❓", "Personne"]] },
-      { q: "Combien y a-t-il de Dieu ?", o: [["1️⃣", "Un seul"], ["2️⃣", "Deux"], ["3️⃣", "Trois"]] },
-      { q: "Allah nous…", o: [["👀", "voit et nous entend"], ["🙈", "ne voit pas"], ["😴", "dort"]] }] },
-  { id: "prophete", e: "🌙", n: "Le Prophète Muhammad ﷺ", c: "#3b6fd8", st: "🌙", cards: [
-    { e: "🕋", t: "Né à La Mecque", x: "Muhammad ﷺ est né dans la ville de La Mecque. Il est le dernier prophète envoyé par Allah." },
-    { e: "🤝", t: "Al-Amin, l'honnête", x: "Quand il était jeune, tout le monde l'appelait « Al-Amin », celui en qui on a confiance, parce qu'il disait toujours la vérité." },
-    { e: "📖", t: "Le Coran", x: "L'ange Jibril lui a apporté le Coran de la part d'Allah. Muhammad ﷺ a appris aux gens à être doux et gentils." }],
-    quiz: [
-      { q: "Dans quelle ville est né le Prophète ﷺ ?", o: [["🕋", "La Mecque"], ["🏙️", "Le Caire"], ["🗼", "Paris"]] },
-      { q: "Comment l'appelait-on quand il était jeune ?", o: [["🤝", "Al-Amin, l'honnête"], ["🤥", "Le menteur"], ["👑", "Le roi"]] },
-      { q: "Quel ange lui a apporté le Coran ?", o: [["😇", "Jibril"], ["🌧️", "Mikaïl"], ["🎺", "Israfil"]] }] },
-  { id: "piliers", e: "🕌", n: "Les 5 piliers", c: "#c98d10", st: "🏛️", cards: [
-    { e: "🏛️", t: "Comme des colonnes", x: "L'islam repose sur 5 piliers, comme une maison tient sur ses colonnes : la Chahada, la prière, la Zakat, le jeûne et le Hadj." },
-    { e: "🤲", t: "Chahada et prière", x: "La Chahada, c'est dire qu'il n'y a de dieu qu'Allah et que Muhammad ﷺ est Son messager. La prière, on la fait 5 fois par jour." },
-    { e: "🕋", t: "Zakat, jeûne et Hadj", x: "La Zakat, c'est donner aux pauvres. Le jeûne, c'est celui du Ramadan. Le Hadj, c'est le voyage à La Mecque." }],
-    quiz: [
-      { q: "Combien y a-t-il de piliers de l'islam ?", o: [["5️⃣", "Cinq"], ["3️⃣", "Trois"], ["7️⃣", "Sept"]] },
-      { q: "Quel pilier consiste à donner aux pauvres ?", o: [["💝", "La Zakat"], ["🌙", "Le jeûne"], ["🤲", "La prière"]] },
-      { q: "Où va-t-on pour le Hadj ?", o: [["🕋", "À La Mecque"], ["🏫", "À l'école"], ["🏖️", "À la mer"]] }] },
-  { id: "priere", e: "🤲", n: "La prière", c: "#8e6ad8", st: "🕊️", cards: [
-    { e: "🌅", t: "5 prières par jour", x: "Le musulman prie 5 fois par jour : Fajr à l'aube, Dhouhr à midi, Asr l'après-midi, Maghrib au coucher du soleil et Icha le soir." },
-    { e: "💧", t: "Se laver avant", x: "Avant de prier, on fait les ablutions : on se lave les mains, la bouche, le nez, le visage, les bras, la tête et les pieds." },
-    { e: "🕋", t: "Vers la Kaaba", x: "Pour prier, on se tourne vers la Kaaba, à La Mecque. On dit « Allahou Akbar », qui veut dire : Allah est le plus grand." }],
-    quiz: [
-      { q: "Combien de prières par jour ?", o: [["5️⃣", "Cinq"], ["2️⃣", "Deux"], ["9️⃣", "Neuf"]] },
-      { q: "Avant de prier, on fait…", o: [["💧", "les ablutions"], ["🍰", "un gâteau"], ["🎨", "un dessin"]] },
-      { q: "« Allahou Akbar » veut dire…", o: [["🌟", "Allah est le plus grand"], ["👋", "Bonjour"], ["🙏", "Merci"]] }] },
-  { id: "ramadan", e: "🌟", n: "Le Ramadan", c: "#e08a1e", st: "🎉", cards: [
-    { e: "🌙", t: "Le mois du jeûne", x: "Le Ramadan est un mois spécial. Les grands ne mangent pas et ne boivent pas de l'aube jusqu'au coucher du soleil." },
-    { e: "🤗", t: "Être gentil", x: "Pendant le Ramadan, on prie plus, on lit le Coran, on partage avec les autres et on essaie d'être encore plus gentil." },
-    { e: "🎉", t: "La fête de l'Aïd", x: "À la fin du Ramadan, c'est la fête de l'Aïd ! On remercie Allah et on se retrouve en famille." }],
-    quiz: [
-      { q: "Pendant le jeûne, les grands ne mangent pas…", o: [["☀️", "dans la journée"], ["🌙", "toute la nuit"], ["📅", "toute l'année"]] },
-      { q: "Comment s'appelle la fête de la fin du Ramadan ?", o: [["🎉", "L'Aïd"], ["🛒", "Le marché"], ["🕋", "Le Hadj"]] },
-      { q: "Pendant le Ramadan, on essaie d'être…", o: [["🤗", "plus gentil"], ["😠", "plus fâché"], ["🏃", "plus pressé"]] }] },
-  { id: "manieres", e: "💚", n: "Les belles manières", c: "#e5584a", st: "💚", cards: [
-    { e: "👋", t: "Salam !", x: "Quand on rencontre quelqu'un, on dit « As-salamou alaykoum », qui veut dire : que la paix soit sur toi." },
-    { e: "🍽️", t: "Avant et après manger", x: "Avant de manger, on dit « Bismillah », au nom d'Allah. Après, on dit « Alhamdoulillah », qui veut dire merci Allah." },
-    { e: "😊", t: "Sourire et partager", x: "Le Prophète ﷺ a dit que sourire à ton frère est une aumône. On aime aussi dire la vérité, partager et respecter ses parents." }],
-    quiz: [
-      { q: "Que dit-on avant de manger ?", o: [["🍽️", "Bismillah"], ["🌙", "Bonne nuit"], ["🚪", "Au revoir"]] },
-      { q: "« As-salamou alaykoum » veut dire…", o: [["🕊️", "Que la paix soit sur toi"], ["👋", "Au revoir"], ["🎁", "Bon anniversaire"]] },
-      { q: "Pour remercier Allah, on dit…", o: [["🙏", "Alhamdoulillah"], ["🍽️", "Bismillah"], ["🌟", "Allahou Akbar"]] }] },
-  { id: "prophetes", e: "📖", n: "Les prophètes", c: "#2b9d9d", st: "⛵", cards: [
-    { e: "🌱", t: "Adam, le premier", x: "Adam est le premier homme et le premier prophète. Allah l'a créé et lui a appris le nom de toutes choses." },
-    { e: "⛵", t: "Nouh et le bateau", x: "Le prophète Nouh a construit un grand bateau, sur l'ordre d'Allah, pour sauver les croyants et les animaux du déluge." },
-    { e: "🔥", t: "Ibrahim et Moussa", x: "Ibrahim adorait Allah seul : le feu est devenu frais pour lui. Moussa a parlé avec Allah et a reçu la Torah." }],
-    quiz: [
-      { q: "Qui est le premier prophète ?", o: [["🌱", "Adam"], ["⛵", "Nouh"], ["🔥", "Ibrahim"]] },
-      { q: "Que construit Nouh ?", o: [["⛵", "Un grand bateau"], ["🏠", "Une maison"], ["🗼", "Une tour"]] },
-      { q: "Qu'est devenu le feu pour Ibrahim ?", o: [["❄️", "Frais et sans danger"], ["🌋", "Encore plus chaud"], ["💙", "Tout bleu"]] }] },
-  { id: "coran", e: "📗", n: "Le Coran", c: "#2a8a4a", st: "📗", cards: [
-    { e: "📖", t: "La parole d'Allah", x: "Le Coran est le livre d'Allah. Il a été révélé en arabe à notre Prophète Muhammad ﷺ par l'ange Jibril." },
-    { e: "🔢", t: "114 sourates", x: "Le Coran a 114 chapitres qu'on appelle des sourates. La première s'appelle Al-Fatiha, et la dernière An-Nas." },
-    { e: "🧼", t: "Lire avec respect", x: "On lit le Coran avec respect : on se lave les mains, on dit « Bismillah » et on essaie de comprendre ses beaux messages." }],
-    quiz: [
-      { q: "Combien le Coran a-t-il de sourates ?", o: [["🔢", "114"], ["9️⃣", "9"], ["3️⃣", "30"]] },
-      { q: "Quelle est la première sourate ?", o: [["🌅", "Al-Fatiha"], ["🧒", "An-Nas"], ["🐄", "Al-Baqara"]] },
-      { q: "Dans quelle langue le Coran a-t-il été révélé ?", o: [["📜", "En arabe"], ["🥖", "En français"], ["🗽", "En anglais"]] }] },
-  { id: "mots", e: "✨", n: "Les mots magiques", c: "#d8559a", st: "✨", cards: [
-    { e: "🌟", t: "Bismillah", x: "« Bismillah » veut dire : au nom d'Allah. On le dit avant de commencer : manger, travailler, jouer, lire…" },
-    { e: "🌈", t: "Machaa Allah, Inchaa Allah", x: "« Machaa Allah » : c'est ce qu'Allah a voulu, pour dire que c'est beau. « Inchaa Allah » : si Allah le veut, pour parler de demain." },
-    { e: "🦋", t: "Soubhanallah", x: "« Soubhanallah » veut dire : gloire à Allah. On le dit quand on admire une belle création : un arc-en-ciel, un coucher de soleil, un papillon…" }],
-    quiz: [
-      { q: "« Inchaa Allah » veut dire…", o: [["🌅", "Si Allah le veut"], ["🍰", "J'ai faim"], ["🚪", "Au revoir"]] },
-      { q: "On dit « Machaa Allah » quand…", o: [["🌈", "c'est beau"], ["😠", "on est fâché"], ["😴", "on a sommeil"]] },
-      { q: "« Soubhanallah » veut dire…", o: [["🦋", "Gloire à Allah"], ["🌙", "Bonne nuit"], ["🙏", "Merci"]] }] },
-];
-const KMSG_OK = ["Bravo !", "Super !", "Machallah !"], KMSG_KO = ["Essaie encore !", "Presque ! Réessaie."];
+/* Parcours enfants : accueil, mondes, aventures (leçons + questions variées), défi du jour, « Mon Sirâj » (tenues, badges).
+   Données : kdata*.js. Voix : audio/kids/<clé>.mp3 (sinon voix de l'appareil). */
+const kd = () => { const D = E.S.kids = E.S.kids || {}; D.stars = D.stars || 0; D.adv = D.adv || {}; D.worn = D.worn || {}; return D; };
+const kdStat = id => kd().adv[id] || { s: 0, n: 0 };
+const kdWorldDone = w => w.adv.filter(a => kdStat(a.id).s > 0).length;
+const kdAllAdv = () => KW.flatMap(w => w.adv);
+const kdNext = () => { for (const w of KW) for (const a of w.adv) if (!kdStat(a.id).s) return { w, a }; return null; };
+const kdToday = () => E.dayStr();
 
-const kidsData = () => { const s = E.S.kids = E.S.kids || { stars: 0, done: {}, stickers: {} }; return s; };
-const kidsAudio = (() => {
-  let a = null;
-  const stop = () => { if (a) { try { a.pause(); } catch {} a = null; } };
-  const play = (key, text) => {
+/* ---- Voix ---- */
+const KA = (() => {
+  let el = null, tm = 0;
+  const stop = () => { if (el) { try { el.pause(); } catch {} el = null; } clearTimeout(tm); KC.talk(false); };
+  const play = (key, text, cb) => {
     stop(); VOICE.stop();
-    const say = () => { if (!VOICE.play("none", 0, text.replace(/ﷺ/g, ", paix sur lui"))) { /* pas de voix disponible */ } };
-    try { const el = new Audio(`audio/kids/${key}.mp3`); a = el; el.volume = 1; el.onerror = say; el.play().catch(() => { if (a === el) say(); }); } catch { say(); }
+    const fallback = () => { const ok = VOICE.play("none", 0, String(text).replace(/ﷺ/g, ", paix sur lui")); if (ok !== false) { KC.talk(true); tm = setTimeout(() => KC.talk(false), Math.min(14000, 700 + String(text).length * 62)); } if (cb) setTimeout(cb, 400); };
+    try {
+      const a = new Audio(`audio/kids/${key}.mp3`); el = a; a.volume = Math.min(1, .4 + (E.S.settings.vol || .5) * .6);
+      a.onplaying = () => KC.talk(true); a.onended = () => { KC.talk(false); if (cb) cb(); }; a.onpause = () => KC.talk(false); a.onerror = () => { if (el === a) fallback(); };
+      a.play().catch(() => { if (el === a) fallback(); });
+    } catch { fallback(); }
   };
   return { play, stop };
 })();
-addEventListener("hashchange", () => kidsAudio.stop());
+KC.setAudio((key, text) => KA.play(key, text));
+addEventListener("hashchange", () => KA.stop());
 
-const kidSky = () => `<div class="kd-sky" aria-hidden="true"><i style="left:8%;top:10%">✨</i><i style="left:84%;top:6%">⭐</i><i style="left:70%;top:22%">✨</i><i style="left:20%;top:30%">🌙</i></div>`;
-const kidStars = n => `<span class="kd-stars">⭐ ${n}</span>`;
+const kdSky = () => `<div class="kd-sky" aria-hidden="true"><i style="left:7%;top:9%">✨</i><i style="left:86%;top:5%">⭐</i><i style="left:72%;top:20%">✨</i><i style="left:16%;top:27%">🌙</i></div>`;
+const kdHello = () => { const h = new Date().getHours(); return h < 12 ? ["sj-hello1", "Bonjour"] : h < 18 ? ["sj-hello2", "Bon après-midi"] : ["sj-hello3", "Bonsoir"]; };
+const kdStars3 = n => [1, 2, 3].map(i => `<span class="${i <= n ? "on" : ""}">★</span>`).join("");
 
-V.kids = (id) => {
-  if (id) return kidTheme(id);
-  const D = kidsData(), done = KIDS.filter(t => D.done[t.id]).length;
-  return `<div class="kd">${kidSky()}
-  <div class="kd-hero"><div class="kd-sj">${siraj3d(done ? "proud" : "happy", 120)}</div><div class="bubble kd-bub">Salam petit explorateur ! Choisis une aventure et apprends avec moi.</div></div>
-  <div class="kd-top">${kidStars(D.stars)}<a class="kd-album" href="#/album">🎖️ Mon album ${done}/${KIDS.length}</a></div>
-  <div class="kd-grid">${KIDS.map((t, i) => `<a class="kd-card${D.done[t.id] ? " done" : ""}" href="#/kids/${t.id}" style="--c:${t.c}"><span class="kd-e">${t.e}</span><b>${esc(t.n)}</b><small>${D.done[t.id] ? "Terminé " + t.st : "3 petites leçons"}</small></a>`).join("")}</div>
-  <p class="muted small" style="text-align:center">Pour les enfants, avec un adulte. Contenu à faire relire par une personne qualifiée.</p></div>`;
+/* ---- Accueil ---- */
+V.kids = (a, b) => {
+  if (a === "adv") return kdAdventure(b);
+  if (a) return kdWorld(a);
+  const D = kd(), nx = kdNext(), hello = kdHello(), r = E.rank(), done = kdAllAdv().filter(x => kdStat(x.id).s > 0).length, tot = K.count(), dd = D.daily === kdToday();
+  setTimeout(() => { KC.setAudio((k, t) => KA.play(k, t)); }, 0);
+  return `<div class="kd">${kdSky()}
+  <section class="kd-hero">
+    <div class="kd-hero-t"><small>${hello[1]}</small><h1>Salam${ME().first ? " " + esc(ME().first) : ""} !</h1><p>${nx ? "Prochaine étape : <b>" + esc(nx.a.n) + "</b>" : "Tu as terminé tous les mondes. Bravo, champion !"}</p></div>
+    <div class="kd-hero-c">${KC.html(nx || done ? "happy" : "wow", 130, { sparks: true })}</div>
+    ${nx ? `<a class="btn gold kd-go" href="#/kids/adv/${nx.a.id}">▶ ${done ? "Continuer" : "Commencer l'aventure"}</a>` : `<a class="btn gold kd-go" href="#/album">🎖️ Voir mon Sirâj</a>`}
+  </section>
+  <div class="kd-stats"><div><b>⭐ ${D.stars}</b><span>étoiles</span></div><div><b>🔥 ${E.streak()}</b><span>série</span></div><div><b>🏅 ${r.n}</b><span>${esc(r.title)}</span></div><div><b>${done}/${tot}</b><span>aventures</span></div></div>
+  <a class="kd-daily${dd ? " done" : ""}" href="#/kdaily"><span class="kd-de">${dd ? "✅" : "🎯"}</span><div><b>Défi du jour</b><small>${dd ? "Relevé aujourd'hui, bravo !" : "5 questions · +2 ⭐ bonus"}</small></div><span class="kd-arr">›</span></a>
+  <div class="sec-h"><h3>Mes mondes</h3><a href="#/album">Mon Sirâj</a></div>
+  <div class="kd-worlds">${KW.map(w => { const d = kdWorldDone(w), p = Math.round(d / w.adv.length * 100); return `<a class="kd-world${d === w.adv.length ? " done" : ""}" href="#/kids/${w.id}" style="--c:${w.c}"><span class="kd-we">${w.e}</span><div class="kd-wt"><b>${esc(w.n)}</b><small>${esc(w.d)}</small><div class="kd-wbar"><i style="width:${p}%"></i></div></div><span class="kd-wn">${d}/${w.adv.length}</span></a>`; }).join("")}</div>
+  <p class="muted small" style="text-align:center;margin-top:14px">Un parcours pour apprendre l'islam pas à pas, avec un adulte si besoin. Contenu à faire relire par une personne qualifiée.</p></div>`;
 };
 
-V.album = () => { const D = kidsData(), done = KIDS.filter(t => D.done[t.id]).length;
-  return `<div class="kd">${kidSky()}<a class="back" href="#/kids">${ico("back", 18)} Espace enfants</a><h2>🎖️ Mon album</h2><p class="muted">Termine une aventure pour gagner son autocollant.</p>
-  <div class="kd-top">${kidStars(D.stars)}<span class="kd-album">${done}/${KIDS.length} autocollants</span></div>
-  <div class="kd-grid st">${KIDS.map(t => D.done[t.id] ? `<a class="kd-sticker on" href="#/kids/${t.id}" style="--c:${t.c}"><span>${t.st}</span><small>${esc(t.n)}</small></a>` : `<div class="kd-sticker"><span>❔</span><small>${esc(t.n)}</small></div>`).join("")}</div></div>`; };
-
-/* ---- leçon + quiz d'un thème ---- */
-let KS = null;
-function kidTheme(id) {
-  const t = KIDS.find(x => x.id === id); if (!t) return V.kids();
-  KS = { t, ph: "cards", i: 0, qi: 0, first: true, got: 0 };
-  setTimeout(kidShow, 0);
-  return `<div class="kd">${kidSky()}<a class="back" href="#/kids">${ico("back", 18)} Espace enfants</a><div id="kstage" style="--c:${t.c}"></div></div>`;
+/* ---- Un monde ---- */
+function kdWorld(id) {
+  const w = KW.find(x => x.id === id); if (!w) return V.kids();
+  const done = kdWorldDone(w), boss = kdStat(w.id + "x");
+  return `<div class="kd">${kdSky()}<a class="back" href="#/kids">${ico("back", 18)} Mes mondes</a>
+  <section class="kd-wh" style="--c:${w.c}"><span class="kd-whe">${w.e}</span><div><h2>${esc(w.n)}</h2><p>${esc(w.d)}</p><div class="kd-wbar big"><i style="width:${Math.round(done / w.adv.length * 100)}%"></i></div><small>${done}/${w.adv.length} aventures</small></div></section>
+  <div class="kd-path" style="--c:${w.c}">${w.adv.map((a, i) => { const s = kdStat(a.id), x = Math.round(Math.sin(i * 1.15) * 62), cur = !s.s && (i === 0 || kdStat(w.adv[i - 1].id).s);
+    return `<a class="kd-node${s.s ? " done" : ""}${cur ? " cur" : ""}" href="#/kids/adv/${a.id}" style="transform:translateX(${x}px)">${cur ? `<span class="kd-go-b">GO !</span>` : ""}<span class="kd-ne">${a.e}</span><b>${esc(a.n)}</b><em>${kdStars3(s.s)}</em></a>`; }).join("")}
+    <a class="kd-node boss${boss.s ? " done" : ""}" href="#/kids/adv/${w.id}x" style="transform:translateX(0)"><span class="kd-ne">🏆</span><b>Grand défi du monde</b><em>${kdStars3(boss.s)}</em></a></div></div>`;
 }
-function kidShow(auto = true) {
-  const st = document.getElementById("kstage"); if (!st || !KS) return; const { t } = KS;
-  const dots = n => `<div class="kd-dots">${Array.from({ length: n }, (_, k) => `<i class="${k < (KS.ph === "cards" ? KS.i : KS.qi) ? "on" : k === (KS.ph === "cards" ? KS.i : KS.qi) ? "cur" : ""}"></i>`).join("")}</div>`;
-  if (KS.ph === "cards") {
-    const c = t.cards[KS.i];
-    st.innerHTML = `${dots(3)}<div class="kd-pane"><div class="kd-big">${c.e}</div><h2>${esc(c.t)}</h2><p class="kd-text">${esc(c.x)}</p>
-      <div class="kd-say">${siraj("happy", 70, "float")}<button class="kd-listen" data-kplay>🔊 Écouter</button></div>
-      <button class="btn kd-next" data-knext>${KS.i < 2 ? "Suivant ▶" : "Place au quiz ! 🎯"}</button></div>`;
-    if (auto) kidsAudio.play(`${t.id}-c${KS.i}`, c.t + ". " + c.x);
-  } else if (KS.ph === "quiz") {
-    const q = t.quiz[KS.qi]; KS.order = KS.order && KS.order.q === KS.qi ? KS.order : { q: KS.qi, a: q.o.map((_, k) => k).sort(() => Math.random() - .5) };
-    st.innerHTML = `${dots(3)}<div class="kd-pane"><h2 class="kd-q">${esc(q.q)}</h2>
-      <div class="kd-opts">${KS.order.a.map(k => `<button class="kd-opt" data-kopt="${k}"><span>${q.o[k][0]}</span><b>${esc(q.o[k][1])}</b></button>`).join("")}</div>
-      <div class="kd-say">${siraj("think", 70, "float")}<button class="kd-listen" data-kplay>🔊 Écouter</button></div><div id="kfb" class="kd-fb"></div></div>`;
-    KS.first = true;
-    if (auto) kidsAudio.play(`${t.id}-q${KS.qi}`, q.q);
+
+/* ---- Aventures (leçons + questions) ---- */
+let AS = null;
+function kdBuild(id) {
+  if (id === "daily") {
+    const all = []; KW.forEach(w => w.adv.forEach(a => a.q.forEach((q, i) => all.push({ a: a.id, i, q }))));
+    const D = kd(), miss = all.filter(x => D.miss && D.miss[x.a + ":" + x.i]), rest = all.filter(x => !(D.miss && D.miss[x.a + ":" + x.i]));
+    const pick = K.shuffle(miss, K.hash(kdToday())).slice(0, 3).concat(K.shuffle(rest, K.hash(kdToday() + "r"))).slice(0, 5);
+    return { id: "daily", n: "Défi du jour", e: "🎯", c: "#e08a1e", back: "#/kids", steps: pick.map(p => ({ k: "q", ak: p.a, i: p.i, q: K.prep(p.a, p.i, p.q) })), intro: "sj-daily" };
+  }
+  if (/^w\d+x$/.test(id)) {
+    const w = KW.find(x => x.id === id.slice(0, -1)); if (!w) return null;
+    const all = []; w.adv.forEach(a => a.q.forEach((q, i) => all.push({ a: a.id, i, q })));
+    const pick = K.shuffle(all, K.hash(id + kdToday().slice(0, 7))).slice(0, 8);
+    return { id, n: "Grand défi : " + w.n, e: "🏆", c: w.c, back: "#/kids/" + w.id, steps: pick.map(p => ({ k: "q", ak: p.a, i: p.i, q: K.prep(p.a, p.i, p.q) })), intro: "sj-boss" };
+  }
+  const f = K.find(id); if (!f) return null;
+  return { id, n: f.a.n, e: f.a.e, c: f.w.c, back: "#/kids/" + f.w.id, w: f.w, a: f.a, steps: f.a.cards.map((c, i) => ({ k: "c", ak: id, i, c })).concat(f.a.q.map((q, i) => ({ k: "q", ak: id, i, q: K.prep(id, i, q) }))) };
+}
+function kdAdventure(id) {
+  const A = kdBuild(id); if (!A) return V.kids();
+  AS = { A, p: 0, mis: 0, wrong: false, ans: false, sel: null, ord: [], match: {}, done: 0 };
+  setTimeout(() => kdStep(), 0);
+  return `<div class="kd kd-play" style="--c:${A.c}"><div class="kd-bar"><a class="kd-x" href="${A.back}" aria-label="Quitter">✕</a><div class="kd-prog" id="kprog"></div></div><div id="kstage"></div></div>`;
+}
+const kdProg = () => { const A = AS.A, el = document.getElementById("kprog"); if (el) el.innerHTML = A.steps.map((s, i) => `<i class="${i < AS.p ? "on" : i === AS.p ? "cur" : ""}${s.k === "q" ? " q" : ""}"></i>`).join(""); };
+function kdStep(auto = true) {
+  const st = document.getElementById("kstage"); if (!st || !AS) return; const A = AS.A;
+  if (AS.p >= A.steps.length) return kdFinish();
+  const s = A.steps[AS.p]; AS.ans = false; AS.wrong = false; AS.sel = null; AS.ord = []; AS.match = {}; AS.ml = null; kdProg(); window.scrollTo(0, 0);
+  if (s.k === "c") {
+    const c = s.c;
+    st.innerHTML = `<div class="kd-pane kd-cs"><div class="kd-big">${c.e}</div><h2>${esc(c.t)}</h2>${c.ar ? `<div class="kd-ar" dir="rtl" lang="ar">${esc(c.ar)}<button class="kd-arb" data-kar="${esc(c.ar)}" aria-label="Écouter en arabe">🔊</button></div>` : ""}<p class="kd-text">${esc(c.x)}</p></div>
+      <div class="kd-foot"><div class="kd-fc">${KC.html("happy", 92, { cls: "kd-mini" })}</div><div class="kd-fb2"><button class="kd-listen" data-kplay>🔊 Écouter</button><button class="btn kd-next" data-knext>Suivant ▶</button></div></div>`;
+    if (auto) KA.play(`${s.ak}-c${s.i}`, c.t + ". " + c.x);
   } else {
-    const D = kidsData(); D.done[t.id] = true; D.stickers[t.id] = true; E.save();
-    st.innerHTML = `<div class="kd-pane kd-end"><div class="kd-big kd-pop">${t.st}</div><h2>Bravo !</h2><p class="kd-text">Tu as gagné l'autocollant « ${esc(t.n)} » et ${KS.got} étoile${KS.got > 1 ? "s" : ""} ⭐</p>
-      <div class="kd-say">${siraj3d("proud", 110)}</div><a class="btn" href="#/kids">Autre aventure</a><a class="btn sec" href="#/album" style="margin-top:8px">Voir mon album</a></div>`;
-    SND.win(); confetti(); kidsAudio.play("fx-end", "Bravo ! Tu as gagné un autocollant !");
+    const q = s.q; AS.sayKey = `${s.ak}-q${s.i}`; AS.sayText = K.say(q);
+    let body = "";
+    if (q.t === "mc") body = `<div class="kd-opts">${q.opts.map((o, k) => `<button class="kd-opt" data-kmc="${k}"><i>${"ABCD"[k]}</i><span>${esc(o)}</span></button>`).join("")}</div>`;
+    else if (q.t === "tf") body = `<div class="kd-tf"><button class="kd-opt t" data-ktf="1"><span>✅ Vrai</span></button><button class="kd-opt f" data-ktf="0"><span>❌ Faux</span></button></div>`;
+    else if (q.t === "order") body = `<div class="kd-slots">${q.items.map((_, k) => `<div class="kd-slot" data-slot="${k}"><i>${k + 1}</i><span></span></div>`).join("")}</div><div class="kd-chips">${q.shuf.map((o, k) => `<button class="kd-chip" data-kch="${k}">${esc(o)}</button>`).join("")}</div><button class="kd-reset" data-kreset>↺ Recommencer</button>`;
+    else if (q.t === "match") body = `<div class="kd-match"><div class="kd-mcol">${q.pairs.map((p, k) => `<button class="kd-mit l" data-kml="${k}">${esc(p[0])}</button>`).join("")}</div><div class="kd-mcol">${q.rights.map((r, k) => `<button class="kd-mit r" data-kmr="${k}">${esc(r)}</button>`).join("")}</div></div>`;
+    st.innerHTML = `<div class="kd-pane kd-qs"><div class="kd-qhead">${KC.html("think", 84, { cls: "kd-mini" })}<button class="kd-listen sm" data-kplay>🔊</button></div><h2 class="kd-q">${esc(q.q)}</h2>${body}<div id="kfb" class="kd-fb"></div></div>`;
+    if (auto) KA.play(AS.sayKey, AS.sayText);
   }
 }
+const kdOk = () => { const m = Math.floor(Math.random() * 4) + 1; return [`sj-ok${m}`, K.lines[`sj-ok${m}`]]; };
+const kdKo = () => { const m = Math.floor(Math.random() * 3) + 1; return [`sj-ko${m}`, K.lines[`sj-ko${m}`]]; };
+function kdMark(bad) { const s = AS.A.steps[AS.p], D = kd(); D.miss = D.miss || {}; const k = s.ak + ":" + s.i; if (bad) D.miss[k] = 1; else if (!AS.wrong) delete D.miss[k]; }
+function kdRight(extra = "") {
+  AS.ans = true; kdMark(false); const [k, t] = kdOk(); SND.correct(); if (!AS.wrong && Math.random() < .5) confetti();
+  const fb = document.getElementById("kfb"), last = AS.p >= AS.A.steps.length - 1;
+  fb.innerHTML = `<div class="kd-ok"><b>${t}${AS.wrong ? "" : " ⭐"}</b>${extra ? `<p>${extra}</p>` : ""}</div><button class="btn kd-next" data-knext>${last ? "Terminer 🎉" : "Continuer ▶"}</button>`;
+  const h = document.querySelector(".kd-qhead .kc"); if (h) { h.querySelector(".kc-in").innerHTML = KC.svg("proud"); KC.animate(h, AS.wrong ? "wiggle" : "hop"); }
+  KA.play(k, t);
+}
+function kdWrong(msg = "") {
+  if (!AS.wrong) { AS.wrong = true; AS.mis++; } kdMark(true);
+  SND.wrong(); const [k, t] = kdKo(), fb = document.getElementById("kfb"); fb.innerHTML = `<div class="kd-ko"><b>${t}</b>${msg ? `<p>${msg}</p>` : ""}</div>`; KA.play(k, t);
+  const h = document.querySelector(".kd-qhead .kc"); if (h) KC.animate(h, "wiggle");
+}
+function kdFinish() {
+  const A = AS.A, D = kd(), st = document.getElementById("kstage"), nq = A.steps.filter(s => s.k === "q").length;
+  const stars = AS.mis <= 1 ? 3 : AS.mis <= 3 ? 2 : 1, old = kdStat(A.id), before = KC.ITEMS.filter(i => KC.owned(i.id)).length;
+  const gain = Math.max(0, stars - (old.s || 0)); const first = !old.s;
+  D.adv[A.id] = { s: Math.max(old.s || 0, stars), n: (old.n || 0) + 1 }; D.stars += gain + (A.id === "daily" && D.daily !== kdToday() ? 2 : 0);
+  if (A.id === "daily") D.daily = kdToday();
+  const xp = first ? 15 + stars * 5 + (A.id === "daily" ? 10 : 0) : 5; E.addXP(xp); E.save();
+  const after = KC.ITEMS.filter(i => KC.owned(i.id)), newItem = after.length > before ? after[after.length - 1] : null;
+  const nx = A.w ? (() => { const i = A.w.adv.findIndex(x => x.id === A.id); return i >= 0 && i < A.w.adv.length - 1 ? A.w.adv[i + 1] : null; })() : null;
+  const msg = stars === 3 ? ["sj-end3", K.lines["sj-end3"]] : stars === 2 ? ["sj-end2", K.lines["sj-end2"]] : ["sj-end1", K.lines["sj-end1"]];
+  AS.p = A.steps.length; kdProg(); SND.win(); confetti(); window.scrollTo(0, 0);
+  st.innerHTML = `<div class="kd-pane kd-end"><div class="kd-stars3">${[1, 2, 3].map(i => `<span class="${i <= stars ? "on" : ""}" style="animation-delay:${.25 * i}s">★</span>`).join("")}</div><h2>${stars === 3 ? "Parfait !" : stars === 2 ? "Très bien !" : "Bien joué !"}</h2><p class="kd-text">${esc(A.e)} ${esc(A.n)}<br><small class="muted">${nq - AS.mis}/${nq} réponses du premier coup · +${xp} XP${gain ? " · +" + gain + " ⭐" : ""}</small></p>
+    <div class="kd-endc">${KC.html("proud", 150, { sparks: true, cls: "kd-celeb" })}</div>
+    ${newItem ? `<div class="kd-unlock"><span>${newItem.e}</span><div><b>Nouvelle tenue débloquée !</b><small>${esc(newItem.n)} — va voir « Mon Sirâj »</small></div></div>` : ""}
+    <div class="kd-endb">${nx ? `<a class="btn kd-next" href="#/kids/adv/${nx.id}">Aventure suivante ▶</a>` : `<a class="btn kd-next" href="${A.back}">Continuer ▶</a>`}<a class="btn sec" href="${A.back}">Retour</a></div></div>`;
+  KA.play(newItem ? "sj-new" : msg[0], newItem ? K.lines["sj-new"] : msg[1]);
+  const c = document.querySelector(".kd-endc .kc"); if (c) setTimeout(() => KC.animate(c, "dance"), 400);
+}
+
+/* ---- Événements ---- */
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-kplay],[data-knext],[data-kopt],[data-knext2]"); if (!t || !KS) return;
-  if (t.matches("[data-kplay]")) { const c = KS.ph === "cards" ? KS.t.cards[KS.i] : KS.t.quiz[KS.qi]; kidsAudio.play(`${KS.t.id}-${KS.ph === "cards" ? "c" + KS.i : "q" + KS.qi}`, KS.ph === "cards" ? c.t + ". " + c.x : c.q); }
-  else if (t.matches("[data-knext]")) { if (KS.ph === "cards") { if (KS.i < 2) KS.i++; else { KS.ph = "quiz"; KS.qi = 0; } } kidShow(); window.scrollTo(0, 0); }
-  else if (t.matches("[data-knext2]")) { if (KS.qi < 2) KS.qi++; else KS.ph = "end"; kidShow(); window.scrollTo(0, 0); }
-  else if (t.matches("[data-kopt]")) {
-    if (t.classList.contains("ok") || t.classList.contains("no")) return;
-    const q = KS.t.quiz[KS.qi], k = +t.dataset.kopt, fb = document.getElementById("kfb");
-    if (k === 0) { // la bonne réponse est toujours en position 0 dans les données
-      document.querySelectorAll(".kd-opt").forEach(b => { b.disabled = true; if (+b.dataset.kopt !== 0) b.classList.add("dim"); }); t.classList.add("ok");
-      if (KS.first) { KS.got++; kidsData().stars++; E.save(); }
-      SND.correct(); const m = KMSG_OK[Math.floor(Math.random() * KMSG_OK.length)]; fb.innerHTML = `<b>${m} ${KS.first ? "⭐" : ""}</b><button class="btn kd-next" data-knext2>${KS.qi < 2 ? "Question suivante ▶" : "Terminer 🎉"}</button>`;
-      confetti(); kidsAudio.play("fx-ok" + (KMSG_OK.indexOf(m) + 1), m);
-    } else { KS.first = false; t.classList.add("no"); t.disabled = true; SND.wrong(); const m = KMSG_KO[Math.floor(Math.random() * KMSG_KO.length)]; fb.innerHTML = `<b>${m}</b>`; kidsAudio.play("fx-ko" + (KMSG_KO.indexOf(m) + 1), m); }
+  const t = e.target.closest("[data-kplay],[data-knext],[data-kmc],[data-ktf],[data-kch],[data-kreset],[data-kml],[data-kmr],[data-kar],[data-kwear],[data-kmode]"); if (!t) return;
+  if (t.matches("[data-kar]")) { if (!VOICE.playAr(t.dataset.kar)) toast("Aucune voix arabe sur cet appareil."); return; }
+  if (t.matches("[data-kwear]")) { const id = t.dataset.kwear, it = KC.ITEMS.find(x => x.id === id), cur = kd().worn[it.slot]; if (!KC.owned(id)) return toast(`Encore ${it.stars - kd().stars} ⭐ pour débloquer`); KC.wear(it.slot, cur === id ? "" : id); route(); const c = document.querySelector(".kd-me .kc"); if (c) { KC.animate(c, "dance"); KC.say(c, cur === id ? "Hop, je l'enlève !" : "Trop beau ! Merci !"); } return; }
+  if (t.matches("[data-kmode]")) { E.S.settings.kid = false; E.save(); location.hash = "#/home"; route(); return; }
+  if (!AS) return; const s = AS.A.steps[AS.p]; if (!s && !t.matches("[data-knext]")) return;
+  if (t.matches("[data-kplay]")) { if (s.k === "c") KA.play(`${s.ak}-c${s.i}`, s.c.t + ". " + s.c.x); else KA.play(AS.sayKey, AS.sayText); return; }
+  if (t.matches("[data-knext]")) { AS.p++; kdStep(); return; }
+  if (!s || s.k !== "q" || AS.ans) return; const q = s.q;
+  if (t.matches("[data-kmc]")) {
+    const k = +t.dataset.kmc; if (t.classList.contains("no")) return;
+    if (k === q.ai) { t.classList.add("ok"); document.querySelectorAll(".kd-opt").forEach(b => { if (b !== t) b.classList.add("dim"); b.disabled = true; }); kdRight(); }
+    else { t.classList.add("no"); t.disabled = true; kdWrong(); }
+  } else if (t.matches("[data-ktf]")) {
+    const v = t.dataset.ktf === "1"; AS.ans = true; document.querySelectorAll(".kd-opt").forEach(b => b.disabled = true);
+    if (v === q.v) { t.classList.add("ok"); kdRight(esc(q.why || "")); } else { t.classList.add("no"); AS.ans = true; if (!AS.wrong) { AS.wrong = true; AS.mis++; } kdMark(true); SND.wrong(); const last = AS.p >= AS.A.steps.length - 1; document.getElementById("kfb").innerHTML = `<div class="kd-ko"><b>${K.lines["sj-ko1"]}</b><p>${esc(q.why || "")}</p></div><button class="btn kd-next" data-knext>${last ? "Terminer 🎉" : "Continuer ▶"}</button>`; KA.play(`${AS.A.steps[AS.p].ak}-w${s.i}`, q.why || ""); }
+  } else if (t.matches("[data-kch]")) {
+    const k = +t.dataset.kch; if (t.classList.contains("used")) return; const n = AS.ord.length; AS.ord.push(k); t.classList.add("used"); t.disabled = true;
+    const slot = document.querySelector(`.kd-slot[data-slot="${n}"]`); slot.classList.add("on"); slot.querySelector("span").textContent = q.shuf[k]; SND.select();
+    if (AS.ord.length === q.items.length) { const okk = AS.ord.every((ki, pos) => q.shuf[ki] === q.items[pos]); if (okk) { document.querySelectorAll(".kd-slot").forEach(x => x.classList.add("ok")); kdRight(); } else { document.querySelectorAll(".kd-slot").forEach(x => x.classList.add("no")); kdWrong("Regarde bien l'ordre et réessaie."); setTimeout(kdResetOrder, 900); } }
+  } else if (t.matches("[data-kreset]")) kdResetOrder();
+  else if (t.matches("[data-kml]")) { document.querySelectorAll(".kd-mit.l").forEach(b => b.classList.remove("sel")); if (t.classList.contains("ok")) return; t.classList.add("sel"); AS.ml = +t.dataset.kml; SND.select(); }
+  else if (t.matches("[data-kmr]")) {
+    if (AS.ml == null || t.classList.contains("ok")) return; const l = AS.ml, rr = +t.dataset.kmr, L = document.querySelector(`.kd-mit.l[data-kml="${l}"]`);
+    if (q.rights[rr] === q.pairs[l][1]) { L.classList.remove("sel"); L.classList.add("ok"); t.classList.add("ok"); AS.match[l] = true; AS.ml = null; SND.correct(); if (Object.keys(AS.match).length === q.pairs.length) kdRight(); }
+    else { t.classList.add("no"); setTimeout(() => t.classList.remove("no"), 500); kdWrong("Ce n'est pas la bonne paire, essaie encore."); }
   }
 });
+function kdResetOrder() {
+  if (!AS) return; AS.ord = []; document.querySelectorAll(".kd-chip").forEach(b => { b.classList.remove("used"); b.disabled = false; }); document.querySelectorAll(".kd-slot").forEach(x => { x.classList.remove("on", "ok", "no"); x.querySelector("span").textContent = ""; });
+}
+
+/* ---- Défi du jour ---- */
+V.kdaily = () => {
+  const D = kd(), dd = D.daily === kdToday();
+  if (!dd) return kdAdventure("daily");
+  return `<div class="kd">${kdSky()}<a class="back" href="#/kids">${ico("back", 18)} Accueil</a><div class="kd-pane kd-end"><div class="kd-big">✅</div><h2>Défi du jour réussi !</h2><p class="kd-text">Reviens demain pour un nouveau défi.</p><div class="kd-endc">${KC.html("proud", 150, { sparks: true })}</div><a class="btn kd-next" href="#/kids">Retour à l'accueil</a><button class="btn sec" id="kdreplay" style="margin-top:8px" onclick="location.hash='#/kids/adv/daily'">Rejouer pour le plaisir</button></div></div>`;
+};
+
+/* ---- Mon Sirâj : tenues, badges, parcours ---- */
+V.album = () => {
+  const D = kd(), done = kdAllAdv().filter(x => kdStat(x.id).s > 0).length, tot = K.count(), worn = D.worn;
+  const slots = { face: "Visage", neck: "Cou", head: "Tête", back: "Dos", fx: "Magie" };
+  return `<div class="kd">${kdSky()}<div class="kd-me"><div class="kd-mec">${KC.html("happy", 190, { sparks: true })}</div><p class="muted small" style="text-align:center">Touche Sirâj : il réagit !</p></div>
+  <div class="kd-stats"><div><b>⭐ ${D.stars}</b><span>étoiles</span></div><div><b>🔥 ${E.streak()}</b><span>série</span></div><div><b>${done}/${tot}</b><span>aventures</span></div></div>
+  <h3>Les tenues de Sirâj</h3><p class="muted small">Gagne des étoiles en terminant des aventures pour débloquer de nouvelles tenues.</p>
+  <div class="kd-wardrobe">${KC.ITEMS.map(it => { const own = KC.owned(it.id), on = worn[it.slot] === it.id; return `<button class="kd-item${own ? "" : " lock"}${on ? " on" : ""}" data-kwear="${it.id}"><span>${own ? it.e : "🔒"}</span><b>${esc(it.n)}</b><small>${own ? (on ? "Portée ✓" : slots[it.slot]) : it.stars + " ⭐"}</small></button>`; }).join("")}</div>
+  <h3>Mes badges</h3><div class="kd-badges">${KW.map(w => { const all = kdWorldDone(w) === w.adv.length, boss = kdStat(w.id + "x").s > 0; return `<a class="kd-badge${all ? " on" : ""}" href="#/kids/${w.id}" style="--c:${w.c}"><span>${all ? w.e : "❔"}</span><small>${esc(w.n)}</small>${boss ? `<em>🏆</em>` : ""}</a>`; }).join("")}</div>
+  <div class="card" style="margin-top:16px"><h3>Pour les grands</h3><p class="muted small">Un parcours plus détaillé en 100 niveaux est disponible pour les adultes et les plus grands.</p><button class="btn sec" data-kmode>Ouvrir le parcours des grands</button></div></div>`;
+};
+
+/* ---- Accueil des nouveaux : version enfant ---- */
+function renderKidOnb() {
+  const s = ONB.step, dots = `<div class="dots">${[0, 1, 2, 3, 4].map(i => `<i class="${i <= s ? "on" : ""}"></i>`).join("")}</div>`, say = (mood, text, size = 150, o = {}) => `<div class="kd-onc">${KC.html(mood, size, o)}</div><div class="bubble c pop">${text}</div>`;
+  const GL = [[5, "🐣 Petit explorateur", "5 minutes par jour"], [10, "🚀 Super explorateur", "10 minutes par jour"], [15, "🏆 Grand champion", "15 minutes par jour"]];
+  let h = "";
+  if (s === 0) h = `<div class="kd-onc">${KC.html("happy", 210, { sparks: true })}</div><div class="bubble c pop2">Salam ! Moi c'est <b>Sirâj</b>, ta lanterne-guide ! Je vais t'apprendre l'islam avec plein d'aventures.</div><button class="btn gold pop3" data-o="next">Salut Sirâj ! 👋</button>`;
+  else if (s === 1) h = say("think", "Comment tu t'appelles ?", 130) + `<div class="card"><input type="text" id="kname" maxlength="24" placeholder="Ton prénom" value="${esc(ME().first || "")}" autocomplete="given-name" style="font-size:1.3rem;text-align:center"></div><button class="btn" data-o="next">Continuer</button><button class="btn sec" data-o="next" style="margin-top:8px">Passer</button>`;
+  else if (s === 2) h = say("proud", `${ME().first ? "Enchanté " + esc(ME().first) + " !" : "Enchanté !"} Combien de temps veux-tu jouer chaque jour ?`, 120) + GL.map(g => `<button class="opt ${ONB.goal === g[0] ? "sel" : ""}" data-goal="${g[0]}">${g[1]} · ${g[2]}</button>`).join("") + `<button class="btn" data-o="next">Continuer</button>`;
+  else if (s === 3) h = say("happy", "Un rappel chaque jour pour ne pas oublier ? <b>Demande à un adulte.</b>", 120) + `<div class="card"><input type="time" id="rtime" value="${ONB.time}"></div><button class="btn" data-o="remind">Activer mon rappel</button><button class="btn sec" data-o="next" style="margin-top:8px">Plus tard</button>${ONB.remind ? `<p class="muted" style="text-align:center">Rappel activé à ${ONB.time} ✓</p>` : ""}`;
+  else h = say("proud", "C'est parti pour l'aventure ! 🎉", 170, { sparks: true }) + `<button class="btn gold" data-o="done">Allons-y !</button>`;
+  $app.innerHTML = `<div class="onbw slide kd-onb">${dots}${h}</div>`;
+  if (s === 4) confetti();
+}
+document.addEventListener("input", e => { if (e.target.id === "kname") { ME().first = e.target.value.trim().slice(0, 24); E.save(); } });
 document.addEventListener("change", e => {
   if (e.target.id !== "set-kid") return;
   E.S.settings.kid = e.target.checked; E.save(); location.hash = e.target.checked ? "#/kids" : "#/home";
