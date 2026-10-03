@@ -60,12 +60,13 @@ const ACCOUNT = (() => {
   /* Connexion Google « bouton officiel » (Google Identity Services) : n'utilise pas la page de Firebase qui échoue sur Safari iPhone. */
   async function signInGoogleToken(idToken) { const f = await loadFb(), A = f.au, c = await A.signInWithCredential(f.auth, A.GoogleAuthProvider.credential(idToken)); setFbUser(c.user); emit(); return pull(); }
   /* Classement mondial : on y apparaît seulement avec un compte, 15 ans ou plus et l'option activée. */
-  const eligible = () => { const m = E.S.me; return state.provider === "firebase" && !!m && m.board && m.age >= 15 && !!m.first; };
+  const eligible = () => { const m = E.S.me, nm = state.user && state.user.name; return state.provider === "firebase" && !!m && m.board !== false && !(m.age && m.age < 15) && !!(m.first || (nm && !/@/.test(nm))); };
   const publicName = m => m.first + (m.last ? " " + m.last[0].toUpperCase() + "." : "");
   async function pushBoard() {
     if (state.provider !== "firebase") return; const d = fb.fs.doc(fb.db, "leaderboard", state.user.id);
     if (!eligible()) { try { await fb.fs.deleteDoc(d); } catch {} return; }
-    const m = E.S.me; await fb.fs.setDoc(d, { name: publicName(m), photo: m.photo || "", xp: E.S.xp, rank: E.rank().n, level: E.currentLevel(), streak: E.streak(), updatedAt: Date.now() });
+    const m = E.S.me; if (!m.first) { const nm = String(state.user.name).trim().split(/\s+/); m.first = nm[0]; m.last = m.last || nm.slice(1).join(" "); }
+    await fb.fs.setDoc(d, { name: publicName(m), photo: m.photo || "", xp: E.S.xp, rank: E.rank().n, level: E.currentLevel(), streak: E.streak(), updatedAt: Date.now() });
   }
   async function leaderboard() {
     const f = await loadFb(); if (state.provider === "firebase") await pushBoard();
