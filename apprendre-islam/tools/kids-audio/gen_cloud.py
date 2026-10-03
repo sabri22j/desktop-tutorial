@@ -15,7 +15,8 @@ Reprend là où il s'est arrêté (les fichiers déjà créés sont ignorés). O
 import json, os, sys, time, urllib.request, urllib.error
 
 # Prononciation : mots écrits comme la voix doit les dire (à ajuster à l'oreille).
-REPLACE = {"ﷺ": ", paix sur lui", "Dhouhr": "Zouhr", "Fajr": "Fadjr", "Allahou": "Allâhou"}
+REPLACE = {"ﷺ": ", sallallâhou 'alayhi wa sallam", "Dhouhr": "Zouhr", "Fajr": "Fadjr", "Allahou": "Allâhou",
+           "dou'as": "dou'â", "dou'a": "dou'â", "doua": "dou'â", "Doua": "Dou'â"}
 STYLE = "Voix chaleureuse et enjouée d'un petit personnage guide, qui parle à des enfants de 7 à 12 ans : claire, vivante, souriante, sans ton enfantin exagéré."
 
 def fix(t):
@@ -26,7 +27,7 @@ def call(provider, voice, text):
     if provider == "elevenlabs":
         key = os.environ["ELEVENLABS_API_KEY"]
         req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{voice}?output_format=mp3_44100_64",
-            data=json.dumps({"text": text, "model_id": "eleven_multilingual_v2", "voice_settings": {"stability": .4, "similarity_boost": .8, "style": .5, "use_speaker_boost": True}}).encode(),
+            data=json.dumps({"text": text, "model_id": "eleven_multilingual_v2", "voice_settings": {"stability": .7, "similarity_boost": .75, "style": 0.0, "use_speaker_boost": True}}).encode(),
             headers={"xi-api-key": key, "Content-Type": "application/json"})
     else:
         key = os.environ["OPENAI_API_KEY"]
@@ -38,9 +39,10 @@ def call(provider, voice, text):
 def main():
     provider, voice, out = sys.argv[1], sys.argv[2], sys.argv[3]
     only = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else None
-    prefix = sys.argv[sys.argv.index("--prefix") + 1] if "--prefix" in sys.argv else None   # p. ex. w1 : monde 1 seulement
+    prefix = sys.argv[sys.argv.index("--prefix") + 1] if "--prefix" in sys.argv else None   # p. ex. w1a : monde 1 seulement
+    keys = open(sys.argv[sys.argv.index("--file") + 1]).read().split() if "--file" in sys.argv else None   # liste de clips à refaire
     T = json.load(open("kidtexts.json")); os.makedirs(out, exist_ok=True)
-    todo = {k: v for k, v in T.items() if (not only or k == only) and (not prefix or k.startswith(prefix)) and (only or not os.path.exists(os.path.join(out, k + ".mp3")))}
+    todo = {k: v for k, v in T.items() if (not only or k == only) and (not prefix or k.startswith(prefix)) and (not keys or k in keys) and (only or keys or not os.path.exists(os.path.join(out, k + ".mp3")))}
     print(f"{len(todo)} clips, {sum(len(fix(v)) for v in todo.values())} caractères à envoyer", flush=True)
     if "--dry-run" in sys.argv: return
     for key, text in todo.items():

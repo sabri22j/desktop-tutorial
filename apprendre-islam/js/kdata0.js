@@ -24,7 +24,7 @@ K.prep = (advId, i, q) => {
   return q;
 };
 /* Texte lu à voix haute pour une question. */
-K.say = q => q.t === "mc" ? q.q + " " + q.opts.map((o, k) => "ABCD"[k] + ". " + o + ".").join(" ") : q.t === "tf" ? q.q + " Vrai ou faux ?" : q.q;
+K.say = q => q.t === "mc" ? q.q + " ... " + q.opts.join(" ... ") + " ..." : q.t === "tf" ? q.q + " Vrai ou faux ?" : q.q;
 K.find = id => { for (const w of KW) for (const a of w.adv) if (a.id === id) return { w, a }; return null; };
 K.count = () => KW.reduce((n, w) => n + w.adv.length, 0);
 
