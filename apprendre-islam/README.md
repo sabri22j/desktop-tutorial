@@ -57,3 +57,13 @@ Faire relire le contenu ; enregistrer les voix ; ajouter les vidéos ; notificat
 - **Bouton Google fiable sur iPhone (recommandé)** : mets l'« ID client Web » (Firebase > Authentication > Google > Configuration du SDK Web) dans `googleClientId` de `js/config.js`, puis, dans Google Cloud Console > API et services > Identifiants > « Web client », ajoute `https://sirat-islam.fr` et `https://www.sirat-islam.fr` aux « Origines JavaScript autorisées ».
 - **Règles de confidentialité appliquées** : compte en ligne à partir de 13 ans ; classement et photo publics à partir de 15 ans et sur option ; seuls prénom, initiale du nom, photo, XP et rang sont visibles. À faire relire pour le RGPD (mineurs, politique de confidentialité).
 - **Limite connue** : les XP sont envoyés par l'application, donc le classement n'est pas protégé contre la triche sans validation côté serveur.
+
+## Parcours enfants (mode par défaut)
+
+12 mondes, 68 aventures (272 petites leçons illustrées, 340 questions : choix, vrai/faux, remise dans l'ordre, association), grand défi par monde, défi du jour (qui reprend les erreurs), étoiles, tenues et badges à débloquer.
+Sirâj est interactif (yeux qui suivent le doigt, clignements, réactions au toucher, bouche qui parle) et lit tout à voix haute.
+
+- Données : `js/kdata1.js` … `js/kdata12.js` (formats dans `js/kdata0.js`). À faire relire par une personne qualifiée.
+- Interface : `js/kids.js` ; personnage : `js/kidchar.js`.
+- Voix : `audio/kids/*.mp3`, générées avec `tools/kids-audio/` (voir son README). Remplaçables par de vraies voix du même nom.
+- Réglage « Mode enfant » dans Paramètres ; le parcours des grands (100 niveaux) reste disponible.
