@@ -11,7 +11,7 @@ if errorlevel 1 goto fin
 echo.
 echo Ecoute audio-kids\w1a1-c0.mp3. Si la voix te plait, appuie sur une touche pour generer le MONDE 1 (environ 6 000 caracteres).
 pause >nul
-python gen_cloud.py elevenlabs %VOICE% audio-kids --prefix w1
+python gen_cloud.py elevenlabs %VOICE% audio-kids --prefix w1a
 echo.
 echo Pour generer tout le reste, tape : python gen_cloud.py elevenlabs %VOICE% audio-kids
 :fin
