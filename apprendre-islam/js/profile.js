@@ -45,7 +45,7 @@ V.profedit = () => {
     <label class="fl">Prénom<input type="text" id="su-first" autocomplete="given-name" value="${esc(m.first)}" maxlength="30"></label>
     <label class="fl">Nom de famille (facultatif)<input type="text" id="su-last" autocomplete="family-name" value="${esc(m.last)}" maxlength="40"></label>
     <label class="fl">Âge (facultatif)<input type="number" id="su-age" inputmode="numeric" min="5" max="120" value="${m.age || ""}"></label>
-    ${on ? `<label class="chk"><input type="checkbox" id="su-board" ${m.board ? "checked" : ""}> <span>Apparaître dans le classement mondial (prénom, initiale du nom, photo et XP visibles par tous). Réservé aux 15 ans et plus : indique ton âge.</span></label>` : ""}
+    ${on ? `<label class="chk"><input type="checkbox" id="su-board" ${m.board !== false ? "checked" : ""}> <span>Apparaître dans le classement mondial (prénom, initiale du nom, photo et XP visibles par tous). Réservé aux 15 ans et plus : si tu indiques un âge inférieur, tu n'apparais pas.</span></label>` : ""}
     <button class="btn" type="submit">Enregistrer</button>
   </form>`;
 };
@@ -90,8 +90,8 @@ async function submitEdit() {
   const first = val("su-first"), last = val("su-last"), age = parseInt(val("su-age"), 10), board = !!(document.getElementById("su-board") || {}).checked;
   if (!first) return toast("Écris ton prénom.");
   if (val("su-age") && !(age >= 5 && age <= 120)) return toast("Âge : entre 5 et 120 ans.");
-  const m = ME(); Object.assign(m, { first, last, age: age || null, photo: suPhoto || "", board: board && age >= 15 });
-  if (board && !(age >= 15)) toast("Il faut indiquer un âge de 15 ans ou plus pour le classement."); else toast("Profil enregistré.");
+  const m = ME(); Object.assign(m, { first, last, age: age || null, photo: suPhoto || "", board: board && !(age && age < 15) });
+  if (board && age && age < 15) toast("Il faut avoir 15 ans ou plus pour le classement."); else toast("Profil enregistré.");
   E.save(); if (connected()) ACCOUNT.push(); location.hash = "#/profile";
 }
 
@@ -120,7 +120,7 @@ async function drawRanking() {
     const mineIn = rows.some(r => r.id === me);
     let msg = "";
     if (ACCOUNT.state.provider !== "firebase") msg = `<div class="card"><b>Rejoins le classement</b><p class="muted small">Crée un compte (15 ans ou plus) et active « Apparaître dans le classement ».</p><a class="btn sm" href="#/signup">Créer mon compte</a></div>`;
-    else if (!(m.board && m.age >= 15)) msg = `<div class="card"><b>Tu n'es pas dans le classement.</b><p class="muted small">${m.age && m.age < 15 ? "Il faut avoir 15 ans ou plus pour apparaître." : "Active « Apparaître dans le classement » dans ton profil."}</p>${m.age && m.age < 15 ? "" : `<a class="btn sm" href="#/profedit">Modifier mon profil</a>`}</div>`;
+    else if (m.board === false || (m.age && m.age < 15)) msg = `<div class="card"><b>Tu n'es pas dans le classement.</b><p class="muted small">${m.age && m.age < 15 ? "Il faut avoir 15 ans ou plus pour apparaître." : "Active « Apparaître dans le classement » dans ton profil."}</p>${m.age && m.age < 15 ? "" : `<a class="btn sm" href="#/profedit">Modifier mon profil</a>`}</div>`;
     else if (pos) msg = `<div class="card rkc"><div class="row"><b>Ta position</b><b>${mineIn ? "" : "n° "}${pos}</b></div><div class="muted small">${E.S.xp} XP</div></div>`;
     box.innerHTML = msg + (rows.length ? `<div class="card" style="padding:6px 0">${rows.map((r, i) => `<div class="rkrow ${r.id === me ? "me" : ""}"><b class="pos">${i + 1 <= 3 ? ["🥇", "🥈", "🥉"][i] : i + 1}</b>${avatar(40, { first: r.name, photo: r.photo })}<div style="flex:1;min-width:0"><div class="nm">${esc(r.name || "Anonyme")}</div><div class="muted small">Rang ${r.rank || 1}${r.streak ? " · 🔥 " + r.streak : ""}</div></div><b class="xp">${ico("moon", 16)} ${r.xp}</b></div>`).join("")}</div>` : note("Personne n'est encore dans le classement. Sois le premier !")) + `<p class="muted small">Les XP sont envoyés par l'application ; le classement n'est pas à l'abri de la triche.</p>`;
   } catch { if (box.isConnected) box.innerHTML = note("Impossible de charger le classement pour le moment. Vérifie ta connexion."); }
