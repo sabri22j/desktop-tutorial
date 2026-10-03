@@ -26,7 +26,7 @@ def call(provider, voice, text):
     if provider == "elevenlabs":
         key = os.environ["ELEVENLABS_API_KEY"]
         req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{voice}?output_format=mp3_44100_64",
-            data=json.dumps({"text": text, "model_id": "eleven_multilingual_v2", "language_code": "fr", "voice_settings": {"stability": .4, "similarity_boost": .8, "style": .5, "use_speaker_boost": True}}).encode(),
+            data=json.dumps({"text": text, "model_id": "eleven_multilingual_v2", "voice_settings": {"stability": .4, "similarity_boost": .8, "style": .5, "use_speaker_boost": True}}).encode(),
             headers={"xi-api-key": key, "Content-Type": "application/json"})
     else:
         key = os.environ["OPENAI_API_KEY"]
@@ -38,17 +38,20 @@ def call(provider, voice, text):
 def main():
     provider, voice, out = sys.argv[1], sys.argv[2], sys.argv[3]
     only = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else None
+    prefix = sys.argv[sys.argv.index("--prefix") + 1] if "--prefix" in sys.argv else None   # p. ex. w1 : monde 1 seulement
     T = json.load(open("kidtexts.json")); os.makedirs(out, exist_ok=True)
-    for key, text in T.items():
-        if only and key != only: continue
+    todo = {k: v for k, v in T.items() if (not only or k == only) and (not prefix or k.startswith(prefix)) and (only or not os.path.exists(os.path.join(out, k + ".mp3")))}
+    print(f"{len(todo)} clips, {sum(len(fix(v)) for v in todo.values())} caractères à envoyer", flush=True)
+    if "--dry-run" in sys.argv: return
+    for key, text in todo.items():
         path = os.path.join(out, key + ".mp3")
-        if os.path.exists(path) and not only: continue
         for attempt in range(4):
             try:
                 open(path, "wb").write(call(provider, voice, fix(text))); print("ok", key, flush=True); break
             except urllib.error.HTTPError as e:
                 print("erreur", key, e.code, e.read()[:200], flush=True)
-                if e.code in (401, 403): sys.exit("Clé refusée : vérifie la variable d'environnement.")
+                if e.code in (401, 403): sys.exit("Clé refusée : vérifie la clé API (et que la voix est dans « My Voices »).")
+                if e.code == 402 or (e.code == 400 and "quota" in str(e.read()).lower()): sys.exit("Plus de crédits : relance plus tard, les fichiers déjà faits sont conservés.")
                 time.sleep(2 ** attempt * 2)
             except Exception as e:
                 print("erreur", key, e, flush=True); time.sleep(2 ** attempt * 2)
