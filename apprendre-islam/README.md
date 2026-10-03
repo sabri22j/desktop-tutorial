@@ -74,3 +74,8 @@ Sirâj est interactif (yeux qui suivent le doigt, clignements, réactions au tou
 - **Mes mots arabes** : le dico de Sirâj, débloqué au fil des aventures.
 - **Plus facile** : bouton précédent, indice, « revoir la leçon », récapitulatif de fin d'aventure, grand texte, mode d'emploi.
 - **Sirâj** : s'endort après un moment, se réveille au toucher, câlin (appui long), conseils qui tournent, accompagne le joueur sur la carte.
+
+### Révision espacée (mémoire)
+Chaque aventure terminée devient un **module** à retenir : première révision 2 h après, puis 1 jour, 3 jours, 7 jours, 14 jours, 30 jours, 90 jours. Réussir repousse la révision ; une erreur ramène le module à 2 h (niveau −2).
+Écrans : accueil (niveau de mémoire, compte à rebours avant la prochaine révision, « N modules en attente »), Modules, Progression (donut de mémoire, répertoire de toutes les révisions avec heure et temps restant), rappels (notifications si autorisées).
+Mauvaise réponse : la bonne réponse s'affiche et la question est reposée à la fin (2 fois au plus). Code : `js/kidsrs.js`.
