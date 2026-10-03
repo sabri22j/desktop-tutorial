@@ -51,9 +51,10 @@ def main():
             try:
                 open(path, "wb").write(call(provider, voice, fix(text))); print("ok", key, flush=True); break
             except urllib.error.HTTPError as e:
-                print("erreur", key, e.code, e.read()[:200], flush=True)
+                body = e.read().decode("utf-8", "ignore")
+                print("erreur", key, e.code, body[:200], flush=True)
+                if "quota_exceeded" in body or e.code == 402: sys.exit("Plus de crédits : les clips déjà faits sont conservés. Relance quand tes crédits sont revenus.")
                 if e.code in (401, 403): sys.exit("Clé refusée : vérifie la clé API (et que la voix est dans « My Voices »).")
-                if e.code == 402 or (e.code == 400 and "quota" in str(e.read()).lower()): sys.exit("Plus de crédits : relance plus tard, les fichiers déjà faits sont conservés.")
                 time.sleep(2 ** attempt * 2)
             except Exception as e:
                 print("erreur", key, e, flush=True); time.sleep(2 ** attempt * 2)
