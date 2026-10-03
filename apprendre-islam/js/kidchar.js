@@ -7,6 +7,17 @@ const KC = (() => {
     { id: "phones", slot: "head", n: "Casque musique", e: "🎧", stars: 60 },
     { id: "cape", slot: "back", n: "Cape de héros", e: "🦸", stars: 90 },
     { id: "orbit", slot: "fx", n: "Étoiles magiques", e: "🌟", stars: 130 },
+    { id: "kufi", slot: "head", n: "Calotte blanche", e: "🧢", stars: 12 },
+    { id: "bag", slot: "back", n: "Sac à dos", e: "🎒", stars: 18 },
+    { id: "bow", slot: "neck", n: "Nœud papillon", e: "🎀", stars: 30 },
+    { id: "cap", slot: "head", n: "Casquette bleue", e: "🧢", stars: 35 },
+    { id: "bubbles", slot: "fx", n: "Bulles joyeuses", e: "🫧", stars: 45 },
+    { id: "starglass", slot: "face", n: "Lunettes étoiles", e: "🤩", stars: 50 },
+    { id: "hearts", slot: "fx", n: "Cœurs flottants", e: "💖", stars: 70 },
+    { id: "medal", slot: "neck", n: "Médaille d'or", e: "🏅", stars: 75 },
+    { id: "wizard", slot: "head", n: "Chapeau magique", e: "🎩", stars: 100 },
+    { id: "moon", slot: "fx", n: "Croissant de lune", e: "🌙", stars: 110 },
+    { id: "wings", slot: "back", n: "Ailes lumineuses", e: "🪽", stars: 160 },
   ];
   const SLOTS = ["face", "neck", "head", "back", "fx"];
   const worn = () => { const D = E.S.kids || {}; return D.worn || {}; };
@@ -19,6 +30,17 @@ const KC = (() => {
     phones: `<g class="a-phones"><path d="M56 112q-6-58 44-62q50 4 44 62" fill="none" stroke="#2b3547" stroke-width="7" stroke-linecap="round"/><rect x="46" y="98" width="16" height="30" rx="8" fill="#e5584a"/><rect x="138" y="98" width="16" height="30" rx="8" fill="#e5584a"/><rect x="50" y="104" width="6" height="18" rx="3" fill="#ffb3ab"/><rect x="144" y="104" width="6" height="18" rx="3" fill="#ffb3ab"/></g>`,
     cape: `<g class="a-cape"><path d="M60 92q-34 60-26 140q66 22 132 0q8-80-26-140z" fill="#d4393b"/><path d="M60 92q-20 50-20 108q60 20 120 0q0-58-20-108z" fill="#ef5b52" opacity=".55"/></g>`,
     orbit: `<g class="a-orbit"><g class="o1"><path d="M0-12l3.5 8.5 9 .8-6.8 6 2 9-7.7-4.8-7.7 4.8 2-9-6.8-6 9-.8z" fill="#ffd54a" stroke="#c99a1a" stroke-width="1.4"/></g><g class="o2"><path d="M0-9l2.6 6.4 6.8.6-5.1 4.5 1.5 6.8-5.8-3.6-5.8 3.6 1.5-6.8-5.1-4.5 6.8-.6z" fill="#fff3b0"/></g></g>`,
+    kufi: `<g class="a-kufi"><path d="M66 70q34-34 68 0z" fill="#fff" stroke="#cfd8d3" stroke-width="3" stroke-linejoin="round"/><path d="M76 64q24-18 48 0" fill="none" stroke="#3fd39a" stroke-width="3" stroke-dasharray="3 5" stroke-linecap="round"/></g>`,
+    bag: `<g class="a-bag"><rect x="36" y="110" width="30" height="62" rx="13" fill="#2f7fd1"/><rect x="134" y="110" width="30" height="62" rx="13" fill="#2f7fd1"/><rect x="40" y="132" width="22" height="18" rx="6" fill="#1f5fa6"/><path d="M62 100q38 -14 76 0" fill="none" stroke="#1f5fa6" stroke-width="6" stroke-linecap="round"/></g>`,
+    bow: `<g class="a-bow"><path d="M100 186l-26-14v28zM100 186l26-14v28z" fill="#d94bb0" stroke="#a02f84" stroke-width="2.5" stroke-linejoin="round"/><circle cx="100" cy="186" r="7" fill="#f27ccf" stroke="#a02f84" stroke-width="2.5"/></g>`,
+    cap: `<g class="a-cap"><path d="M64 72q36-40 72 0z" fill="#2f7fd1"/><path d="M60 72h80q18 0 28 10q-30 -4 -108 -2z" fill="#1f5fa6"/><circle cx="100" cy="42" r="4" fill="#fff"/></g>`,
+    bubbles: `<g class="a-bub"><circle cx="30" cy="90" r="9" fill="#bfeaff" opacity=".7" stroke="#fff" stroke-width="2"/><circle cx="170" cy="70" r="12" fill="#bfeaff" opacity=".7" stroke="#fff" stroke-width="2"/><circle cx="22" cy="170" r="6" fill="#bfeaff" opacity=".7" stroke="#fff" stroke-width="2"/><circle cx="178" cy="160" r="8" fill="#bfeaff" opacity=".7" stroke="#fff" stroke-width="2"/></g>`,
+    starglass: `<g class="a-sg"><path d="M80 112l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#ffd54a" stroke="#c99a1a" stroke-width="3" stroke-linejoin="round"/><path d="M120 112l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#ffd54a" stroke="#c99a1a" stroke-width="3" stroke-linejoin="round"/><path d="M97 128h6" stroke="#c99a1a" stroke-width="4" stroke-linecap="round"/></g>`,
+    hearts: `<g class="a-hrt"><path d="M28 80q-10-10 0-16q8-4 12 4q4-8 12-4q10 6 0 16l-12 12z" fill="#ff5d8f"/><path d="M160 50q-8-8 0-13q6-3 10 3q3-6 10-3q8 5 0 13l-10 10z" fill="#ff8fb1"/><path d="M168 170q-8-8 0-13q6-3 10 3q3-6 10-3q8 5 0 13l-10 10z" fill="#ff5d8f"/></g>`,
+    medal: `<g class="a-medal"><path d="M84 180l16 30 16-30" fill="none" stroke="#3a7bd5" stroke-width="7"/><circle cx="100" cy="214" r="13" fill="#ffd54a" stroke="#c99a1a" stroke-width="3"/><path d="M100 207l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6-4.5-4 6-1z" fill="#fff3b0"/></g>`,
+    wizard: `<g class="a-wiz"><path d="M62 72h76l-30-62z" fill="#5b3fb8" stroke="#3b2788" stroke-width="3" stroke-linejoin="round"/><path d="M56 72h88" stroke="#3b2788" stroke-width="7" stroke-linecap="round"/><path d="M104 42l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" fill="#ffd54a"/></g>`,
+    moon: `<g class="a-moon"><path d="M168 36a26 26 0 1 0 14 40a20 20 0 0 1 -14 -40z" fill="#ffe27a" stroke="#c99a1a" stroke-width="2.5"/><circle cx="26" cy="60" r="3" fill="#fff3b0"/><circle cx="40" cy="30" r="2.5" fill="#fff3b0"/></g>`,
+    wings: `<g class="a-wings"><path d="M62 110q-52-30-46 40q6 24 46 0z" fill="#fff" stroke="#9fd8ff" stroke-width="3"/><path d="M138 110q52-30 46 40q-6 24-46 0z" fill="#fff" stroke="#9fd8ff" stroke-width="3"/><path d="M58 120q-32-10-30 24" fill="none" stroke="#cfeaff" stroke-width="3"/><path d="M142 120q32-10 30 24" fill="none" stroke="#cfeaff" stroke-width="3"/></g>`,
   };
 
   /* SVG du personnage. mood : happy | think | proud | oops | wow | sleepy */

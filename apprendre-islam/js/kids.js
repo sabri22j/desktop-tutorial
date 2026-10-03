@@ -181,9 +181,10 @@ document.addEventListener("click", e => {
     else if (x.matches("[data-khow]")) { kd().tuto = 1; E.save(); x.closest(".kd-how")?.remove(); const sj = document.querySelector(".kd-hero .kc"); if (sj) { KC.animate(sj, "dance"); KC.say(sj, "Super ! On y va !", 2200); } }
     else if (x.matches("[data-ksize]")) { kd().size = x.dataset.ksize; E.save(); document.body.classList.toggle("kd-lg", kd().size === "l"); document.querySelectorAll("[data-ksize]").forEach(b => b.classList.toggle("on", b.dataset.ksize === kd().size)); }
     return; }
+  const bd = e.target.closest("[data-kbadge]"); if (bd) { const [n, how, on, em] = bd.dataset.kbadge.split("|"); return kdSheet(`<div class="kd-acc"><div class="kd-bigb${on === "1" ? "" : " lock"}">${em}</div><h3>${n}</h3><p>${on === "1" ? "Badge obtenu, bravo !" : how}</p><button class="btn kd-next" data-ksheetx>OK</button></div>`);}
   const t = e.target.closest("[data-kplay],[data-kprev],[data-knext],[data-kmc],[data-ktf],[data-kch],[data-kreset],[data-kml],[data-kmr],[data-kar],[data-kwear],[data-kmode]"); if (!t) return;
   if (t.matches("[data-kar]")) { if (!VOICE.playAr(t.dataset.kar)) toast("Aucune voix arabe sur cet appareil."); return; }
-  if (t.matches("[data-kwear]")) { const id = t.dataset.kwear, it = KC.ITEMS.find(x => x.id === id), cur = kd().worn[it.slot]; if (!KC.owned(id)) return toast(`Encore ${it.stars - kd().stars} ⭐ pour débloquer`); KC.wear(it.slot, cur === id ? "" : id); route(); const c = document.querySelector(".kd-me .kc"); if (c) { KC.animate(c, "dance"); KC.say(c, cur === id ? "Hop, je l'enlève !" : "Trop beau ! Merci !"); } return; }
+  if (t.matches("[data-kwear]")) { const id = t.dataset.kwear, it = KC.ITEMS.find(x => x.id === id), cur = kd().worn[it.slot]; if (!KC.owned(id)) return kdSheet(`<div class="kd-acc"><div>${KC.html("happy", 150, { tap: false, worn: { [it.slot]: id } })}</div><h3>${it.e} ${esc(it.n)}</h3><p>Encore <b>${it.stars - (kd().stars || 0)} ⭐</b> pour le débloquer et le porter.</p><button class="btn kd-next" data-ksheetx>OK</button></div>`); KC.wear(it.slot, cur === id ? "" : id); route(); const c = document.querySelector(".kd-me .kc"); if (c) { KC.animate(c, "dance"); KC.say(c, cur === id ? "Hop, je l'enlève !" : "Trop beau ! Merci !"); } return; }
   if (t.matches("[data-kmode]")) { E.S.settings.kid = false; E.save(); location.hash = "#/home"; route(); return; }
   if (!AS) return; const s = AS.A.steps[AS.p]; if (!s && !t.matches("[data-knext]")) return;
   if (t.matches("[data-kplay]")) { if (s.k === "c") KA.play(`${s.ak}-c${s.i}`, s.c.t + ". " + s.c.x); else KA.play(AS.sayKey, AS.sayText); return; }
@@ -221,14 +222,23 @@ V.kdaily = () => {
 };
 
 /* ---- Mon Sirâj : tenues, badges, parcours ---- */
+const kdBadges = () => {
+  const D = kd(), advDone = kdAllAdv().filter(x => kdStat(x.id).s > 0).length, mods = typeof srsList === "function" ? srsList().length : 0, st = E.streak(), stars = D.stars || 0;
+  const worlds = KW.map(w => ({ n: w.n, e: w.e, c: w.c, on: kdWorldDone(w) === w.adv.length, boss: kdStat(w.id + "x").s > 0, how: `Termine les ${w.adv.length} aventures du monde « ${w.n} ».` }));
+  const m = (n, e, how, on) => ({ n, e, how, on, c: "#f4b836" });
+  return worlds.concat([m("Première étoile", "⭐", "Gagne ta première étoile.", stars >= 1), m("10 étoiles", "🌟", "Gagne 10 étoiles.", stars >= 10), m("50 étoiles", "✨", "Gagne 50 étoiles.", stars >= 50), m("100 étoiles", "💫", "Gagne 100 étoiles.", stars >= 100),
+    m("3 jours de suite", "🔥", "Reviens 3 jours de suite.", st >= 3), m("7 jours de suite", "🔥", "Reviens 7 jours de suite.", st >= 7), m("30 jours de suite", "☄️", "Reviens 30 jours de suite.", st >= 30),
+    m("10 aventures", "🗺️", "Termine 10 aventures.", advDone >= 10), m("30 aventures", "🧭", "Termine 30 aventures.", advDone >= 30), m("Explorateur", "🏔️", `Termine toutes les aventures (${K.count()}).`, advDone >= K.count()),
+    m("5 modules retenus", "🧠", "Retiens 5 modules dans ta mémoire.", mods >= 5), m("20 modules retenus", "🎓", "Retiens 20 modules dans ta mémoire.", mods >= 20), m("Défi du jour", "🎯", "Relève le défi du jour.", D.daily === kdToday() || !!D.daily)]);
+};
 V.album = () => {
   const D = kd(), done = kdAllAdv().filter(x => kdStat(x.id).s > 0).length, tot = K.count(), worn = D.worn;
   const slots = { face: "Visage", neck: "Cou", head: "Tête", back: "Dos", fx: "Magie" };
   return `<div class="kd">${kdSky()}<div class="kd-me"><div class="kd-mec">${KC.html("happy", 190, { sparks: true })}</div><p class="muted small" style="text-align:center">Touche Sirâj : il réagit !</p></div>
   <div class="kd-stats"><div><b>⭐ ${D.stars}</b><span>étoiles</span></div><div><b>🔥 ${E.streak()}</b><span>série</span></div><div><b>${done}/${tot}</b><span>aventures</span></div></div>
   <h3>Les tenues de Sirâj</h3><p class="muted small">Gagne des étoiles en terminant des aventures pour débloquer de nouvelles tenues.</p>
-  <div class="kd-wardrobe">${KC.ITEMS.map(it => { const own = KC.owned(it.id), on = worn[it.slot] === it.id; return `<button class="kd-item${own ? "" : " lock"}${on ? " on" : ""}" data-kwear="${it.id}"><span>${own ? it.e : "🔒"}</span><b>${esc(it.n)}</b><small>${own ? (on ? "Portée ✓" : slots[it.slot]) : it.stars + " ⭐"}</small></button>`; }).join("")}</div>
-  <h3>Mes badges</h3><div class="kd-badges">${KW.map(w => { const all = kdWorldDone(w) === w.adv.length, boss = kdStat(w.id + "x").s > 0; return `<a class="kd-badge${all ? " on" : ""}" href="#/kids/${w.id}" style="--c:${w.c}"><span>${all ? w.e : "❔"}</span><small>${esc(w.n)}</small>${boss ? `<em>🏆</em>` : ""}</a>`; }).join("")}</div>
+  <div class="kd-wardrobe">${KC.ITEMS.slice().sort((a, b) => a.stars - b.stars).map(it => { const own = KC.owned(it.id), on = worn[it.slot] === it.id; return `<button class="kd-item${own ? "" : " lock"}${on ? " on" : ""}" data-kwear="${it.id}"><span>${it.e}</span><b>${esc(it.n)}</b><small>${own ? (on ? "Portée ✓" : slots[it.slot]) : "🔒 " + it.stars + " ⭐"}</small></button>`; }).join("")}</div>
+  <h3>Mes badges</h3><p class="muted small">Touche un badge pour voir comment l'obtenir.</p><div class="kd-badges">${kdBadges().map(b => `<button class="kd-badge${b.on ? " on" : ""}" data-kbadge="${esc(b.n)}|${esc(b.how)}|${b.on ? 1 : 0}|${b.e}" style="--c:${b.c || "#f4b836"}"><span>${b.e}</span><small>${esc(b.n)}</small>${b.boss ? `<em>🏆</em>` : ""}</button>`).join("")}</div>
   <div class="card" style="margin-top:16px"><h3>Taille du texte</h3><div><button class="pill ${kd().size === "l" ? "" : "on"}" data-ksize="n">Normal</button><button class="pill ${kd().size === "l" ? "on" : ""}" data-ksize="l">Grand</button></div></div>
   <div class="card" style="margin-top:12px"><h3>Pour les grands</h3><p class="muted small">Un parcours plus détaillé en 100 niveaux est disponible pour les adultes et les plus grands.</p><button class="btn sec" data-kmode>Ouvrir le parcours des grands</button></div></div>`;
 };

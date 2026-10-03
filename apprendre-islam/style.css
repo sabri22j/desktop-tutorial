@@ -610,3 +610,8 @@ main.p3d{animation:p3d .5s cubic-bezier(.2,.8,.25,1)}@keyframes p3d{from{opacity
 .kd-acc{text-align:center}.kd-acc ul{list-style:none;padding:0;text-align:left;margin:10px 0;font-weight:700;line-height:1.9}.kd-later{border:0;background:none;color:var(--muted);font:800 1rem var(--fb);padding:12px;width:100%;cursor:pointer}
 .kd-hl{background:var(--surface);border-radius:16px;padding:10px 14px;line-height:1.9;font-weight:700;margin:8px 0}.kd-hl span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font-size:.78rem;margin-right:6px}
 .kd-srs small b{display:inline}
+
+.kd-item.lock{opacity:1;background:var(--surface2)}.kd-item.lock span{filter:grayscale(1);opacity:.55}.kd-item.lock small{color:var(--gold-d)}
+button.kd-badge{font-family:var(--fb);cursor:pointer}.kd-badge span{filter:grayscale(1);opacity:.45}.kd-badge.on span{filter:none;opacity:1}.kd-badge small{margin-top:2px}
+.kd-bigb{font-size:5rem;line-height:1.2}.kd-bigb.lock{filter:grayscale(1);opacity:.5}
+.kc .a-bub,.kc .a-hrt,.kc .a-moon{animation:kdfl 3s ease-in-out infinite}
