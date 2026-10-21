@@ -23,8 +23,14 @@ jobs:
           enablement: true
       - name: Liste des enregistrements de noms
         run: node apprendre-islam/tools/gen-noms-index.js
+      - name: Assembler le site (accueil à la racine, application sous /app)
+        run: |
+          mkdir -p _site/app
+          cp -r site/. _site/
+          cp -r apprendre-islam/. _site/app/
+          rm -rf _site/app/tools _site/app/server _site/app/README.md
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: apprendre-islam
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

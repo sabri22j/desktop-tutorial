@@ -2,6 +2,8 @@
 
 Application mobile (PWA, sans dépendance). Ouvrir `index.html`, ou : `python3 -m http.server` puis http://localhost:8000 (installable sur téléphone via le navigateur).
 
+En ligne, l'application est publiée sous `https://sirat-islam.fr/app/` ; la page d'accueil du site est dans `../site` (voir le README à la racine).
+
 ## Contenu
 - **101 niveaux (0 à 100), 155 chapitres, 775 questions** rédigés : fondamentaux, Sîra complète, prophètes (Adam à Sulayman, Yunus, Ayyub, Musa, Issa, Yusuf…), compagnons, histoire après le Prophète ﷺ (califes, dynasties, sciences), Coran, pratique (prière, jeûne, zakat, Hajj, invocations), croyance, éthique, grands bilans et examen final.
 - Chaque chapitre : 2 leçons + question rapide, quiz de 5 questions, sources citées, « Le savais-tu ? ».
