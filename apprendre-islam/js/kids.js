@@ -82,9 +82,13 @@ function kdAdventure(id) {
   const A = kdBuild(id); if (!A) return V.kids();
   AS = { A, p: 0, mis: 0, wrong: false, ans: false, sel: null, ord: [], match: {}, done: 0 };
   setTimeout(() => kdStep(), 0);
-  return `<div class="kd kd-play" style="--c:${A.c}"><div class="kd-bar"><a class="kd-x" href="${A.back}" aria-label="Quitter">✕</a><div class="kd-prog" id="kprog"></div></div><div id="kstage"></div></div>`;
+  return `<div class="kd kd-play" style="--c:${A.c}"><div class="kd-bar"><a class="kd-x" href="${A.back}" aria-label="Quitter">✕</a><div class="kd-prog" id="kprog"><div class="kd-hfill" style="width:2%"></div></div><div class="kd-lives" id="klives">❤️❤️❤️</div></div><div id="kstage"></div><div id="kfbp" class="kd-fbp" style="display:none"></div></div>`;
 }
-const kdProg = () => { const A = AS.A, el = document.getElementById("kprog"); if (el) el.innerHTML = A.steps.map((s, i) => `<i class="${i < AS.p ? "on" : i === AS.p ? "cur" : ""}${s.k === "q" ? " q" : ""}"></i>`).join(""); };
+const kdProg = () => {
+  const A = AS.A, el = document.getElementById("kprog"), lv = document.getElementById("klives");
+  if (el) { const pct = Math.round(AS.p / A.steps.length * 100), f = el.querySelector(".kd-hfill"); if (f) f.style.width = Math.max(2, pct) + "%"; }
+  if (lv) { const lives = Math.max(0, 3 - AS.mis); lv.innerHTML = Array.from({ length: 3 }, (_, i) => `<span class="${i < lives ? "on" : ""}">${i < lives ? "❤️" : "🤍"}</span>`).join(""); }
+};
 function kdStep(auto = true) {
   const st = document.getElementById("kstage"); if (!st || !AS) return; const A = AS.A;
   if (AS.p >= A.steps.length) return kdFinish();
@@ -102,31 +106,44 @@ function kdStep(auto = true) {
     else if (q.t === "tf") body = `<div class="kd-tf"><button class="kd-opt t" data-ktf="1"><span>✅ Vrai</span></button><button class="kd-opt f" data-ktf="0"><span>❌ Faux</span></button></div>`;
     else if (q.t === "order") body = `<div class="kd-slots">${q.items.map((_, k) => `<div class="kd-slot" data-slot="${k}"><i>${k + 1}</i><span></span></div>`).join("")}</div><div class="kd-chips">${q.shuf.map((o, k) => `<button class="kd-chip" data-kch="${k}">${esc(o)}</button>`).join("")}</div><button class="kd-reset" data-kreset>↺ Recommencer</button>`;
     else if (q.t === "match") body = `<div class="kd-match"><div class="kd-mcol">${q.pairs.map((p, k) => `<button class="kd-mit l" data-kml="${k}">${esc(p[0])}</button>`).join("")}</div><div class="kd-mcol">${q.rights.map((r, k) => `<button class="kd-mit r" data-kmr="${k}">${esc(r)}</button>`).join("")}</div></div>`;
-    st.innerHTML = `<div class="kd-pane kd-qs"><div class="kd-qhead">${KC.html("think", 84, { cls: "kd-mini" })}<button class="kd-listen sm" data-kplay>🔊</button><button class="kd-listen sm" data-krev="${s.ak}">📖</button></div><h2 class="kd-q">${esc(q.q)}</h2>${body}<div id="kfb" class="kd-fb"></div></div>`;
+    const qtL = { mc: "Choisis la bonne réponse", tf: "Vrai ou faux ?", order: "Remets dans l'ordre", match: "Associe les paires" };
+    st.innerHTML = `<div class="kd-pane kd-qs"><div class="kd-qhead"><span class="kd-qlabel">${qtL[q.t] || ""}</span><div class="kd-qbtns"><button class="kd-listen sm" data-kplay aria-label="Écouter">🔊</button><button class="kd-listen sm" data-krev="${s.ak}" aria-label="Revoir">📖</button></div></div><div class="kd-qchar">${KC.html("think", 80, { cls: "kd-mini", tap: false })}</div><h2 class="kd-q">${esc(q.q)}</h2>${body}<div id="kfb" class="kd-fb kd-fb-inline"></div></div>`;
     if (auto) KA.play(AS.sayKey, AS.sayText);
   }
 }
 const kdOk = () => { const m = Math.floor(Math.random() * 4) + 1; return [`sj-ok${m}`, K.lines[`sj-ok${m}`]]; };
 const kdKo = () => { const m = Math.floor(Math.random() * 3) + 1; return [`sj-ko${m}`, K.lines[`sj-ko${m}`]]; };
 function kdMark(bad) { const s = AS.A.steps[AS.p], D = kd(); D.miss = D.miss || {}; const k = s.ak + ":" + s.i; if (bad) D.miss[k] = 1; else if (!AS.wrong && !s.rq) delete D.miss[k]; }
+function kdFbPanel(ok, title, info, btnTxt) {
+  const p = document.getElementById("kfbp"); if (!p) return;
+  p.className = `kd-fbp ${ok ? "ok" : "ko"}`;
+  p.innerHTML = `<div class="kd-fbp-t"><span class="kd-fbp-i">${ok ? "✓" : "✗"}</span><div><b>${title}</b>${info ? `<p>${info}</p>` : ""}</div></div><button class="btn kd-fbp-btn" data-knext>${btnTxt}</button>`;
+  p.style.display = "";
+}
 function kdRight(extra = "") {
   AS.ans = true; kdMark(false); const [k, t] = kdOk(); SND.correct(); if (!AS.wrong && Math.random() < .5) confetti();
-  const fb = document.getElementById("kfb"), last = AS.p >= AS.A.steps.length - 1, again = AS.A.steps[AS.p].rq;
-  fb.innerHTML = `<div class="kd-ok"><b>${t}${AS.wrong || again ? "" : " ⭐"}</b>${extra ? `<p>${extra}</p>` : ""}</div><button class="btn kd-next" data-knext>${last ? "Terminer 🎉" : "Continuer ▶"}</button>`;
-  const h = document.querySelector(".kd-qhead .kc"); if (h) { h.querySelector(".kc-in").innerHTML = KC.svg("proud"); KC.animate(h, AS.wrong ? "wiggle" : "hop"); }
+  const last = AS.p >= AS.A.steps.length - 1, again = AS.A.steps[AS.p].rq;
+  kdFbPanel(true, t + (AS.wrong || again ? "" : " ⭐"), extra, last ? "Terminer 🎉" : "Continuer ▶");
+  const h = document.querySelector(".kd-qchar .kc"); if (h) { h.querySelector(".kc-in").innerHTML = KC.svg("proud"); KC.animate(h, AS.wrong ? "wiggle" : "hop"); }
   KA.play(k, t);
 }
 function kdFail(info = "", key, spoken = "") {
   const s = AS.A.steps[AS.p]; AS.ans = true; if (!AS.wrong) { AS.wrong = true; AS.mis++; } kdMark(true);
   const again = (s.rq || 0) < 2; if (again) AS.A.steps.push({ k: "q", ak: s.ak, i: s.i, q: s.q, rq: (s.rq || 0) + 1 }); kdProg();
-  const last = AS.p >= AS.A.steps.length - 1; SND.wrong(); const [k, t] = kdKo(), fb = document.getElementById("kfb");
-  fb.innerHTML = `<div class="kd-ko"><b>❌ Mauvaise réponse</b>${info ? `<p>${info}</p>` : ""}${again ? `<p class="kd-again">Pas grave ! Je te la reposerai tout à l'heure 😉</p>` : ""}</div><div class="kd-frow2"><button class="btn sec sm" data-krev="${s.ak}">📖 Revoir la leçon</button><button class="btn kd-next" data-knext>${last ? "Terminer 🎉" : "Continuer ▶"}</button></div>`;
-  KA.play(key || k, spoken || t); const h = document.querySelector(".kd-qhead .kc"); if (h) KC.animate(h, "wiggle");
+  const last = AS.p >= AS.A.steps.length - 1; SND.wrong(); const [k, t] = kdKo();
+  const infoHtml = (info ? `<p>${info}</p>` : "") + (again ? `<p class="kd-again">Pas grave, je te la reposerai 😉</p>` : "");
+  const p = document.getElementById("kfbp");
+  if (p) {
+    p.className = "kd-fbp ko";
+    p.innerHTML = `<div class="kd-fbp-t"><span class="kd-fbp-i">✗</span><div><b>${t}</b>${infoHtml}</div></div><button class="btn sec sm kd-fbp-rev" data-krev="${s.ak}" style="margin-top:8px">📖 Revoir la leçon</button><button class="btn kd-fbp-btn" data-knext style="margin-top:8px">${last ? "Terminer 🎉" : "Continuer ▶"}</button>`;
+    p.style.display = "";
+  }
+  KA.play(key || k, spoken || t); const h = document.querySelector(".kd-qchar .kc"); if (h) KC.animate(h, "wiggle");
 }
 function kdWrong(msg = "") {
   if (!AS.wrong) { AS.wrong = true; AS.mis++; } kdMark(true);
   SND.wrong(); const [k, t] = kdKo(), fb = document.getElementById("kfb"); AS.wc = (AS.wc || 0) + 1; fb.innerHTML = `<div class="kd-ko"><b>${t}</b>${msg ? `<p>${msg}</p>` : ""}${AS.wc >= 2 ? `<button class="btn sec sm" data-krev="${AS.A.steps[AS.p].ak}">📖 Revoir la leçon</button>` : ""}</div>`; KA.play(k, t);
-  const h = document.querySelector(".kd-qhead .kc"); if (h) KC.animate(h, "wiggle");
+  const h = document.querySelector(".kd-qchar .kc"); if (h) KC.animate(h, "wiggle");
 }
 function kdFinish() {
   if (AS.A.rev) return kdFinishReview();
@@ -164,13 +181,14 @@ document.addEventListener("click", e => {
     else if (x.matches("[data-khow]")) { kd().tuto = 1; E.save(); x.closest(".kd-how")?.remove(); const sj = document.querySelector(".kd-hero .kc"); if (sj) { KC.animate(sj, "dance"); KC.say(sj, "Super ! On y va !", 2200); } }
     else if (x.matches("[data-ksize]")) { kd().size = x.dataset.ksize; E.save(); document.body.classList.toggle("kd-lg", kd().size === "l"); document.querySelectorAll("[data-ksize]").forEach(b => b.classList.toggle("on", b.dataset.ksize === kd().size)); }
     return; }
+  const bd = e.target.closest("[data-kbadge]"); if (bd) { const [n, how, on, em] = bd.dataset.kbadge.split("|"); return kdSheet(`<div class="kd-acc"><div class="kd-bigb${on === "1" ? "" : " lock"}">${em}</div><h3>${n}</h3><p>${on === "1" ? "Badge obtenu, bravo !" : how}</p><button class="btn kd-next" data-ksheetx>OK</button></div>`);}
   const t = e.target.closest("[data-kplay],[data-kprev],[data-knext],[data-kmc],[data-ktf],[data-kch],[data-kreset],[data-kml],[data-kmr],[data-kar],[data-kwear],[data-kmode]"); if (!t) return;
   if (t.matches("[data-kar]")) { if (!VOICE.playAr(t.dataset.kar)) toast("Aucune voix arabe sur cet appareil."); return; }
-  if (t.matches("[data-kwear]")) { const id = t.dataset.kwear, it = KC.ITEMS.find(x => x.id === id), cur = kd().worn[it.slot]; if (!KC.owned(id)) return toast(`Encore ${it.stars - kd().stars} ⭐ pour débloquer`); KC.wear(it.slot, cur === id ? "" : id); route(); const c = document.querySelector(".kd-me .kc"); if (c) { KC.animate(c, "dance"); KC.say(c, cur === id ? "Hop, je l'enlève !" : "Trop beau ! Merci !"); } return; }
+  if (t.matches("[data-kwear]")) { const id = t.dataset.kwear, it = KC.ITEMS.find(x => x.id === id), cur = kd().worn[it.slot]; if (!KC.owned(id)) return kdSheet(`<div class="kd-acc"><div>${KC.html("happy", 150, { tap: false, worn: { [it.slot]: id } })}</div><h3>${it.e} ${esc(it.n)}</h3><p>Encore <b>${it.stars - (kd().stars || 0)} ⭐</b> pour le débloquer et le porter.</p><button class="btn kd-next" data-ksheetx>OK</button></div>`); KC.wear(it.slot, cur === id ? "" : id); route(); const c = document.querySelector(".kd-me .kc"); if (c) { KC.animate(c, "dance"); KC.say(c, cur === id ? "Hop, je l'enlève !" : "Trop beau ! Merci !"); } return; }
   if (t.matches("[data-kmode]")) { E.S.settings.kid = false; E.save(); location.hash = "#/home"; route(); return; }
   if (!AS) return; const s = AS.A.steps[AS.p]; if (!s && !t.matches("[data-knext]")) return;
   if (t.matches("[data-kplay]")) { if (s.k === "c") KA.play(`${s.ak}-c${s.i}`, s.c.t + ". " + s.c.x); else KA.play(AS.sayKey, AS.sayText); return; }
-  if (t.matches("[data-knext]")) { AS.p++; kdStep(); return; }
+  if (t.matches("[data-knext]")) { const fp = document.getElementById("kfbp"); if (fp) fp.style.display = "none"; AS.p++; kdStep(); return; }
   if (t.matches("[data-kprev]")) { if (AS.p > 0) { AS.p--; kdStep(); } return; }
   if (!s || s.k !== "q" || AS.ans) return; const q = s.q;
   if (t.matches("[data-kmc]")) {
@@ -204,14 +222,23 @@ V.kdaily = () => {
 };
 
 /* ---- Mon Sirâj : tenues, badges, parcours ---- */
+const kdBadges = () => {
+  const D = kd(), advDone = kdAllAdv().filter(x => kdStat(x.id).s > 0).length, mods = typeof srsList === "function" ? srsList().length : 0, st = E.streak(), stars = D.stars || 0;
+  const worlds = KW.map(w => ({ n: w.n, e: w.e, c: w.c, on: kdWorldDone(w) === w.adv.length, boss: kdStat(w.id + "x").s > 0, how: `Termine les ${w.adv.length} aventures du monde « ${w.n} ».` }));
+  const m = (n, e, how, on) => ({ n, e, how, on, c: "#f4b836" });
+  return worlds.concat([m("Première étoile", "⭐", "Gagne ta première étoile.", stars >= 1), m("10 étoiles", "🌟", "Gagne 10 étoiles.", stars >= 10), m("50 étoiles", "✨", "Gagne 50 étoiles.", stars >= 50), m("100 étoiles", "💫", "Gagne 100 étoiles.", stars >= 100),
+    m("3 jours de suite", "🔥", "Reviens 3 jours de suite.", st >= 3), m("7 jours de suite", "🔥", "Reviens 7 jours de suite.", st >= 7), m("30 jours de suite", "☄️", "Reviens 30 jours de suite.", st >= 30),
+    m("10 aventures", "🗺️", "Termine 10 aventures.", advDone >= 10), m("30 aventures", "🧭", "Termine 30 aventures.", advDone >= 30), m("Explorateur", "🏔️", `Termine toutes les aventures (${K.count()}).`, advDone >= K.count()),
+    m("5 modules retenus", "🧠", "Retiens 5 modules dans ta mémoire.", mods >= 5), m("20 modules retenus", "🎓", "Retiens 20 modules dans ta mémoire.", mods >= 20), m("Défi du jour", "🎯", "Relève le défi du jour.", D.daily === kdToday() || !!D.daily)]);
+};
 V.album = () => {
   const D = kd(), done = kdAllAdv().filter(x => kdStat(x.id).s > 0).length, tot = K.count(), worn = D.worn;
   const slots = { face: "Visage", neck: "Cou", head: "Tête", back: "Dos", fx: "Magie" };
   return `<div class="kd">${kdSky()}<div class="kd-me"><div class="kd-mec">${KC.html("happy", 190, { sparks: true })}</div><p class="muted small" style="text-align:center">Touche Sirâj : il réagit !</p></div>
   <div class="kd-stats"><div><b>⭐ ${D.stars}</b><span>étoiles</span></div><div><b>🔥 ${E.streak()}</b><span>série</span></div><div><b>${done}/${tot}</b><span>aventures</span></div></div>
   <h3>Les tenues de Sirâj</h3><p class="muted small">Gagne des étoiles en terminant des aventures pour débloquer de nouvelles tenues.</p>
-  <div class="kd-wardrobe">${KC.ITEMS.map(it => { const own = KC.owned(it.id), on = worn[it.slot] === it.id; return `<button class="kd-item${own ? "" : " lock"}${on ? " on" : ""}" data-kwear="${it.id}"><span>${own ? it.e : "🔒"}</span><b>${esc(it.n)}</b><small>${own ? (on ? "Portée ✓" : slots[it.slot]) : it.stars + " ⭐"}</small></button>`; }).join("")}</div>
-  <h3>Mes badges</h3><div class="kd-badges">${KW.map(w => { const all = kdWorldDone(w) === w.adv.length, boss = kdStat(w.id + "x").s > 0; return `<a class="kd-badge${all ? " on" : ""}" href="#/kids/${w.id}" style="--c:${w.c}"><span>${all ? w.e : "❔"}</span><small>${esc(w.n)}</small>${boss ? `<em>🏆</em>` : ""}</a>`; }).join("")}</div>
+  <div class="kd-wardrobe">${KC.ITEMS.slice().sort((a, b) => a.stars - b.stars).map(it => { const own = KC.owned(it.id), on = worn[it.slot] === it.id; return `<button class="kd-item${own ? "" : " lock"}${on ? " on" : ""}" data-kwear="${it.id}"><span>${it.e}</span><b>${esc(it.n)}</b><small>${own ? (on ? "Portée ✓" : slots[it.slot]) : "🔒 " + it.stars + " ⭐"}</small></button>`; }).join("")}</div>
+  <h3>Mes badges</h3><p class="muted small">Touche un badge pour voir comment l'obtenir.</p><div class="kd-badges">${kdBadges().map(b => `<button class="kd-badge${b.on ? " on" : ""}" data-kbadge="${esc(b.n)}|${esc(b.how)}|${b.on ? 1 : 0}|${b.e}" style="--c:${b.c || "#f4b836"}"><span>${b.e}</span><small>${esc(b.n)}</small>${b.boss ? `<em>🏆</em>` : ""}</button>`).join("")}</div>
   <div class="card" style="margin-top:16px"><h3>Taille du texte</h3><div><button class="pill ${kd().size === "l" ? "" : "on"}" data-ksize="n">Normal</button><button class="pill ${kd().size === "l" ? "on" : ""}" data-ksize="l">Grand</button></div></div>
   <div class="card" style="margin-top:12px"><h3>Pour les grands</h3><p class="muted small">Un parcours plus détaillé en 100 niveaux est disponible pour les adultes et les plus grands.</p><button class="btn sec" data-kmode>Ouvrir le parcours des grands</button></div></div>`;
 };
