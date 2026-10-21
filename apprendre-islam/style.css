@@ -615,3 +615,6 @@ main.p3d{animation:p3d .5s cubic-bezier(.2,.8,.25,1)}@keyframes p3d{from{opacity
 button.kd-badge{font-family:var(--fb);cursor:pointer}.kd-badge span{filter:grayscale(1);opacity:.45}.kd-badge.on span{filter:none;opacity:1}.kd-badge small{margin-top:2px}
 .kd-bigb{font-size:5rem;line-height:1.2}.kd-bigb.lock{filter:grayscale(1);opacity:.5}
 .kc .a-bub,.kc .a-hrt,.kc .a-moon{animation:kdfl 3s ease-in-out infinite}
+.kd>.kd-fbp{position:fixed;z-index:40;left:10px;right:10px;bottom:calc(70px + env(safe-area-inset-bottom));padding:16px 14px 14px;border:3px solid;border-radius:24px;max-width:540px}
+.kd>.kd-fbp.ok{border-color:#27b77c}.kd>.kd-fbp.ko{border-color:var(--coral)}
+.kd-fbp-row{display:flex;gap:8px;align-items:stretch}.kd-fbp-row .btn{margin:0}.kd-fbp-row .kd-fbp-btn{flex:1}.kd-fbp-row .kd-fbp-rev{flex:none;padding:0 16px}

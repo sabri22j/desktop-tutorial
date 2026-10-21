@@ -135,7 +135,7 @@ function kdFail(info = "", key, spoken = "") {
   const p = document.getElementById("kfbp");
   if (p) {
     p.className = "kd-fbp ko";
-    p.innerHTML = `<div class="kd-fbp-t"><span class="kd-fbp-i">✗</span><div><b>${t}</b>${infoHtml}</div></div><button class="btn sec sm kd-fbp-rev" data-krev="${s.ak}" style="margin-top:8px">📖 Revoir la leçon</button><button class="btn kd-fbp-btn" data-knext style="margin-top:8px">${last ? "Terminer 🎉" : "Continuer ▶"}</button>`;
+    p.innerHTML = `<div class="kd-fbp-t"><span class="kd-fbp-i">✗</span><div><b>${t}</b>${infoHtml}</div></div><div class="kd-fbp-row"><button class="btn sec sm kd-fbp-rev" data-krev="${s.ak}">📖 Leçon</button><button class="btn kd-fbp-btn" data-knext>${last ? "Terminer 🎉" : "Continuer ▶"}</button></div>`;
     p.style.display = "";
   }
   KA.play(key || k, spoken || t); const h = document.querySelector(".kd-qchar .kc"); if (h) KC.animate(h, "wiggle");
