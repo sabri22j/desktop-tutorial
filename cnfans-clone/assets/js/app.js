@@ -31,7 +31,7 @@
     if (el.textContent !== String(n)) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
     el.textContent = n; el.hidden = n === 0;
   };
-  const itemName = i => typeof i.id === 'number' ? t('prod.' + i.id) : i.pid ? t('item.imported', { id: i.pid }) : (i.name || '');
+  const itemName = i => i.title ? i.title : typeof i.id === 'number' ? t('prod.' + i.id) : i.pid ? t('item.imported', { id: i.pid }) : (i.name || '');
   const prodName = p => t('prod.' + p.id);
 
   const MOODS = { face: 'buddy-face.png', happy: 'buddy-happy.png', surprised: 'buddy-surprised.png', sad: 'buddy-sad.png' };
@@ -66,22 +66,21 @@
 
   function addToCart(item, from) {
     const found = cart.find(i => i.id === item.id);
-    if (found) found.qty++; else cart.push({ ...item, qty: 1 });
+    if (found) found.qty++; else cart.push({ ...item, qty: item.qty || 1 });
     saveCart(); toast(t('toast.added'));
     flyToCart(from, item.emoji);
     buddy.say(t('buddy.added'), 'happy');
   }
 
+  const LINK_HOSTS = ['taobao.com', 'tmall.com', 'tmall.hk', '1688.com', 'weidian.com', 'koudai.com', 'goofish.com', 'xianyu.com', 'tb.cn'];
   function parseLink(text) {
     let u;
     try { u = new URL(text.trim()); } catch { return null; }
     if (!/^https?:$/.test(u.protocol)) return null;
     const h = u.hostname.toLowerCase();
-    const platform = h.includes('weidian') ? 'weidian' : h.includes('1688') ? '1688'
-      : h.includes('tmall') ? 'tmall' : h.includes('taobao') ? 'taobao' : null;
-    if (!platform) return null;
-    const pid = u.searchParams.get('id') || u.searchParams.get('itemID') || u.pathname.split('/').filter(Boolean).pop() || '?';
-    return { platform, pid };
+    if (!LINK_HOSTS.some(d => h === d || h.endsWith('.' + d))) return null;
+    const pid = u.searchParams.get('id') || u.searchParams.get('itemID') || u.searchParams.get('itemId') || u.pathname.split('/').filter(Boolean).pop() || '';
+    return { url: u.href, pid };
   }
 
   const mascot = name => `<img class="mascot" src="${img(name + '.jpg')}" alt="${esc(t('alt.mascot'))}">`;
@@ -159,7 +158,7 @@
       const fee = sub * SERVICE_FEE;
       return `<h2>${t('cart.title')}</h2>
       <table><thead><tr><th>${t('cart.item')}</th><th>${t('cart.price')}</th><th>${t('cart.qty')}</th><th></th></tr></thead><tbody>
-      ${cart.map(i => `<tr><td>${esc(i.emoji)} ${esc(itemName(i))}</td>
+      ${cart.map(i => `<tr><td>${esc(i.emoji)} ${esc(itemName(i))}${i.opts ? `<div class="meta">${esc(i.opts)}</div>` : ''}</td>
         <td>${eur(priceEur(i.cny))}</td>
         <td><span class="qty"><button data-dec="${esc(i.id)}">−</button>${i.qty}<button data-inc="${esc(i.id)}">+</button></span></td>
         <td><button class="btn alt small" data-del="${esc(i.id)}">${t('cart.remove')}</button></td></tr>`).join('')}
@@ -202,6 +201,30 @@
       ${orders.map(o => `<tr><td>${esc(o.id)}</td><td>${esc(o.ts ? new Date(o.ts).toLocaleDateString(LOCALES[lang]) : o.date)}</td><td>${o.count}</td><td>${eur(o.total)}</td><td><span class="tag wait">${esc(has('status.' + o.status) ? t('status.' + o.status) : o.status)}</span></td></tr>`).join('')}</tbody></table>` : `<div class="empty">${mascot('fox-look')}<p>${t('acc.none')}</p></div>`}`;
     },
 
+    add() {
+      const L = state.pending;
+      if (!L) return `<div class="empty">${mascot('fox-look')}<p>${t('add.empty')}</p></div>`;
+      return `<h2>${t('add.title')}</h2>
+      <div class="panel" style="max-width:560px">
+        <form id="addForm">
+          <label for="aLink">${t('add.link')}</label><input id="aLink" type="text" value="${esc(L.url)}" readonly>
+          <label for="aName">${t('add.name')}</label><input id="aName" type="text" required maxlength="140" placeholder="${esc(t('add.name.ph'))}">
+          <div class="row2">
+            <div><label for="aPrice">${t('add.price')}</label><input id="aPrice" type="number" min="0.01" step="0.01" required></div>
+            <div><label for="aQty">${t('add.qty')}</label><input id="aQty" type="number" min="1" max="999" step="1" value="1" required></div>
+          </div>
+          <label for="aOpts">${t('add.opts')}</label><input id="aOpts" type="text" maxlength="140" placeholder="${esc(t('add.opts.ph'))}">
+          <p class="meta" id="addEst">${t('add.est', { eur: eur(0) })}</p>
+          <p class="meta">${t('add.note')}</p>
+          <button class="btn" type="submit">${t('add.submit')}</button>
+        </form></div>`;
+    },
+
+    page(slug) {
+      if (!PAGES.includes(slug)) return views.home();
+      return `<article class="doc"><h2>${t(`page.${slug}.t`)}</h2><p>${t(`page.${slug}.1`)}</p><p>${t(`page.${slug}.2`)}</p><a class="btn alt" href="#help">${t('nav.help')}</a></article>`;
+    },
+
     help() {
       return `<h2>${t('help.title')}</h2><div class="faq">${[1, 2, 3, 4, 5].map(n => `<details><summary>${t('faq.q' + n)}</summary><p>${t('faq.a' + n)}</p></details>`).join('')}</div>`;
     }
@@ -219,12 +242,13 @@
   }
 
   const FOOTER = [
-    ['f.service', [['f.service.1', 'help']]],
-    ['f.guide', [['f.guide.1', 'help'], ['f.guide.2', 'help'], ['f.guide.3', 'help'], ['f.guide.4', 'help']]],
-    ['f.pay', [['f.pay.1', 'help'], ['f.pay.2', 'help'], ['f.pay.3', 'help']]],
-    ['f.deliv', [['f.deliv.1', 'help'], ['f.deliv.2', 'help'], ['f.deliv.3', 'shipping'], ['f.deliv.4', 'help']]],
-    ['f.wh', [['f.wh.1', 'help'], ['f.wh.2', 'help'], ['f.wh.3', 'help'], ['f.wh.4', 'help']]]
+    ['f.service', [['f.service.1', 'page-contact']]],
+    ['f.guide', [['f.guide.1', 'page-guide'], ['f.guide.2', 'page-fees'], ['f.guide.3', 'page-guide'], ['f.guide.4', 'page-returns']]],
+    ['f.pay', [['f.pay.1', 'page-payment'], ['f.pay.2', 'page-payment'], ['f.pay.3', 'page-payment']]],
+    ['f.deliv', [['f.deliv.1', 'page-delivery'], ['f.deliv.2', 'page-delivery'], ['f.deliv.3', 'shipping'], ['f.deliv.4', 'page-delivery']]],
+    ['f.wh', [['f.wh.1', 'page-delivery'], ['f.wh.2', 'page-returns'], ['f.wh.3', 'page-storage'], ['f.wh.4', 'page-returns']]]
   ];
+  const LEGAL = ['page-terms', 'page-privacy', 'page-about'];
 
   function applyStatic() {
     document.documentElement.lang = lang;
@@ -235,7 +259,7 @@
     document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
     $('#catnav').innerHTML = CATEGORIES.map(c => `<a href="#products" data-gocat="${c}">${c === 'all' ? '☰ ' : ''}${t('cat.' + c)}</a>`).join('');
     $('#footerCols').innerHTML = FOOTER.map(([h, links]) => `<div><h4>${t(h)}</h4>${links.map(([k, to]) => `<a href="#${to}">${t(k)}</a>`).join('')}</div>`).join('');
-    $('#legal').innerHTML = [1, 2, 3].map(n => `<a href="#help">${t('legal.' + n)}</a>`).join('');
+    $('#legal').innerHTML = LEGAL.map((to, i) => `<a href="#${to}">${t('legal.' + (i + 1))}</a>`).join('');
     $('#langMenu').innerHTML = Object.entries(LANGS).map(([k, name]) => `<li><button type="button" role="menuitem" data-lang="${k}" class="${k === lang ? 'on' : ''}" lang="${k}">${name}</button></li>`).join('');
   }
 
@@ -272,6 +296,7 @@
     const [name = '', arg] = location.hash.slice(1).split('-');
     let html;
     if (name === 'product') html = views.product(arg);
+    else if (name === 'page') html = views.page(arg);
     else if (views[name]) html = views[name]();
     else html = views.home();
     app.innerHTML = html;
@@ -320,8 +345,15 @@
     if (e.target.id === 'searchForm') {
       const v = $('#searchInput').value.trim();
       const link = parseLink(v);
-      if (link) return addLink(link);
+      if (link) { state.pending = link; $('#searchInput').value = ''; return go('add'); }
+      if (/^https?:\/\//i.test(v)) { toast(t('link.unsupported')); buddy.say(t('link.unsupported'), 'surprised', 4500); return; }
       state.q = v; state.cat = 'all'; go('products');
+    }
+    if (e.target.id === 'addForm') {
+      const L = state.pending, cny = parseFloat($('#aPrice').value), qty = Math.max(1, parseInt($('#aQty').value, 10) || 1);
+      if (!L || !(cny > 0)) return;
+      addToCart({ id: 'link-' + Date.now(), pid: L.pid, url: L.url, title: $('#aName').value.trim(), opts: $('#aOpts').value.trim(), cny, qty, weight: 0.5, emoji: '🔗' });
+      state.pending = null; go('cart');
     }
     if (e.target.id === 'loginForm') {
       store.set('user', { name: $('#uName').value.trim(), email: $('#uMail').value.trim(), id: 'U' + Math.floor(100000 + Math.random() * 900000) });
@@ -329,10 +361,11 @@
     }
   });
 
-  function addLink({ platform, pid }) {
-    addToCart({ id: `link-${platform}-${pid}`, pid, cny: 100, weight: 0.5, emoji: '🔗' });
-    go('cart');
-  }
+  document.addEventListener('input', e => {
+    if (!e.target.closest('#addForm')) return;
+    const cny = parseFloat($('#aPrice').value) || 0, qty = Math.max(1, parseInt($('#aQty').value, 10) || 1);
+    $('#addEst').textContent = t('add.est', { eur: eur(priceEur(cny) * qty * (1 + SERVICE_FEE)) });
+  });
 
   window.addEventListener('hashchange', route);
   applyStatic();

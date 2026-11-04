@@ -7,7 +7,7 @@
 }
 :root[data-theme="dark"]{--bg:#1a0d0d;--card:#251313;--text:#fbeee8;--muted:#c9a59c;--line:#3d2222;--brand:#ee4535;--brand-d:#d93526;--gold:#ffd24a;--gold-d:#ffd24a;--accent:#ffd24a;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+body{margin:0;font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
 a{color:inherit;text-decoration:none}
 .container{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .header{background:var(--card);border-bottom:2px solid var(--gold)}
@@ -97,6 +97,7 @@ table{width:100%;border-collapse:collapse;background:var(--card);border-radius:v
 th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
 th{color:var(--muted);font-weight:600}
 label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,select,textarea,button{font-family:inherit}
 select,input[type=number],input[type=text],input[type=email],input[type=password]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
 .total{font-size:22px;font-weight:800;color:var(--brand)}
@@ -146,3 +147,9 @@ select,input[type=number],input[type=text],input[type=email],input[type=password
 .bubble{max-width:230px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:14px 14px 4px 14px;padding:8px 12px;font-size:13px;font-weight:500;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:0;pointer-events:none;transform:translateY(8px) scale(.9);transition:opacity .2s,transform .2s}
 .bubble.show{opacity:1;transform:none;animation:pop .25s ease}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+.doc{max-width:720px;margin:24px auto}
+.doc h2{margin:0 0 12px}
+.doc p{line-height:1.75;color:var(--text);margin:0 0 14px}
+input[readonly]{color:var(--muted)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
