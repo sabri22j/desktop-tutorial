@@ -12,6 +12,7 @@
   const img = n => (typeof ASSETS !== 'undefined' && ASSETS[n]) || 'assets/images/' + n;
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) document.querySelector('.logo-vid video')?.pause();
+  { const th = store.get('theme', null); if (th) document.documentElement.dataset.theme = th; }
   const state = { q: '', cat: 'Tous', calcW: 1 };
   const go = h => { if (location.hash === '#' + h || (!h && !location.hash)) route(); else location.hash = h; };
   let cart = store.get('cart', []);
@@ -20,7 +21,7 @@
     store.set('cart', cart);
     const el = $('#cartCount'), n = cart.reduce((n, i) => n + i.qty, 0);
     if (el.textContent !== String(n)) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
-    el.textContent = n;
+    el.textContent = n; el.hidden = n === 0;
   };
 
   const MOODS = { face: 'buddy-face.png', happy: 'buddy-happy.png', surprised: 'buddy-surprised.png', sad: 'buddy-sad.png' };
@@ -105,7 +106,6 @@
       <section class="hero">
         <h1>Achetez en Chine, livré chez vous</h1>
         <p>Collez un lien ou cherchez un produit : nous l’achetons, le contrôlons et l’expédions.</p>
-        <form id="linkForm" class="hero-search"><input id="linkInput" type="text" placeholder="Nom du produit ou lien" aria-label="Produit ou lien"><span class="plat-icons" aria-label="Plateformes : Taobao, 1688, Weidian"><i title="Taobao">淘</i><i title="1688">1688</i><i title="Weidian">店</i></span><button class="btn" type="submit">Rechercher</button></form>
       </section>
       <section class="panel why">
         <h2>Pourquoi choisir FoxBuy ?</h2>
@@ -214,7 +214,16 @@
     c.onchange = upd; w.oninput = upd; upd();
   }
 
+  function toggleTheme() {
+    const root = document.documentElement;
+    const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next; store.set('theme', next);
+  }
+
   function decorate(name) {
+    const user = store.get('user', null);
+    $('#accountBtn').textContent = user ? user.name : 'S’inscrire';
     const hero = $('.hero');
     if (hero) {
       if (!reduceMotion) {
@@ -245,7 +254,8 @@
   document.addEventListener('click', e => {
     const t = e.target;
     if (t.dataset.add) addToCart(PRODUCTS.find(p => p.id === +t.dataset.add), t);
-    if (t.closest('.hero-search') && !t.closest('button')) $('#linkInput').focus();
+    if (t.closest('.searchbar') && !t.closest('button')) $('#searchInput').focus();
+    if (t.closest('#themeBtn')) toggleTheme();
     const gc = t.closest('[data-gocat]');
     if (gc) { e.preventDefault(); state.cat = gc.dataset.gocat; state.q = ''; go('produits'); }
     if (t.dataset.tab) {
@@ -272,11 +282,6 @@
     if (e.target.id === 'searchForm') {
       const v = $('#searchInput').value.trim();
       const link = parseLink(v);
-      if (link) return addLink(link);
-      state.q = v; state.cat = 'Tous'; go('produits');
-    }
-    if (e.target.id === 'linkForm') {
-      const v = $('#linkInput').value.trim(), link = parseLink(v);
       if (link) return addLink(link);
       state.q = v; state.cat = 'Tous'; go('produits');
     }
