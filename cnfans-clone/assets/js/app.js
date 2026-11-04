@@ -24,7 +24,7 @@
   };
 
   const MOODS = { face: 'buddy-face.png', happy: 'buddy-happy.png', surprised: 'buddy-surprised.png', sad: 'buddy-sad.png' };
-  const TIPS = ['Colle un lien Taobao ou Weidian pour commencer !', 'Le calculateur de port est dans « Frais de port ».', 'Tes colis sont stockés 90 jours gratuitement.', 'Clique sur moi, j’adore ça !'];
+  const TIPS = ['Colle un lien produit pour commencer !', 'Le calculateur de port est dans « Frais de port ».', 'Tes colis sont stockés 90 jours gratuitement.', 'Clique sur moi, j’adore ça !'];
   const buddy = {
     el: $('#buddy'), img: $('#buddyImg'), bubble: $('#buddyBubble'), t1: 0, t2: 0,
     say(msg, mood = 'face', ms = 3200) {
@@ -76,7 +76,7 @@
 
   const mascot = name => `<img class="mascot" src="${img(name + '.jpg')}" alt="Le renard mascotte de FoxBuy">`;
   const HOW = [
-    { t: 'Ajoutez vos articles', d: 'Collez le lien d’un produit Taobao, Weidian ou 1688, ou choisissez dans le catalogue, puis payez en euros.', i: 'fox-look.jpg' },
+    { t: 'Ajoutez vos articles', d: 'Collez le lien d’un produit chinois, ou choisissez dans le catalogue, puis payez en euros.', i: 'fox-look.jpg' },
     { t: 'Achat et contrôle qualité', d: 'Nous achetons pour vous et recevons le colis à l’entrepôt. Vous validez les photos de contrôle avant l’envoi.', i: 'fox-surprised.jpg' },
     { t: 'Expédition et livraison', d: 'Regroupez vos achats, choisissez le transporteur et suivez votre colis jusqu’à votre porte.', i: 'fox-happy.jpg' }
   ];
@@ -88,7 +88,7 @@
       <a href="#produit-${p.id}">${thumb(p)}</a>
       <div class="card-body">
         <a class="card-title" href="#produit-${p.id}">${esc(p.name)}</a>
-        <div class="meta">${esc(p.platform)} · ${p.sales.toLocaleString('fr-FR')} ventes</div>
+        <div class="meta">${p.sales.toLocaleString('fr-FR')} ventes</div>
         <div class="row"><div class="price">${eur(priceEur(p.cny))} <small>¥${p.cny}</small></div>
         <button class="btn small" data-add="${p.id}">+ Panier</button></div>
       </div></article>`;
@@ -138,7 +138,7 @@
       const fee = priceEur(p.cny) * SERVICE_FEE;
       return `<section class="product">${thumb(p)}
         <div>
-          <span class="tag">${esc(p.platform)}</span>
+          <span class="tag">${esc(p.cat)}</span>
           <h1>${esc(p.name)}</h1>
           <div class="price">${eur(priceEur(p.cny))} <small>¥${p.cny}</small></div>
           <p class="meta">Poids estimé : ${p.weight} kg · ${p.sales.toLocaleString('fr-FR')} ventes · Catégorie : ${esc(p.cat)}</p>
@@ -154,7 +154,7 @@
       const fee = sub * SERVICE_FEE;
       return `<h2>Panier</h2>
       <table><thead><tr><th>Article</th><th>Prix</th><th>Qté</th><th></th></tr></thead><tbody>
-      ${cart.map(i => `<tr><td>${esc(i.emoji)} ${esc(i.name)}<div class="meta">${esc(i.platform)}</div></td>
+      ${cart.map(i => `<tr><td>${esc(i.emoji)} ${esc(i.name)}</td>
         <td>${eur(priceEur(i.cny))}</td>
         <td><span class="qty"><button data-dec="${esc(i.id)}">−</button>${i.qty}<button data-inc="${esc(i.id)}">+</button></span></td>
         <td><button class="btn alt small" data-del="${esc(i.id)}">Retirer</button></td></tr>`).join('')}
@@ -287,7 +287,7 @@
   });
 
   function addLink({ platform, pid }) {
-    addToCart({ id: `lien-${platform}-${pid}`, name: `Article ${platform} #${pid} (prix à confirmer)`, cny: 100, weight: 0.5, platform, emoji: '🔗' });
+    addToCart({ id: `lien-${platform}-${pid}`, name: `Article importé #${pid} (prix à confirmer)`, cny: 100, weight: 0.5, platform, emoji: '🔗' });
     go('panier');
   }
 
