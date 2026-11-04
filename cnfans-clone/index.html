@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentChine – Achetez en Chine, livré chez vous</title>
+<meta name="description" content="Service d'agent d'achat : collez un lien Taobao, Weidian ou 1688, nous achetons, contrôlons et expédions votre colis.">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="header">
+  <div class="container header-row">
+    <a href="#/" class="logo">Agent<span>Chine</span></a>
+    <form class="search" id="searchForm" role="search">
+      <input id="searchInput" type="search" placeholder="Rechercher un produit ou coller un lien Taobao / Weidian / 1688…" aria-label="Recherche">
+      <button type="submit">Rechercher</button>
+    </form>
+    <nav class="nav">
+      <a href="#/produits">Produits</a>
+      <a href="#/calculateur">Frais de port</a>
+      <a href="#/aide">Aide</a>
+      <a href="#/compte" class="btn-link">Mon compte</a>
+      <a href="#/panier" class="cart-link">Panier <span id="cartCount" class="badge">0</span></a>
+    </nav>
+  </div>
+</header>
+
+<main id="app" class="container"></main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>
+      <div class="logo">Agent<span>Chine</span></div>
+      <p>Votre agent d'achat en Chine. Démo front-end : aucune commande réelle n'est passée.</p>
+    </div>
+    <div>
+      <h4>Plateformes</h4>
+      <p>Taobao · Weidian · 1688 · Tmall · Xianyu</p>
+    </div>
+    <div>
+      <h4>Services</h4>
+      <p>Achat · Contrôle qualité (photos) · Stockage 90 jours · Expédition internationale</p>
+    </div>
+  </div>
+</footer>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
