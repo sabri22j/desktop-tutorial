@@ -15,7 +15,7 @@ a{color:inherit;text-decoration:none}
 .logo{font-weight:800;font-size:22px;display:inline-flex;align-items:center}
 .logo-img{width:36px;height:36px;border-radius:50%;margin-right:8px}
 .logo-vid{display:inline-block;width:46px;height:46px;border-radius:50%;overflow:hidden;margin-right:8px;border:2px solid var(--gold);background:#3a0b0b;flex:none}
-.logo-vid video{display:block;width:100%;height:100%;object-fit:cover;transform:scale(2.3);transform-origin:56% 24%}
+.logo-vid video{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.35);transform-origin:50% 38%}
 .mascot{display:block;margin:0 auto 12px;width:160px;max-width:60%;border-radius:16px}.logo span{color:var(--brand)}
 .search{flex:1;min-width:240px;display:flex}
 .search input{flex:1;padding:10px 14px;border:1px solid var(--line);border-right:0;border-radius:var(--r) 0 0 var(--r);background:var(--bg);color:var(--text);font-size:14px}
