@@ -23,6 +23,7 @@
 
   const state = { q: '', cat: 'all', calcW: 1 };
   const go = h => { if (location.hash === '#' + h || (!h && !location.hash)) route(); else location.hash = h; };
+  let sbUser = null;
   let cart = store.get('cart', []);
   let orders = store.get('orders', []);
   const saveCart = () => {
@@ -183,18 +184,15 @@
     },
 
     account() {
-      const user = store.get('user', null);
-      if (!user) return `<h2>${t('acc.title')}</h2><div class="panel" style="max-width:420px">
-        <form id="loginForm">
-          <label for="uName">${t('acc.name')}</label><input id="uName" type="text" required>
-          <label for="uMail">${t('acc.email')}</label><input id="uMail" type="email" required>
-          <p class="meta">${t('acc.note')}</p>
-          <button class="btn" type="submit">${t('acc.create')}</button>
-        </form></div>`;
-      return `<h2>${t('acc.hello', { name: esc(user.name) })}</h2>
+      if (!sbUser) return `<h2>${t('acc.title')}</h2><div class="panel" style="max-width:420px">
+        <button class="btn" id="googleSignIn" style="display:flex;align-items:center;gap:10px;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.7 0 6.9 5.5 3.3 13.5l7.8 6C13 13.6 18.1 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.2-.4-4.7H24v9h12.7c-.6 3-2.3 5.6-4.9 7.4l7.6 5.9c4.5-4.1 7.1-10.2 7.1-17.6z"/><path fill="#FBBC05" d="M11.1 28.5c-.6-1.6-.9-3.2-.9-5s.3-3.4.9-5l-7.8-6C1.2 15.6 0 19.7 0 24s1.2 8.4 3.3 11.9l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.6-5.9c-2 1.4-4.6 2.2-7.6 2.2-5.9 0-10.9-4-12.7-9.3l-7.8 6C6.9 42.5 14.7 48 24 48z"/></svg>
+          ${t('acc.google')}
+        </button></div>`;
+      const name = sbUser.user_metadata?.full_name || sbUser.email;
+      return `<h2>${t('acc.hello', { name: esc(name) })}</h2>
       <div class="two">
-        <div class="panel"><h3>${t('acc.wh')}</h3><p class="meta">${t('acc.addr', { name: esc(user.name), id: esc(user.id) })}<br>${t('acc.city')}</p></div>
-        <div class="panel"><h3>${t('acc.info')}</h3><p>${esc(user.email)}</p><button class="btn alt small" id="logout">${t('acc.logout')}</button></div>
+        <div class="panel"><h3>${t('acc.info')}</h3><p>${esc(sbUser.email)}</p><button class="btn alt small" id="logout">${t('acc.logout')}</button></div>
       </div>
       <h2>${t('acc.orders')}</h2>
       ${orders.length ? `<table><thead><tr><th>${t('acc.no')}</th><th>${t('acc.date')}</th><th>${t('acc.items')}</th><th>${t('acc.total')}</th><th>${t('acc.status')}</th></tr></thead><tbody>
@@ -277,8 +275,8 @@
   }
 
   function decorate(name) {
-    const user = store.get('user', null);
-    $('#accountBtn').textContent = user ? user.name : t('nav.signup');
+    const displayName = sbUser ? (sbUser.user_metadata?.full_name || sbUser.email) : null;
+    $('#accountBtn').textContent = displayName || t('nav.signup');
     const hero = $('.hero');
     if (hero && !reduceMotion) {
       for (let i = 0; i < 12; i++) {
@@ -333,7 +331,8 @@
       orders.unshift({ id: 'ORD' + Date.now().toString().slice(-6), ts: Date.now(), count: cart.reduce((n, i) => n + i.qty, 0), total: sub * (1 + SERVICE_FEE), status: 'pending' });
       store.set('orders', orders); cart = []; saveCart(); toast(t('toast.order')); buddy.say(t('buddy.order'), 'happy', 4000); go('account');
     }
-    if (el.id === 'logout') { localStorage.removeItem('user'); route(); }
+    if (el.id === 'googleSignIn') sbAuth.signInWithGoogle();
+    if (el.id === 'logout') sbAuth.signOut().then(() => { sbUser = null; route(); });
   });
 
   document.addEventListener('keydown', e => {
@@ -355,10 +354,6 @@
       addToCart({ id: 'link-' + Date.now(), pid: L.pid, url: L.url, title: $('#aName').value.trim(), opts: $('#aOpts').value.trim(), cny, qty, weight: 0.5, emoji: '🔗' });
       state.pending = null; go('cart');
     }
-    if (e.target.id === 'loginForm') {
-      store.set('user', { name: $('#uName').value.trim(), email: $('#uMail').value.trim(), id: 'U' + Math.floor(100000 + Math.random() * 900000) });
-      route();
-    }
   });
 
   document.addEventListener('input', e => {
@@ -370,5 +365,10 @@
   window.addEventListener('hashchange', route);
   applyStatic();
   saveCart();
-  route();
+  if (typeof sbAuth !== 'undefined') {
+    sbAuth.onAuthChange(u => { sbUser = u; route(); });
+    sbAuth.getUser().then(u => { sbUser = u; route(); });
+  } else {
+    route();
+  }
 })();
