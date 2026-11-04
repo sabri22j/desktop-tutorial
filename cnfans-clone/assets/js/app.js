@@ -11,6 +11,7 @@
   };
   const img = n => (typeof ASSETS !== 'undefined' && ASSETS[n]) || 'assets/images/' + n;
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) document.querySelector('.logo-vid video')?.pause();
   const state = { q: '', cat: 'Tous', calcW: 1 };
   const go = h => { if (location.hash === '#' + h || (!h && !location.hash)) route(); else location.hash = h; };
   let cart = store.get('cart', []);
@@ -104,8 +105,7 @@
       <section class="hero">
         <h1>Achetez en Chine, livré chez vous</h1>
         <p>Collez un lien ou cherchez un produit : nous l’achetons, le contrôlons et l’expédions.</p>
-        <form id="linkForm" class="hero-search"><input id="linkInput" type="text" placeholder="Nom du produit ou lien Taobao / Weidian / 1688…" aria-label="Produit ou lien"><button class="btn" type="submit">Rechercher</button></form>
-        <div class="plats">${PLATFORMS.map(p => `<span>${esc(p)}</span>`).join('')}</div>
+        <form id="linkForm" class="hero-search"><input id="linkInput" type="text" placeholder="Nom du produit ou lien" aria-label="Produit ou lien"><span class="plat-icons" aria-label="Plateformes : Taobao, 1688, Weidian"><i title="Taobao">淘</i><i title="1688">1688</i><i title="Weidian">店</i></span><button class="btn" type="submit">Rechercher</button></form>
       </section>
       <section class="panel why">
         <h2>Pourquoi choisir FoxBuy ?</h2>
@@ -118,10 +118,6 @@
             <div class="tabs" role="tablist">${HOW.map((h, i) => `<button class="tab ${i ? '' : 'on'}" role="tab" data-tab="${i}">Étape ${i + 1}</button>`).join('')}</div>
             <div id="howBody">${howHtml(0)}</div>
           </div>
-        </div>
-        <div class="panel">
-          <h2>Le renard en action</h2>
-          <video class="how-video" ${reduceMotion ? '' : 'autoplay'} muted loop playsinline preload="auto" poster="${img('hero.jpg')}" src="${img('fox-hero.mp4')}" aria-label="Le renard mascotte de FoxBuy, animé, devant une ville chinoise illuminée avec des colis"></video>
         </div>
       </section>
       <h2>Produits populaires</h2>
@@ -249,6 +245,7 @@
   document.addEventListener('click', e => {
     const t = e.target;
     if (t.dataset.add) addToCart(PRODUCTS.find(p => p.id === +t.dataset.add), t);
+    if (t.closest('.hero-search') && !t.closest('button')) $('#linkInput').focus();
     const gc = t.closest('[data-gocat]');
     if (gc) { e.preventDefault(); state.cat = gc.dataset.gocat; state.q = ''; go('produits'); }
     if (t.dataset.tab) {
