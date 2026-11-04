@@ -39,6 +39,7 @@
     return { platform, pid };
   }
 
+  const mascot = name => `<img class="mascot" src="assets/images/${name}.jpg" alt="Le renard mascotte de FoxBuy">`;
   const thumb = p => `<div class="thumb" style="background:${EMOJI_BG[p.id % EMOJI_BG.length]}">${p.emoji}</div>`;
 
   function card(p) {
@@ -61,9 +62,12 @@
     home() {
       return `
       <section class="hero">
-        <h1>Achetez en Chine, livré chez vous</h1>
-        <p>Collez le lien d’un produit Taobao, Weidian ou 1688 : nous l’achetons, le contrôlons et l’expédions.</p>
-        <form id="linkForm"><input id="linkInput" type="text" placeholder="https://item.taobao.com/item.htm?id=…" aria-label="Lien produit"><button class="btn" type="submit">Ajouter</button></form>
+        <div class="hero-text">
+          <h1>Achetez en Chine, livré chez vous</h1>
+          <p>Collez le lien d’un produit Taobao, Weidian ou 1688 : nous l’achetons, le contrôlons et l’expédions.</p>
+          <form id="linkForm"><input id="linkInput" type="text" placeholder="https://item.taobao.com/item.htm?id=…" aria-label="Lien produit"><button class="btn" type="submit">Ajouter</button></form>
+        </div>
+        <img class="hero-img" src="assets/images/hero.jpg" alt="Le renard mascotte de FoxBuy devant une ville chinoise illuminée avec des colis">
       </section>
       <section class="steps">
         <div class="step"><b>1</b><h3>Collez un lien</h3><p>Ou choisissez dans le catalogue.</p></div>
@@ -80,12 +84,12 @@
       const list = PRODUCTS.filter(p => (cat === 'Tous' || p.cat === cat) && p.name.toLowerCase().includes(q.toLowerCase()));
       return `<h2>${q ? `Résultats pour « ${esc(q)} »` : 'Catalogue'}</h2>
       <div class="cats">${CATEGORIES.map(c => `<span class="chip ${c === cat ? 'on' : ''}" data-cat="${esc(c)}">${esc(c)}</span>`).join('')}</div>
-      ${list.length ? `<div class="grid">${list.map(card).join('')}</div>` : '<div class="empty">Aucun produit trouvé.</div>'}`;
+      ${list.length ? `<div class="grid">${list.map(card).join('')}</div>` : `<div class="empty">${mascot('fox-surprised')}<p>Aucun produit trouvé.</p></div>`}`;
     },
 
     produit(id) {
       const p = PRODUCTS.find(x => x.id === +id);
-      if (!p) return '<div class="empty">Produit introuvable.</div>';
+      if (!p) return `<div class="empty">${mascot('fox-surprised')}<p>Produit introuvable.</p></div>`;
       const fee = priceEur(p.cny) * SERVICE_FEE;
       return `<section class="product">${thumb(p)}
         <div>
@@ -100,7 +104,7 @@
     },
 
     panier() {
-      if (!cart.length) return '<div class="empty"><h2>Votre panier est vide</h2><a class="btn" href="#produits">Parcourir le catalogue</a></div>';
+      if (!cart.length) return `<div class="empty">${mascot('fox-sad')}<h2>Votre panier est vide</h2><a class="btn" href="#produits">Parcourir le catalogue</a></div>`;
       const sub = cart.reduce((s, i) => s + priceEur(i.cny) * i.qty, 0);
       const fee = sub * SERVICE_FEE;
       return `<h2>Panier</h2>
@@ -146,7 +150,7 @@
       </div>
       <h2>Mes commandes</h2>
       ${orders.length ? `<table><thead><tr><th>N°</th><th>Date</th><th>Articles</th><th>Total</th><th>Statut</th></tr></thead><tbody>
-      ${orders.map(o => `<tr><td>${esc(o.id)}</td><td>${esc(o.date)}</td><td>${o.count}</td><td>${eur(o.total)}</td><td><span class="tag wait">${esc(o.status)}</span></td></tr>`).join('')}</tbody></table>` : '<div class="empty">Aucune commande pour le moment.</div>'}`;
+      ${orders.map(o => `<tr><td>${esc(o.id)}</td><td>${esc(o.date)}</td><td>${o.count}</td><td>${eur(o.total)}</td><td><span class="tag wait">${esc(o.status)}</span></td></tr>`).join('')}</tbody></table>` : `<div class="empty">${mascot('fox-look')}<p>Aucune commande pour le moment.</p></div>`}`;
     },
 
     aide() {
