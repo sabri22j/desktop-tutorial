@@ -101,7 +101,7 @@
           <p>Collez le lien d’un produit Taobao, Weidian ou 1688 : nous l’achetons, le contrôlons et l’expédions.</p>
           <form id="linkForm"><input id="linkInput" type="text" placeholder="https://item.taobao.com/item.htm?id=…" aria-label="Lien produit"><button class="btn" type="submit">Ajouter</button></form>
         </div>
-        <img class="hero-img" src="${img('hero.jpg')}" alt="Le renard mascotte de FoxBuy devant une ville chinoise illuminée avec des colis">
+        <video class="hero-img" ${reduceMotion ? '' : 'autoplay'} muted loop playsinline preload="auto" poster="${img('hero.jpg')}" src="${img('fox-hero.mp4')}" aria-label="Le renard mascotte de FoxBuy, animé, devant une ville chinoise illuminée avec des colis"></video>
       </section>
       <section class="steps">
         <div class="step"><b>1</b><h3>Collez un lien</h3><p>Ou choisissez dans le catalogue.</p></div>
