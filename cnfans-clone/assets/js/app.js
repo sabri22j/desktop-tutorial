@@ -85,7 +85,7 @@
   }
 
   const mascot = name => `<img class="mascot" src="${img(name + '.jpg')}" alt="${esc(t('alt.mascot'))}">`;
-  const HOW_IMG = ['fox-look.jpg', 'fox-surprised.jpg', 'fox-happy.jpg'];
+  const HOW_IMG = ['step-1.webp', 'step-2.webp', 'step-3.webp'];
   const howHtml = n => `<img class="how-img" src="${img(HOW_IMG[n])}" alt="${esc(t('alt.mascot'))}"><div><h3>${t(`how.${n + 1}t`)}</h3><p>${t(`how.${n + 1}d`)}</p></div>`;
   const thumb = p => `<div class="thumb" style="background:${EMOJI_BG[p.id % EMOJI_BG.length]}">${p.emoji}</div>`;
 

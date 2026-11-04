@@ -67,10 +67,10 @@ a{color:inherit;text-decoration:none}
 .tabs{display:flex;gap:10px}.tab{flex:1}
 .tab{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:12px;font-size:14px;cursor:pointer;transition:background .15s,color .15s}
 .tab.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
-#howBody{display:grid;grid-template-columns:200px 1fr;gap:22px;align-items:center}
+#howBody{display:grid;grid-template-columns:minmax(180px,260px) 1fr;gap:28px;align-items:center}
 #howBody h3{margin:0 0 6px}#howBody p{margin:0;color:var(--muted);font-size:14px}
-.how-img{width:200px;height:auto;aspect-ratio:1;object-fit:cover;object-position:50% 12%;border-radius:16px;border:2px solid var(--gold)}
-@media(max-width:560px){#howBody{grid-template-columns:1fr}.how-img{width:140px}}
+.how-img{display:block;width:auto;max-width:100%;height:260px;margin:0 auto;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(60,0,0,.25));animation:bob 3.2s ease-in-out infinite}
+@media(max-width:560px){#howBody{grid-template-columns:1fr}.how-img{height:200px}}
 @media(max-width:760px){.tagline{display:none}.header-row{flex-wrap:wrap}.tools{width:100%;margin-left:0}.signup{margin-left:auto}}
 @media(max-width:480px){.plat-icons{display:none}.searchbar{padding-left:16px}}
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0}
