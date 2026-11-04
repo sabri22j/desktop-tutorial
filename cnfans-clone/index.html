@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FoxBuy – Achetez en Chine, livré chez vous</title>
-<meta name="description" content="Service d'agent d'achat : collez un lien produit, nous achetons, contrôlons et expédions votre colis.">
+<title>FoxBuy – Buy from China, delivered to your door</title>
+<meta name="description" content="Shopping agent service: paste a product link, we buy, inspect and ship your parcel.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700&display=swap">
@@ -14,25 +14,26 @@
 <header class="header">
   <div class="container header-row">
     <a href="#" class="logo"><span class="logo-vid"><video autoplay muted loop playsinline preload="auto" poster="assets/images/logo.png" src="assets/video/fox-hero.mp4" aria-hidden="true"></video></span><span class="lg-name">Fox<span class="lg-buy">Buy</span></span></a>
-    <span class="tagline">Votre agent d’achat en Chine</span>
-    <nav class="tools" aria-label="Navigation principale">
-      <a href="#panier" class="ico" aria-label="Panier" title="Panier"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11h10.2l2-8H6"/><circle cx="9" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></svg><span id="cartCount" class="badge" hidden>0</span></a>
-      <a href="#compte" class="ico" aria-label="Mes commandes" title="Mes commandes"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/></svg></a>
-      <a href="#produits" class="ico" aria-label="Catalogue" title="Catalogue"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg></a>
-      <a href="#calculateur" class="ico" aria-label="Frais de port" title="Frais de port"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg></a>
-      <a href="#aide" class="ico" aria-label="Aide" title="Aide"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.01"/></svg></a>
-      <button type="button" class="ico" id="themeBtn" aria-label="Changer de thème" title="Clair / sombre"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
-      <a href="#compte" class="btn signup" id="accountBtn">S’inscrire</a>
+    <span class="tagline" data-i18n="tagline">Your shopping agent in China</span>
+    <nav class="tools">
+      <a href="#cart" class="ico" aria-label="Cart" title="Cart" data-i18n-aria="nav.cart" data-i18n-title="nav.cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11h10.2l2-8H6"/><circle cx="9" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></svg><span id="cartCount" class="badge" hidden>0</span></a>
+      <a href="#account" class="ico" aria-label="My orders" title="My orders" data-i18n-aria="nav.orders" data-i18n-title="nav.orders"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/></svg></a>
+      <a href="#products" class="ico" aria-label="Catalog" title="Catalog" data-i18n-aria="nav.catalog" data-i18n-title="nav.catalog"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg></a>
+      <a href="#shipping" class="ico" aria-label="Shipping cost" title="Shipping cost" data-i18n-aria="nav.shipping" data-i18n-title="nav.shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg></a>
+      <a href="#help" class="ico" aria-label="Help" title="Help" data-i18n-aria="nav.help" data-i18n-title="nav.help"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.01"/></svg></a>
+      <div class="lang"><button type="button" class="ico" id="langBtn" aria-haspopup="true" aria-expanded="false" aria-label="Language" title="Language" data-i18n-aria="nav.lang" data-i18n-title="nav.lang"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></button><ul class="lang-menu" id="langMenu" hidden></ul></div>
+      <button type="button" class="ico" id="themeBtn" aria-label="Light / dark" title="Light / dark" data-i18n-aria="nav.theme" data-i18n-title="nav.theme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+      <a href="#account" class="btn signup" id="accountBtn">Sign up</a>
     </nav>
   </div>
-<div class="catnav"><div class="container catnav-row"><a href="#produits" data-gocat="Tous">☰ Toutes les catégories</a><a href="#produits" data-gocat="Vêtements">Vêtements</a><a href="#produits" data-gocat="Chaussures">Chaussures</a><a href="#produits" data-gocat="Sacs">Sacs</a><a href="#produits" data-gocat="Électronique">Électronique</a><a href="#produits" data-gocat="Maison">Maison</a><a href="#produits" data-gocat="Accessoires">Accessoires</a></div></div>
+<div class="catnav"><div class="container catnav-row" id="catnav"></div></div>
 </header>
 
 <div class="container">
   <form class="searchbar" id="searchForm" role="search">
-    <input id="searchInput" type="search" placeholder="Nom du produit ou lien" aria-label="Produit ou lien">
-    <span class="plat-icons" aria-label="Plateformes : Taobao, 1688, Weidian"><i title="Taobao">淘</i><i title="1688">1688</i><i title="Weidian">店</i></span>
-    <button class="sbtn" type="submit" aria-label="Rechercher"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>
+    <input id="searchInput" type="search" placeholder="Product name or link" aria-label="Product name or link" data-i18n-ph="search.ph" data-i18n-aria="search.ph">
+    <span class="plat-icons" aria-hidden="true"><i title="Taobao">淘</i><i title="1688">1688</i><i title="Weidian">店</i></span>
+    <button class="sbtn" type="submit" aria-label="Search" data-i18n-aria="search.btn"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>
   </form>
 </div>
 
@@ -40,19 +41,20 @@
 
 <footer class="footer">
   <div class="container">
-    <div class="footer-cols"><div><h4>Service client</h4><a href="#aide">Nous contacter</a></div><div><h4>Guide d’achat</h4><a href="#aide">Guide d’achat</a><a href="#aide">Services et frais</a><a href="#aide">Tutoriel</a><a href="#aide">Retours et remboursements</a></div><div><h4>Paiement</h4><a href="#aide">Recharger mon compte</a><a href="#aide">Carte bancaire</a><a href="#aide">PayPal</a></div><div><h4>Livraison</h4><a href="#aide">Réception du colis</a><a href="#aide">Délais de livraison</a><a href="#calculateur">Tarifs</a><a href="#aide">Douane et taxes</a></div><div><h4>Entrepôt et SAV</h4><a href="#aide">Suivre mon colis</a><a href="#aide">Colis abîmé ?</a><a href="#aide">Stockage</a><a href="#aide">Demander un SAV</a></div></div>
+    <div class="footer-cols" id="footerCols"></div>
     <div class="footer-bottom">
       <div class="pays"><span class="pay"><svg viewBox="0 0 62 22" width="62" height="22" role="img" aria-label="PayPal"><text x="2" y="17" font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="700" font-size="17"><tspan fill="#253B80">Pay</tspan><tspan fill="#179BD7">Pal</tspan></text></svg></span><span class="pay"><svg viewBox="0 0 54 22" width="54" height="22" role="img" aria-label="Visa"><text x="2" y="18" font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="900" font-size="20" fill="#1A1F71">VISA</text></svg></span><span class="pay"><svg viewBox="0 0 32 22" width="32" height="22" role="img" aria-label="Mastercard"><circle cx="14" cy="11" r="9" fill="#EB001B"/><circle cx="26" cy="11" r="9" fill="#F79E1B"/><path d="M20 4.1a9 9 0 0 1 0 13.8 9 9 0 0 1 0-13.8z" fill="#FF5F00"/></svg></span><span class="pay"><svg viewBox="0 0 72 22" width="72" height="22" role="img" aria-label="Discover"><text x="2" y="16" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="12.5" fill="#231F20">DISC<tspan fill="#F76F20">O</tspan>VER</text></svg></span><span class="pay"><svg viewBox="0 0 92 22" width="92" height="22" role="img" aria-label="Diners Club"><circle cx="11" cy="11" r="9" fill="none" stroke="#0079BE" stroke-width="2.4"/><circle cx="11" cy="11" r="4.5" fill="#0079BE"/><text x="25" y="15" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="11" fill="#0079BE">Diners Club</text></svg></span><span class="pay"><svg viewBox="0 0 58 22" width="58" height="22" role="img" aria-label="Wise"><rect x="1" y="2" width="56" height="18" rx="9" fill="#9FE870"/><text x="29" y="15.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="900" font-size="13" fill="#163300">WISE</text></svg></span><span class="pay"><svg viewBox="0 0 92 22" width="92" height="22" role="img" aria-label="UnionPay"><path d="M7 2h10l-4 18H3z" fill="#E21836"/><path d="M16 2h10l-4 18H12z" fill="#00447C"/><path d="M25 2h6l-4 18h-9z" fill="#007B84"/><text x="35" y="15.5" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="11" fill="#1A1A1A">UnionPay</text></svg></span><span class="pay"><svg viewBox="0 0 58 22" width="58" height="22" role="img" aria-label="Virement bancaire"><path d="M3 9 11 3l8 6v2H3z" fill="#2563a8" opacity="0"/><text x="2" y="9" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="8.5" fill="#1F6FB5">BANK</text><text x="2" y="19" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="8.5" fill="#1F6FB5">TRANSFER</text></svg></span><span class="pay"><svg viewBox="0 0 50 22" width="50" height="22" role="img" aria-label="PCI DSS"><text x="2" y="16" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="13" fill="#1A1A1A">PCI</text><text x="26" y="16" font-family="Arial,Helvetica,sans-serif" font-weight="600" font-size="9" fill="#666">DSS</text></svg></span></div>
-      <nav class="legal"><a href="#aide">Conditions</a><a href="#aide">Confidentialité</a><a href="#aide">À propos de FoxBuy</a></nav>
+      <nav class="legal" id="legal"></nav>
     </div>
   </div>
 </footer>
 
-<button id="buddy" class="buddy" type="button" aria-label="Mascotte FoxBuy : cliquer pour un conseil">
+<button id="buddy" class="buddy" type="button" aria-label="FoxBuy mascot: click for a tip" data-i18n-aria="buddy.aria">
   <span id="buddyBubble" class="bubble" role="status" aria-live="polite"></span>
   <img id="buddyImg" src="assets/images/buddy-face.png" alt="">
 </button>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/i18n.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
