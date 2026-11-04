@@ -74,6 +74,12 @@
   }
 
   const mascot = name => `<img class="mascot" src="${img(name + '.jpg')}" alt="Le renard mascotte de FoxBuy">`;
+  const HOW = [
+    { t: 'Ajoutez vos articles', d: 'Collez le lien d’un produit Taobao, Weidian ou 1688, ou choisissez dans le catalogue, puis payez en euros.', i: 'fox-look.jpg' },
+    { t: 'Achat et contrôle qualité', d: 'Nous achetons pour vous et recevons le colis à l’entrepôt. Vous validez les photos de contrôle avant l’envoi.', i: 'fox-surprised.jpg' },
+    { t: 'Expédition et livraison', d: 'Regroupez vos achats, choisissez le transporteur et suivez votre colis jusqu’à votre porte.', i: 'fox-happy.jpg' }
+  ];
+  const howHtml = n => `<img class="how-img" src="${img(HOW[n].i)}" alt="Le renard mascotte de FoxBuy"><div><h3>${HOW[n].t}</h3><p>${HOW[n].d}</p></div>`;
   const thumb = p => `<div class="thumb" style="background:${EMOJI_BG[p.id % EMOJI_BG.length]}">${p.emoji}</div>`;
 
   function card(p, i = 0) {
@@ -96,18 +102,27 @@
     home() {
       return `
       <section class="hero">
-        <div class="hero-text">
-          <h1>Achetez en Chine, livré chez vous</h1>
-          <p>Collez le lien d’un produit Taobao, Weidian ou 1688 : nous l’achetons, le contrôlons et l’expédions.</p>
-          <form id="linkForm"><input id="linkInput" type="text" placeholder="https://item.taobao.com/item.htm?id=…" aria-label="Lien produit"><button class="btn" type="submit">Ajouter</button></form>
-        </div>
-        <video class="hero-img" ${reduceMotion ? '' : 'autoplay'} muted loop playsinline preload="auto" poster="${img('hero.jpg')}" src="${img('fox-hero.mp4')}" aria-label="Le renard mascotte de FoxBuy, animé, devant une ville chinoise illuminée avec des colis"></video>
+        <h1>Achetez en Chine, livré chez vous</h1>
+        <p>Collez un lien ou cherchez un produit : nous l’achetons, le contrôlons et l’expédions.</p>
+        <form id="linkForm" class="hero-search"><input id="linkInput" type="text" placeholder="Nom du produit ou lien Taobao / Weidian / 1688…" aria-label="Produit ou lien"><button class="btn" type="submit">Rechercher</button></form>
+        <div class="plats">${PLATFORMS.map(p => `<span>${esc(p)}</span>`).join('')}</div>
       </section>
-      <section class="steps">
-        <div class="step"><b>1</b><h3>Collez un lien</h3><p>Ou choisissez dans le catalogue.</p></div>
-        <div class="step"><b>2</b><h3>Nous achetons</h3><p>Paiement unique en euros.</p></div>
-        <div class="step"><b>3</b><h3>Contrôle photos</h3><p>Validez avant l’envoi.</p></div>
-        <div class="step"><b>4</b><h3>Livraison</h3><p>Expédition internationale suivie.</p></div>
+      <section class="panel why">
+        <h2>Pourquoi choisir FoxBuy ?</h2>
+        <ul class="checks">${['Paiement sécurisé', 'Contrôle qualité en photos', 'Support 7j/7', '90 jours de stockage gratuit', 'Livraison suivie', 'Achat protégé'].map(t => `<li>${t}</li>`).join('')}</ul>
+      </section>
+      <section class="how">
+        <div class="panel">
+          <h2>Comment acheter</h2>
+          <div class="how-body">
+            <div class="tabs" role="tablist">${HOW.map((h, i) => `<button class="tab ${i ? '' : 'on'}" role="tab" data-tab="${i}">Étape ${i + 1}</button>`).join('')}</div>
+            <div id="howBody">${howHtml(0)}</div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Le renard en action</h2>
+          <video class="how-video" ${reduceMotion ? '' : 'autoplay'} muted loop playsinline preload="auto" poster="${img('hero.jpg')}" src="${img('fox-hero.mp4')}" aria-label="Le renard mascotte de FoxBuy, animé, devant une ville chinoise illuminée avec des colis"></video>
+        </div>
       </section>
       <h2>Produits populaires</h2>
       <div class="grid">${[...PRODUCTS].sort((a, b) => b.sales - a.sales).slice(0, 8).map(card).join('')}</div>`;
@@ -212,12 +227,6 @@
           e.style.cssText = `left:${Math.random() * 100}%;--d:${(5 + Math.random() * 6).toFixed(1)}s;--w:${(Math.random() * 8).toFixed(1)}s;--s:${(4 + Math.random() * 6).toFixed(0)}px`;
           hero.appendChild(e);
         }
-        hero.addEventListener('mousemove', ev => {
-          const r = hero.getBoundingClientRect();
-          hero.style.setProperty('--rx', ((ev.clientY - r.top) / r.height - .5) * -6 + 'deg');
-          hero.style.setProperty('--ry', ((ev.clientX - r.left) / r.width - .5) * 8 + 'deg');
-        });
-        hero.addEventListener('mouseleave', () => { hero.style.setProperty('--rx', '0deg'); hero.style.setProperty('--ry', '0deg'); });
       }
     }
     if (name === '' && !decorate.welcomed) { decorate.welcomed = true; setTimeout(() => buddy.say('Salut ! Je suis ton renard FoxBuy. Colle un lien pour commencer.', 'happy', 4500), 700); }
@@ -240,6 +249,12 @@
   document.addEventListener('click', e => {
     const t = e.target;
     if (t.dataset.add) addToCart(PRODUCTS.find(p => p.id === +t.dataset.add), t);
+    const gc = t.closest('[data-gocat]');
+    if (gc) { e.preventDefault(); state.cat = gc.dataset.gocat; state.q = ''; go('produits'); }
+    if (t.dataset.tab) {
+      document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b === t));
+      $('#howBody').innerHTML = howHtml(+t.dataset.tab);
+    }
     if (t.closest('#buddy')) buddy.say(TIPS[Math.floor(Math.random() * TIPS.length)], 'happy');
     if (t.dataset.cat) { state.cat = t.dataset.cat; route(); }
     if (t.dataset.w) state.calcW = parseFloat(t.dataset.w) || 1;
@@ -264,9 +279,9 @@
       state.q = v; state.cat = 'Tous'; go('produits');
     }
     if (e.target.id === 'linkForm') {
-      const link = parseLink($('#linkInput').value);
-      if (!link) return toast('Lien non reconnu (Taobao, Weidian, 1688, Tmall)');
-      addLink(link);
+      const v = $('#linkInput').value.trim(), link = parseLink(v);
+      if (link) return addLink(link);
+      state.q = v; state.cat = 'Tous'; go('produits');
     }
     if (e.target.id === 'loginForm') {
       store.set('user', { name: $('#uName').value.trim(), email: $('#uMail').value.trim(), id: 'U' + Math.floor(100000 + Math.random() * 900000) });

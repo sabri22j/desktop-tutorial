@@ -5,7 +5,7 @@ const CATEGORIES = ['Tous', 'Vêtements', 'Chaussures', 'Sacs', 'Électronique',
 
 const PLATFORMS = ['Taobao', 'Weidian', '1688', 'Tmall'];
 
-const EMOJI_BG = ['#fde68a', '#bfdbfe', '#fbcfe8', '#bbf7d0', '#ddd6fe', '#fed7aa'];
+const EMOJI_BG = ['#fde9a8', '#fcd5ce', '#ffe3b3', '#fbd0c8', '#fff0c2', '#f9dcc4'];
 
 const PRODUCTS = [
   { id: 1, name: 'Sweat à capuche oversize coton épais', cat: 'Vêtements', cny: 138, weight: 0.8, platform: 'Taobao', emoji: '🧥', sales: 4210 },
