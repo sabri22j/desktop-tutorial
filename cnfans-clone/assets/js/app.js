@@ -9,6 +9,8 @@
     get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
   };
+  const state = { q: '', cat: 'Tous', calcW: 1 };
+  const go = h => { if (location.hash === '#' + h || (!h && !location.hash)) route(); else location.hash = h; };
   let cart = store.get('cart', []);
   let orders = store.get('orders', []);
   const saveCart = () => { store.set('cart', cart); $('#cartCount').textContent = cart.reduce((n, i) => n + i.qty, 0); };
@@ -41,9 +43,9 @@
 
   function card(p) {
     return `<article class="card">
-      <a href="#/produit/${p.id}">${thumb(p)}</a>
+      <a href="#produit-${p.id}">${thumb(p)}</a>
       <div class="card-body">
-        <a class="card-title" href="#/produit/${p.id}">${esc(p.name)}</a>
+        <a class="card-title" href="#produit-${p.id}">${esc(p.name)}</a>
         <div class="meta">${esc(p.platform)} · ${p.sales.toLocaleString('fr-FR')} ventes</div>
         <div class="row"><div class="price">${eur(priceEur(p.cny))} <small>¥${p.cny}</small></div>
         <button class="btn small" data-add="${p.id}">+ Panier</button></div>
@@ -73,8 +75,8 @@
       <div class="grid">${[...PRODUCTS].sort((a, b) => b.sales - a.sales).slice(0, 8).map(card).join('')}</div>`;
     },
 
-    produits(q = '', cat = 'Tous') {
-      q = decodeURIComponent(q || '');
+    produits() {
+      const { q, cat } = state;
       const list = PRODUCTS.filter(p => (cat === 'Tous' || p.cat === cat) && p.name.toLowerCase().includes(q.toLowerCase()));
       return `<h2>${q ? `Résultats pour « ${esc(q)} »` : 'Catalogue'}</h2>
       <div class="cats">${CATEGORIES.map(c => `<span class="chip ${c === cat ? 'on' : ''}" data-cat="${esc(c)}">${esc(c)}</span>`).join('')}</div>
@@ -93,12 +95,12 @@
           <p class="meta">Poids estimé : ${p.weight} kg · ${p.sales.toLocaleString('fr-FR')} ventes · Catégorie : ${esc(p.cat)}</p>
           <p class="meta">Frais de service (3 %) : ${eur(fee)}</p>
           <button class="btn" data-add="${p.id}">Ajouter au panier</button>
-          <a class="btn alt" href="#/calculateur?w=${p.weight}">Estimer le port</a>
+          <a class="btn alt" href="#calculateur" data-w="${p.weight}">Estimer le port</a>
         </div></section>`;
     },
 
     panier() {
-      if (!cart.length) return '<div class="empty"><h2>Votre panier est vide</h2><a class="btn" href="#/produits">Parcourir le catalogue</a></div>';
+      if (!cart.length) return '<div class="empty"><h2>Votre panier est vide</h2><a class="btn" href="#produits">Parcourir le catalogue</a></div>';
       const sub = cart.reduce((s, i) => s + priceEur(i.cny) * i.qty, 0);
       const fee = sub * SERVICE_FEE;
       return `<h2>Panier</h2>
@@ -117,8 +119,8 @@
       </div>`;
     },
 
-    calculateur(params) {
-      const w = parseFloat(new URLSearchParams(params).get('w')) || 1;
+    calculateur() {
+      const w = state.calcW;
       return `<h2>Calculateur de frais de port</h2>
       <div class="two"><div class="panel">
         <label for="cCountry">Pays</label>
@@ -164,12 +166,10 @@
   }
 
   function route() {
-    const [path, query = ''] = (location.hash.slice(1) || '/').split('?');
-    const [, name = '', arg] = path.split('/');
+    const [name = '', arg] = location.hash.slice(1).split('-');
     let html;
-    if (name === 'produits') html = views.produits(new URLSearchParams(query).get('q') || '', new URLSearchParams(query).get('cat') || 'Tous');
-    else if (name === 'produit') html = views.produit(arg);
-    else if (views[name]) html = views[name](query);
+    if (name === 'produit') html = views.produit(arg);
+    else if (views[name]) html = views[name]();
     else html = views.home();
     app.innerHTML = html;
     window.scrollTo(0, 0);
@@ -179,10 +179,8 @@
   document.addEventListener('click', e => {
     const t = e.target;
     if (t.dataset.add) addToCart(PRODUCTS.find(p => p.id === +t.dataset.add));
-    if (t.dataset.cat) {
-      const q = new URLSearchParams(location.hash.split('?')[1] || '').get('q') || '';
-      location.hash = `#/produits?q=${encodeURIComponent(q)}&cat=${encodeURIComponent(t.dataset.cat)}`;
-    }
+    if (t.dataset.cat) { state.cat = t.dataset.cat; route(); }
+    if (t.dataset.w) state.calcW = parseFloat(t.dataset.w) || 1;
     const idOf = v => cart.find(i => String(i.id) === v);
     if (t.dataset.inc) { idOf(t.dataset.inc).qty++; saveCart(); route(); }
     if (t.dataset.dec) { const i = idOf(t.dataset.dec); i.qty = Math.max(1, i.qty - 1); saveCart(); route(); }
@@ -190,7 +188,7 @@
     if (t.id === 'checkout') {
       const sub = cart.reduce((s, i) => s + priceEur(i.cny) * i.qty, 0);
       orders.unshift({ id: 'CMD' + Date.now().toString().slice(-6), date: new Date().toLocaleDateString('fr-FR'), count: cart.reduce((n, i) => n + i.qty, 0), total: sub * (1 + SERVICE_FEE), status: 'En attente de paiement' });
-      store.set('orders', orders); cart = []; saveCart(); toast('Commande créée (démo)'); location.hash = '#/compte';
+      store.set('orders', orders); cart = []; saveCart(); toast('Commande créée (démo)'); go('compte');
     }
     if (t.id === 'logout') { localStorage.removeItem('user'); route(); }
   });
@@ -201,7 +199,7 @@
       const v = $('#searchInput').value.trim();
       const link = parseLink(v);
       if (link) return addLink(link);
-      location.hash = `#/produits?q=${encodeURIComponent(v)}`;
+      state.q = v; state.cat = 'Tous'; go('produits');
     }
     if (e.target.id === 'linkForm') {
       const link = parseLink($('#linkInput').value);
@@ -216,7 +214,7 @@
 
   function addLink({ platform, pid }) {
     addToCart({ id: `lien-${platform}-${pid}`, name: `Article ${platform} #${pid} (prix à confirmer)`, cny: 100, weight: 0.5, platform, emoji: '🔗' });
-    location.hash = '#/panier';
+    go('panier');
   }
 
   window.addEventListener('hashchange', route);
