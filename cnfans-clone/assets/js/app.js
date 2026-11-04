@@ -9,11 +9,43 @@
     get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
   };
+  const img = n => (typeof ASSETS !== 'undefined' && ASSETS[n]) || 'assets/images/' + n;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const state = { q: '', cat: 'Tous', calcW: 1 };
   const go = h => { if (location.hash === '#' + h || (!h && !location.hash)) route(); else location.hash = h; };
   let cart = store.get('cart', []);
   let orders = store.get('orders', []);
-  const saveCart = () => { store.set('cart', cart); $('#cartCount').textContent = cart.reduce((n, i) => n + i.qty, 0); };
+  const saveCart = () => {
+    store.set('cart', cart);
+    const el = $('#cartCount'), n = cart.reduce((n, i) => n + i.qty, 0);
+    if (el.textContent !== String(n)) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+    el.textContent = n;
+  };
+
+  const MOODS = { face: 'buddy-face.png', happy: 'buddy-happy.png', surprised: 'buddy-surprised.png', sad: 'buddy-sad.png' };
+  const TIPS = ['Colle un lien Taobao ou Weidian pour commencer !', 'Le calculateur de port est dans « Frais de port ».', 'Tes colis sont stockés 90 jours gratuitement.', 'Clique sur moi, j’adore ça !'];
+  const buddy = {
+    el: $('#buddy'), img: $('#buddyImg'), bubble: $('#buddyBubble'), t1: 0, t2: 0,
+    say(msg, mood = 'face', ms = 3200) {
+      this.img.src = img(MOODS[mood]);
+      this.bubble.textContent = msg; this.bubble.classList.add('show');
+      this.el.classList.remove('jump'); void this.el.offsetWidth; if (mood === 'happy') this.el.classList.add('jump');
+      clearTimeout(this.t1); clearTimeout(this.t2);
+      this.t1 = setTimeout(() => { this.bubble.classList.remove('show'); this.img.src = img(MOODS.face); }, ms);
+    }
+  };
+
+  function flyToCart(from, emoji) {
+    const target = $('.cart-link');
+    if (reduceMotion || !from || !target || !from.animate) return;
+    const a = from.getBoundingClientRect(), b = target.getBoundingClientRect();
+    const f = document.createElement('div');
+    f.className = 'fly'; f.textContent = emoji;
+    f.style.left = a.left + a.width / 2 - 16 + 'px'; f.style.top = a.top + a.height / 2 - 16 + 'px';
+    document.body.appendChild(f);
+    const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+    f.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${dx * .5}px,${dy * .5 - 60}px) scale(1.4)`, opacity: 1, offset: .5 }, { transform: `translate(${dx}px,${dy}px) scale(.3)`, opacity: .2 }], { duration: 750, easing: 'ease-in-out' }).onfinish = () => f.remove();
+  }
 
   function toast(msg) {
     const t = $('#toast');
@@ -21,10 +53,12 @@
     clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2000);
   }
 
-  function addToCart(item) {
+  function addToCart(item, from) {
     const found = cart.find(i => i.id === item.id);
     if (found) found.qty++; else cart.push({ ...item, qty: 1 });
     saveCart(); toast('Ajouté au panier');
+    flyToCart(from, item.emoji);
+    buddy.say('Super choix ! Ajouté au panier.', 'happy');
   }
 
   function parseLink(text) {
@@ -39,11 +73,11 @@
     return { platform, pid };
   }
 
-  const mascot = name => `<img class="mascot" src="assets/images/${name}.jpg" alt="Le renard mascotte de FoxBuy">`;
+  const mascot = name => `<img class="mascot" src="${img(name + '.jpg')}" alt="Le renard mascotte de FoxBuy">`;
   const thumb = p => `<div class="thumb" style="background:${EMOJI_BG[p.id % EMOJI_BG.length]}">${p.emoji}</div>`;
 
-  function card(p) {
-    return `<article class="card">
+  function card(p, i = 0) {
+    return `<article class="card" style="--i:${i}">
       <a href="#produit-${p.id}">${thumb(p)}</a>
       <div class="card-body">
         <a class="card-title" href="#produit-${p.id}">${esc(p.name)}</a>
@@ -67,7 +101,7 @@
           <p>Collez le lien d’un produit Taobao, Weidian ou 1688 : nous l’achetons, le contrôlons et l’expédions.</p>
           <form id="linkForm"><input id="linkInput" type="text" placeholder="https://item.taobao.com/item.htm?id=…" aria-label="Lien produit"><button class="btn" type="submit">Ajouter</button></form>
         </div>
-        <img class="hero-img" src="assets/images/hero.jpg" alt="Le renard mascotte de FoxBuy devant une ville chinoise illuminée avec des colis">
+        <img class="hero-img" src="${img('hero.jpg')}" alt="Le renard mascotte de FoxBuy devant une ville chinoise illuminée avec des colis">
       </section>
       <section class="steps">
         <div class="step"><b>1</b><h3>Collez un lien</h3><p>Ou choisissez dans le catalogue.</p></div>
@@ -169,6 +203,28 @@
     c.onchange = upd; w.oninput = upd; upd();
   }
 
+  function decorate(name) {
+    const hero = $('.hero');
+    if (hero) {
+      if (!reduceMotion) {
+        for (let i = 0; i < 12; i++) {
+          const e = document.createElement('span'); e.className = 'ember';
+          e.style.cssText = `left:${Math.random() * 100}%;--d:${(5 + Math.random() * 6).toFixed(1)}s;--w:${(Math.random() * 8).toFixed(1)}s;--s:${(4 + Math.random() * 6).toFixed(0)}px`;
+          hero.appendChild(e);
+        }
+        hero.addEventListener('mousemove', ev => {
+          const r = hero.getBoundingClientRect();
+          hero.style.setProperty('--rx', ((ev.clientY - r.top) / r.height - .5) * -6 + 'deg');
+          hero.style.setProperty('--ry', ((ev.clientX - r.left) / r.width - .5) * 8 + 'deg');
+        });
+        hero.addEventListener('mouseleave', () => { hero.style.setProperty('--rx', '0deg'); hero.style.setProperty('--ry', '0deg'); });
+      }
+    }
+    if (name === '' && !decorate.welcomed) { decorate.welcomed = true; setTimeout(() => buddy.say('Salut ! Je suis ton renard FoxBuy. Colle un lien pour commencer.', 'happy', 4500), 700); }
+    else if (name === 'panier' && !cart.length) buddy.say('Ton panier est vide... remplissons-le !', 'sad');
+    else if (name === 'produits' && !$('.card')) buddy.say('Hmm, je n’ai rien trouvé.', 'surprised');
+  }
+
   function route() {
     const [name = '', arg] = location.hash.slice(1).split('-');
     let html;
@@ -178,11 +234,13 @@
     app.innerHTML = html;
     window.scrollTo(0, 0);
     renderCalc();
+    decorate(name);
   }
 
   document.addEventListener('click', e => {
     const t = e.target;
-    if (t.dataset.add) addToCart(PRODUCTS.find(p => p.id === +t.dataset.add));
+    if (t.dataset.add) addToCart(PRODUCTS.find(p => p.id === +t.dataset.add), t);
+    if (t.closest('#buddy')) buddy.say(TIPS[Math.floor(Math.random() * TIPS.length)], 'happy');
     if (t.dataset.cat) { state.cat = t.dataset.cat; route(); }
     if (t.dataset.w) state.calcW = parseFloat(t.dataset.w) || 1;
     const idOf = v => cart.find(i => String(i.id) === v);
@@ -192,7 +250,7 @@
     if (t.id === 'checkout') {
       const sub = cart.reduce((s, i) => s + priceEur(i.cny) * i.qty, 0);
       orders.unshift({ id: 'CMD' + Date.now().toString().slice(-6), date: new Date().toLocaleDateString('fr-FR'), count: cart.reduce((n, i) => n + i.qty, 0), total: sub * (1 + SERVICE_FEE), status: 'En attente de paiement' });
-      store.set('orders', orders); cart = []; saveCart(); toast('Commande créée (démo)'); go('compte');
+      store.set('orders', orders); cart = []; saveCart(); toast('Commande créée (démo)'); buddy.say('Commande créée ! Merci !', 'happy', 4000); go('compte');
     }
     if (t.id === 'logout') { localStorage.removeItem('user'); route(); }
   });
