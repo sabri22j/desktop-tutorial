@@ -18,6 +18,10 @@ const toNumber = (v: unknown) => {
 
 const toHttps = (s: string) => (s.startsWith('//') ? 'https:' + s : s);
 
+const asArray = (x: any): any[] => (Array.isArray(x) ? x : x ? [x] : []);
+
+const smallImages = (x: any): string[] => asArray(Array.isArray(x?.string) ? x.string : x);
+
 function timestamp() {
   return new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 19).replace('T', ' ');
 }
@@ -49,19 +53,22 @@ async function callTop(method: string, params: Record<string, string>) {
   return res.json();
 }
 
-function normalize(it: any) {
+function normalizeProduct(it: any) {
+  const base = it.item_basic_info ?? it;
+  const price = it.price_promotion_info ?? it;
   const id = String(it.item_id ?? it.num_iid ?? '');
-  const images: string[] = [it.pict_url, ...(it.small_images?.string ?? [])].filter(Boolean).map(toHttps);
+  const images: string[] = [base.pict_url, ...smallImages(base.small_images)].filter(Boolean).map(toHttps);
+  const link: string | undefined = it.publish_info?.click_url ?? it.click_url ?? it.item_url;
   return {
     id,
-    title: it.title ?? '',
+    title: base.title ?? '',
     image: images[0] ?? null,
     images,
-    originalPrice: toNumber(it.reserve_price),
-    promoPrice: toNumber(it.zk_final_price),
-    sales: it.volume ?? null,
-    shop: it.nick ?? null,
-    url: it.item_url ? toHttps(it.item_url) : `https://item.taobao.com/item.htm?id=${id}`,
+    originalPrice: toNumber(price.reserve_price),
+    promoPrice: toNumber(price.zk_final_price),
+    sales: base.volume ?? null,
+    shop: base.shop_title ?? it.nick ?? null,
+    url: link ? toHttps(link) : `https://item.taobao.com/item.htm?id=${id}`,
   };
 }
 
@@ -83,27 +90,26 @@ Deno.serve(async (req) => {
       if (r.error_response) {
         return reply({ error: 'api_error', message: r.error_response.sub_msg ?? r.error_response.msg }, 502);
       }
-      const list = r.tbk_item_info_get_response?.results?.n_tbk_item ?? [];
+      const list = asArray(r.tbk_item_info_get_response?.results?.n_tbk_item);
       if (!list.length) return reply({ error: 'not_found' }, 404);
-      return reply({ items: list.map(normalize) });
+      return reply({ items: list.map(normalizeProduct) });
     }
 
     if (q) {
       const adzoneId = Deno.env.get('TB_ADZONE_ID');
       if (!adzoneId) return reply({ error: 'not_configured' }, 503);
-      const r = await callTop('taobao.tbk.dg.material.optional', {
+      const r = await callTop('taobao.tbk.dg.material.optional.upgrade', {
         q: String(q),
         adzone_id: adzoneId,
-        material_id: '2',
-        platform: '2',
+        material_id: '80309',
         page_no: '1',
         page_size: '20',
       });
       if (r.error_response) {
         return reply({ error: 'api_error', message: r.error_response.sub_msg ?? r.error_response.msg }, 502);
       }
-      const list = r.tbk_dg_material_optional_response?.result_list?.map_data ?? [];
-      return reply({ items: list.map(normalize) });
+      const list = asArray(r.tbk_dg_material_optional_upgrade_response?.result_list?.map_data);
+      return reply({ items: list.filter((it: any) => it.item_id).map(normalizeProduct) });
     }
 
     return reply({ error: 'missing_input' }, 400);
