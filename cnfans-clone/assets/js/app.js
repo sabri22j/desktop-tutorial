@@ -152,7 +152,11 @@
     go('add');
     const res = await searchApi({ url: link.url });
     if (state.pending !== L) return;
-    if (res.error || !res.items?.length) return toast(t(SEARCH_ERRORS[res.error] || 'search.error'));
+    if (res.error || !res.items?.length) {
+      L.error = t(SEARCH_ERRORS[res.error] || 'search.error') + (res.message ? ' — ' + res.message : '');
+      if (location.hash === '#add') route();
+      return;
+    }
     L.item = res.items[0];
     if (location.hash === '#add') route();
   }
@@ -241,7 +245,7 @@
       if (!L) return `<div class="empty">${mascot('fox-look')}<p>${t('add.empty')}</p></div>`;
       const it = L.item;
       const price = it ? (it.promoPrice ?? it.originalPrice ?? '') : '';
-      return `<h2>${t('add.title')}</h2>
+      return `<h2>${t('add.title')}</h2>${L.error ? `<p class="meta" style="color:var(--brand);font-size:14px">${esc(L.error)}</p>` : ''}
       <div class="panel" style="max-width:560px">
         ${it?.image ? `<img class="add-pic" src="${esc(it.image)}" alt="${esc(it.title)}">` : ''}
         ${it ? `<p class="meta">${t('search.note')}</p>` : ''}

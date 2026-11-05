@@ -39,6 +39,11 @@ function isTaobaoLink(raw: string) {
   }
 }
 
+function describe(items: any[]) {
+  if (!items.length) return 'Apify n\'a renvoyé aucun résultat pour ce lien.';
+  return JSON.stringify(items[0]).slice(0, 300);
+}
+
 async function runActor(input: Record<string, unknown>): Promise<any[]> {
   const token = Deno.env.get('APIFY_TOKEN');
   if (!token) throw new Error('not_configured');
@@ -61,7 +66,7 @@ Deno.serve(async (req) => {
       if (!isTaobaoLink(url)) return reply({ error: 'unsupported_link' }, 400);
       const items = await runActor({ items: [url] });
       const detail = items.find((it: any) => it.type === 'productDetail' && it.title);
-      if (!detail) return reply({ error: 'not_found' }, 404);
+      if (!detail) return reply({ error: 'not_found', message: describe(items) }, 404);
       return reply({ items: [normalize(detail)] });
     }
 
