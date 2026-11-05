@@ -1,12 +1,9 @@
-import { createHash } from 'node:crypto';
-
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const TOP_URL = 'https://eco.taobao.com/router/rest';
-const ITEM_FIELDS = 'num_iid,title,pict_url,small_images,reserve_price,zk_final_price,volume,nick,item_url';
+const ACTOR = 'sinodata~taobao-product-search';
 
 const reply = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...CORS, 'Content-Type': 'application/json' } });
@@ -18,64 +15,41 @@ const toNumber = (v: unknown) => {
 
 const toHttps = (s: string) => (s.startsWith('//') ? 'https:' + s : s);
 
-const asArray = (x: any): any[] => (Array.isArray(x) ? x : x ? [x] : []);
-
-const smallImages = (x: any): string[] => asArray(Array.isArray(x?.string) ? x.string : x);
-
-function timestamp() {
-  return new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 19).replace('T', ' ');
-}
-
-function sign(params: Record<string, string>, secret: string) {
-  const body = Object.keys(params).sort().map((k) => k + params[k]).join('');
-  return createHash('md5').update(secret + body + secret).digest('hex').toUpperCase();
-}
-
-async function callTop(method: string, params: Record<string, string>) {
-  const appKey = Deno.env.get('TB_APP_KEY');
-  const appSecret = Deno.env.get('TB_APP_SECRET');
-  if (!appKey || !appSecret) throw new Error('not_configured');
-  const all: Record<string, string> = {
-    app_key: appKey,
-    method,
-    timestamp: timestamp(),
-    format: 'json',
-    v: '2.0',
-    sign_method: 'md5',
-    ...params,
-  };
-  all.sign = sign(all, appSecret);
-  const res = await fetch(TOP_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
-    body: new URLSearchParams(all),
-  });
-  return res.json();
-}
-
-function normalizeProduct(it: any) {
-  const base = it.item_basic_info ?? it;
-  const price = it.price_promotion_info ?? it;
-  const id = String(it.item_id ?? it.num_iid ?? '');
-  const images: string[] = [base.pict_url, ...smallImages(base.small_images)].filter(Boolean).map(toHttps);
-  const link: string | undefined = it.publish_info?.click_url ?? it.click_url ?? it.item_url;
+function normalize(it: any) {
+  const id = String(it.itemId ?? '');
+  const image = it.imageUrl ? toHttps(it.imageUrl) : null;
   return {
     id,
-    title: base.title ?? '',
-    image: images[0] ?? null,
-    images,
-    originalPrice: toNumber(price.reserve_price),
-    promoPrice: toNumber(price.zk_final_price),
-    sales: base.volume ?? null,
-    shop: base.shop_title ?? it.nick ?? null,
-    url: link ? toHttps(link) : `https://item.taobao.com/item.htm?id=${id}`,
+    title: it.title ?? '',
+    image,
+    images: image ? [image] : [],
+    originalPrice: toNumber(it.originalPrice),
+    promoPrice: toNumber(it.price),
+    sales: null,
+    shop: it.shopName ?? null,
+    url: it.url ?? `https://item.taobao.com/item.htm?id=${id}`,
   };
 }
 
-function itemIdFromLink(raw: string) {
-  const u = new URL(raw);
-  if (!/(^|\.)(taobao|tmall)\.(com|hk)$/i.test(u.hostname)) return null;
-  return u.searchParams.get('id') || u.searchParams.get('itemId') || null;
+function isTaobaoLink(raw: string) {
+  try {
+    return /(^|\.)(taobao|tmall)\.(com|hk)$/i.test(new URL(raw).hostname);
+  } catch {
+    return false;
+  }
+}
+
+async function runActor(input: Record<string, unknown>): Promise<any[]> {
+  const token = Deno.env.get('APIFY_TOKEN');
+  if (!token) throw new Error('not_configured');
+  const res = await fetch(`https://api.apify.com/v2/acts/${ACTOR}/run-sync-get-dataset-items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(input),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error('apify:' + (data?.error?.message ?? `HTTP ${res.status}`));
+  return Array.isArray(data) ? data : [];
 }
 
 Deno.serve(async (req) => {
@@ -84,37 +58,23 @@ Deno.serve(async (req) => {
     const { q, url } = await req.json();
 
     if (url) {
-      const id = itemIdFromLink(url);
-      if (!id) return reply({ error: 'unsupported_link' }, 400);
-      const r = await callTop('taobao.tbk.item.info.get', { num_iids: id, platform: '2', fields: ITEM_FIELDS });
-      if (r.error_response) {
-        return reply({ error: 'api_error', message: r.error_response.sub_msg ?? r.error_response.msg }, 502);
-      }
-      const list = asArray(r.tbk_item_info_get_response?.results?.n_tbk_item);
-      if (!list.length) return reply({ error: 'not_found' }, 404);
-      return reply({ items: list.map(normalizeProduct) });
+      if (!isTaobaoLink(url)) return reply({ error: 'unsupported_link' }, 400);
+      const items = await runActor({ items: [url] });
+      const detail = items.find((it: any) => it.type === 'productDetail' && it.title);
+      if (!detail) return reply({ error: 'not_found' }, 404);
+      return reply({ items: [normalize(detail)] });
     }
 
     if (q) {
-      const adzoneId = Deno.env.get('TB_ADZONE_ID');
-      if (!adzoneId) return reply({ error: 'not_configured' }, 503);
-      const r = await callTop('taobao.tbk.dg.material.optional.upgrade', {
-        q: String(q),
-        adzone_id: adzoneId,
-        material_id: '80309',
-        page_no: '1',
-        page_size: '20',
-      });
-      if (r.error_response) {
-        return reply({ error: 'api_error', message: r.error_response.sub_msg ?? r.error_response.msg }, 502);
-      }
-      const list = asArray(r.tbk_dg_material_optional_upgrade_response?.result_list?.map_data);
-      return reply({ items: list.filter((it: any) => it.item_id).map(normalizeProduct) });
+      const items = await runActor({ keywords: [String(q)] });
+      const list = items.filter((it: any) => it.type === 'product' && it.itemId);
+      return reply({ items: list.map(normalize) });
     }
 
     return reply({ error: 'missing_input' }, 400);
   } catch (e) {
     if (e.message === 'not_configured') return reply({ error: 'not_configured' }, 503);
+    if (e.message.startsWith('apify:')) return reply({ error: 'api_error', message: e.message.slice(6) }, 502);
     return reply({ error: 'server_error', message: e.message }, 500);
   }
 });
