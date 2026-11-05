@@ -21,7 +21,7 @@
   if (reduceMotion) document.querySelector('.logo-vid video')?.pause();
   { const th = store.get('theme', null); if (th) document.documentElement.dataset.theme = th; }
 
-  const state = { q: '', cat: 'all', calcW: 1 };
+  const state = { q: '', calcW: 1, results: [], cache: {}, pending: null };
   const go = h => { if (location.hash === '#' + h || (!h && !location.hash)) route(); else location.hash = h; };
   let sbUser = null;
   let cart = store.get('cart', []);
@@ -33,7 +33,6 @@
     el.textContent = n; el.hidden = n === 0;
   };
   const itemName = i => i.title ? i.title : typeof i.id === 'number' ? t('prod.' + i.id) : i.pid ? t('item.imported', { id: i.pid }) : (i.name || '');
-  const prodName = p => t('prod.' + p.id);
 
   const MOODS = { face: 'buddy-face.png', happy: 'buddy-happy.png', surprised: 'buddy-surprised.png', sad: 'buddy-sad.png' };
   const buddy = {
@@ -80,24 +79,82 @@
     if (!/^https?:$/.test(u.protocol)) return null;
     const h = u.hostname.toLowerCase();
     if (!LINK_HOSTS.some(d => h === d || h.endsWith('.' + d))) return null;
-    const pid = u.searchParams.get('id') || u.searchParams.get('itemID') || u.searchParams.get('itemId') || u.pathname.split('/').filter(Boolean).pop() || '';
-    return { url: u.href, pid };
+    return { url: u.href };
   }
 
   const mascot = name => `<img class="mascot" src="${img(name + '.jpg')}" alt="${esc(t('alt.mascot'))}">`;
   const HOW_IMG = ['step-1.webp', 'step-2.webp', 'step-3.webp'];
   const howHtml = n => `<img class="how-img" src="${img(HOW_IMG[n])}" alt="${esc(t('alt.mascot'))}"><div><h3>${t(`how.${n + 1}t`)}</h3><p>${t(`how.${n + 1}d`)}</p></div>`;
-  const thumb = p => `<div class="thumb" style="background:${EMOJI_BG[p.id % EMOJI_BG.length]}">${p.emoji}</div>`;
 
-  function card(p, i = 0) {
+  const CAT_KEYWORD = { clothing: '服装', shoes: '鞋子', bags: '包包', electronics: '数码', home: '家居', accessories: '配饰' };
+  const SEARCH_ERRORS = { not_configured: 'search.off', unsupported_link: 'search.unsupported', not_found: 'search.notfound' };
+
+  async function searchApi(body) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/search-products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY },
+        body: JSON.stringify(body)
+      });
+      const data = await r.json();
+      return r.ok ? data : { error: data.error ?? (r.status === 404 ? 'not_configured' : 'server_error'), message: data.message };
+    } catch {
+      return { error: 'network' };
+    }
+  }
+
+  function showError(box, res) {
+    const detail = res.message ? `<br><small>${esc(res.message)}</small>` : '';
+    box.innerHTML = `<div class="empty">${mascot('fox-surprised')}<p>${t(SEARCH_ERRORS[res.error] || 'search.error')}${detail}</p></div>`;
+  }
+
+  function resultCard(it, i = 0) {
+    const price = it.promoPrice ?? it.originalPrice;
+    const strike = it.promoPrice != null && it.originalPrice > it.promoPrice ? `<s>¥${it.originalPrice}</s>` : '';
+    const media = it.image ? `<img class="pic" src="${esc(it.image)}" alt="${esc(it.title)}" loading="lazy">` : '<div class="thumb">🛍️</div>';
     return `<article class="card" style="--i:${i}">
-      <a href="#product-${p.id}">${thumb(p)}</a>
+      <a href="${esc(it.url)}" target="_blank" rel="noopener">${media}</a>
       <div class="card-body">
-        <a class="card-title" href="#product-${p.id}">${esc(prodName(p))}</a>
-        <div class="meta">${t('sales', { n: num(p.sales) })}</div>
-        <div class="row"><div class="price">${eur(priceEur(p.cny))} <small>¥${p.cny}</small></div>
-        <button class="btn small" data-add="${p.id}">${t('addMini')}</button></div>
+        <a class="card-title" href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title)}</a>
+        <div class="meta">${it.sales != null ? t('sales', { n: num(Number(it.sales)) }) : ''}${it.shop ? ' · ' + esc(it.shop) : ''}</div>
+        <div class="row"><div class="price">${price != null ? `${eur(priceEur(price))} <small>¥${price}</small>${strike}` : ''}</div>
+        <button class="btn small" data-choose="${esc(it.id)}">${t('search.choose')}</button></div>
       </div></article>`;
+  }
+
+  function showResults(box, items) {
+    state.results = items;
+    box.innerHTML = items.length
+      ? `<div class="grid">${items.map(resultCard).join('')}</div>`
+      : `<div class="empty">${mascot('fox-surprised')}<p>${t('none')}</p></div>`;
+    if (!items.length) buddy.say(t('buddy.none'), 'surprised');
+  }
+
+  let searchSeq = 0;
+  function runSearch(q) {
+    const box = $('#results');
+    if (!box) return;
+    const seq = ++searchSeq;
+    if (state.cache[q]) return showResults(box, state.cache[q]);
+    box.innerHTML = `<p class="meta">${t('search.loading')}</p>`;
+    searchApi({ q }).then(res => {
+      const target = $('#results');
+      if (seq !== searchSeq || !target) return;
+      if (res.error || !res.items) return showError(target, res);
+      state.cache[q] = res.items;
+      showResults(target, res.items);
+    });
+  }
+
+  async function openLink(link) {
+    const L = { url: link.url, item: null };
+    state.pending = L;
+    go('add');
+    const res = await searchApi({ url: link.url });
+    if (state.pending !== L) return;
+    if (res.error || !res.items?.length) return toast(t(SEARCH_ERRORS[res.error] || 'search.error'));
+    L.item = res.items[0];
+    if (location.hash === '#add') route();
   }
 
   function shippingCost(country, method, kg) {
@@ -124,33 +181,13 @@
             <div id="howBody">${howHtml(0)}</div>
           </div>
         </div>
-      </section>
-      <h2>${t('home.popular')}</h2>
-      <div class="grid">${[...PRODUCTS].sort((a, b) => b.sales - a.sales).slice(0, 8).map(card).join('')}</div>`;
+      </section>`;
     },
 
     products() {
-      const { q, cat } = state;
-      const list = PRODUCTS.filter(p => (cat === 'all' || p.cat === cat) && prodName(p).toLowerCase().includes(q.toLowerCase()));
-      return `<h2>${q ? t('res.title', { q: esc(q) }) : t('catalog')}</h2>
-      <div class="cats">${CATEGORIES.map(c => `<span class="chip ${c === cat ? 'on' : ''}" data-cat="${c}">${t('cat.' + c)}</span>`).join('')}</div>
-      ${list.length ? `<div class="grid">${list.map(card).join('')}</div>` : `<div class="empty">${mascot('fox-surprised')}<p>${t('none')}</p></div>`}`;
-    },
-
-    product(id) {
-      const p = PRODUCTS.find(x => x.id === +id);
-      if (!p) return `<div class="empty">${mascot('fox-surprised')}<p>${t('notfound')}</p></div>`;
-      const fee = priceEur(p.cny) * SERVICE_FEE;
-      return `<section class="product">${thumb(p)}
-        <div>
-          <span class="tag">${t('cat.' + p.cat)}</span>
-          <h1>${esc(prodName(p))}</h1>
-          <div class="price">${eur(priceEur(p.cny))} <small>¥${p.cny}</small></div>
-          <p class="meta">${t('weight', { w: p.weight })} · ${t('sales', { n: num(p.sales) })} · ${t('categoryLine', { c: t('cat.' + p.cat) })}</p>
-          <p class="meta">${t('fee', { fee: eur(fee) })}</p>
-          <button class="btn" data-add="${p.id}">${t('addCart')}</button>
-          <a class="btn alt" href="#shipping" data-w="${p.weight}">${t('estimate')}</a>
-        </div></section>`;
+      const q = state.q.trim();
+      if (!q) return `<div class="empty">${mascot('fox-look')}<p>${t('search.start')}</p></div>`;
+      return `<h2>${t('res.title', { q: esc(q) })}</h2><div id="results"></div>`;
     },
 
     cart() {
@@ -159,7 +196,7 @@
       const fee = sub * SERVICE_FEE;
       return `<h2>${t('cart.title')}</h2>
       <table><thead><tr><th>${t('cart.item')}</th><th>${t('cart.price')}</th><th>${t('cart.qty')}</th><th></th></tr></thead><tbody>
-      ${cart.map(i => `<tr><td>${esc(i.emoji)} ${esc(itemName(i))}${i.opts ? `<div class="meta">${esc(i.opts)}</div>` : ''}</td>
+      ${cart.map(i => `<tr><td>${i.image ? `<img class="cart-thumb" src="${esc(i.image)}" alt="">` : esc(i.emoji ?? '')} ${esc(itemName(i))}${i.opts ? `<div class="meta">${esc(i.opts)}</div>` : ''}</td>
         <td>${eur(priceEur(i.cny))}</td>
         <td><span class="qty"><button data-dec="${esc(i.id)}">−</button>${i.qty}<button data-inc="${esc(i.id)}">+</button></span></td>
         <td><button class="btn alt small" data-del="${esc(i.id)}">${t('cart.remove')}</button></td></tr>`).join('')}
@@ -202,17 +239,22 @@
     add() {
       const L = state.pending;
       if (!L) return `<div class="empty">${mascot('fox-look')}<p>${t('add.empty')}</p></div>`;
+      const it = L.item;
+      const price = it ? (it.promoPrice ?? it.originalPrice ?? '') : '';
       return `<h2>${t('add.title')}</h2>
       <div class="panel" style="max-width:560px">
+        ${it?.image ? `<img class="add-pic" src="${esc(it.image)}" alt="${esc(it.title)}">` : ''}
+        ${it ? `<p class="meta">${t('search.note')}</p>` : ''}
         <form id="addForm">
           <label for="aLink">${t('add.link')}</label><input id="aLink" type="text" value="${esc(L.url)}" readonly>
-          <label for="aName">${t('add.name')}</label><input id="aName" type="text" required maxlength="140" placeholder="${esc(t('add.name.ph'))}">
+          <label for="aName">${t('add.name')}</label><input id="aName" type="text" required maxlength="140" placeholder="${esc(t('add.name.ph'))}" value="${esc(it?.title ?? '')}">
           <div class="row2">
-            <div><label for="aPrice">${t('add.price')}</label><input id="aPrice" type="number" min="0.01" step="0.01" required></div>
+            <div><label for="aPrice">${t('add.price')}</label><input id="aPrice" type="number" min="0.01" step="0.01" required value="${price}"></div>
             <div><label for="aQty">${t('add.qty')}</label><input id="aQty" type="number" min="1" max="999" step="1" value="1" required></div>
           </div>
           <label for="aOpts">${t('add.opts')}</label><input id="aOpts" type="text" maxlength="140" placeholder="${esc(t('add.opts.ph'))}">
           <p class="meta" id="addEst">${t('add.est', { eur: eur(0) })}</p>
+          ${it ? `<p class="meta">${t('search.pricehint')}</p>` : ''}
           <p class="meta">${t('add.note')}</p>
           <button class="btn" type="submit">${t('add.submit')}</button>
         </form></div>`;
@@ -287,19 +329,26 @@
     }
     if (name === '' && !decorate.welcomed) { decorate.welcomed = true; setTimeout(() => buddy.say(t('buddy.welcome'), 'happy', 4500), 700); }
     else if (name === 'cart' && !cart.length) buddy.say(t('buddy.empty'), 'sad');
-    else if (name === 'products' && !$('.card')) buddy.say(t('buddy.none'), 'surprised');
+  }
+
+  function updateEst() {
+    const el = $('#addEst');
+    if (!el) return;
+    const cny = parseFloat($('#aPrice').value) || 0, qty = Math.max(1, parseInt($('#aQty').value, 10) || 1);
+    el.textContent = t('add.est', { eur: eur(priceEur(cny) * qty * (1 + SERVICE_FEE)) });
   }
 
   function route() {
     const [name = '', arg] = location.hash.slice(1).split('-');
     let html;
-    if (name === 'product') html = views.product(arg);
-    else if (name === 'page') html = views.page(arg);
+    if (name === 'page') html = views.page(arg);
     else if (views[name]) html = views[name]();
     else html = views.home();
     app.innerHTML = html;
     window.scrollTo(0, 0);
     renderCalc();
+    if (name === 'products' && state.q.trim()) runSearch(state.q.trim());
+    if (name === 'add') updateEst();
     decorate(name);
   }
 
@@ -310,18 +359,19 @@
     else if (!langMenu.hidden) { langMenu.hidden = true; langBtn.setAttribute('aria-expanded', 'false'); }
     const lb = el.closest('[data-lang]');
     if (lb) setLang(lb.dataset.lang);
-    if (el.dataset.add) { const p = PRODUCTS.find(x => x.id === +el.dataset.add); addToCart({ id: p.id, cny: p.cny, weight: p.weight, emoji: p.emoji }, el); }
     if (el.closest('.searchbar') && !el.closest('button')) $('#searchInput').focus();
     if (el.closest('#themeBtn')) toggleTheme();
     const gc = el.closest('[data-gocat]');
-    if (gc) { e.preventDefault(); state.cat = gc.dataset.gocat; state.q = ''; go('products'); }
+    if (gc) { e.preventDefault(); state.q = CAT_KEYWORD[gc.dataset.gocat] ?? ''; go('products'); }
+    if (el.dataset.choose) {
+      const it = state.results.find(x => x.id === el.dataset.choose);
+      if (it) { state.pending = { url: it.url, item: it }; go('add'); }
+    }
     if (el.dataset.tab) {
       document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b === el));
       $('#howBody').innerHTML = howHtml(+el.dataset.tab);
     }
     if (el.closest('#buddy')) buddy.say(t('tip.' + (1 + Math.floor(Math.random() * 4))), 'happy');
-    if (el.dataset.cat) { state.cat = el.dataset.cat; route(); }
-    if (el.dataset.w) state.calcW = parseFloat(el.dataset.w) || 1;
     const idOf = v => cart.find(i => String(i.id) === v);
     if (el.dataset.inc) { idOf(el.dataset.inc).qty++; saveCart(); route(); }
     if (el.dataset.dec) { const i = idOf(el.dataset.dec); i.qty = Math.max(1, i.qty - 1); saveCart(); route(); }
@@ -344,22 +394,20 @@
     if (e.target.id === 'searchForm') {
       const v = $('#searchInput').value.trim();
       const link = parseLink(v);
-      if (link) { state.pending = link; $('#searchInput').value = ''; return go('add'); }
+      if (link) { $('#searchInput').value = ''; return openLink(link); }
       if (/^https?:\/\//i.test(v)) { toast(t('link.unsupported')); buddy.say(t('link.unsupported'), 'surprised', 4500); return; }
-      state.q = v; state.cat = 'all'; go('products');
+      state.q = v; go('products');
     }
     if (e.target.id === 'addForm') {
       const L = state.pending, cny = parseFloat($('#aPrice').value), qty = Math.max(1, parseInt($('#aQty').value, 10) || 1);
       if (!L || !(cny > 0)) return;
-      addToCart({ id: 'link-' + Date.now(), pid: L.pid, url: L.url, title: $('#aName').value.trim(), opts: $('#aOpts').value.trim(), cny, qty, weight: 0.5, emoji: '🔗' });
+      addToCart({ id: 'link-' + Date.now(), pid: L.item?.id ?? '', url: L.url, title: $('#aName').value.trim(), opts: $('#aOpts').value.trim(), cny, qty, weight: 0.5, emoji: '🔗', image: L.item?.image ?? null });
       state.pending = null; go('cart');
     }
   });
 
   document.addEventListener('input', e => {
-    if (!e.target.closest('#addForm')) return;
-    const cny = parseFloat($('#aPrice').value) || 0, qty = Math.max(1, parseInt($('#aQty').value, 10) || 1);
-    $('#addEst').textContent = t('add.est', { eur: eur(priceEur(cny) * qty * (1 + SERVICE_FEE)) });
+    if (e.target.closest('#addForm')) updateEst();
   });
 
   window.addEventListener('hashchange', route);
