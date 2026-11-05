@@ -31,11 +31,13 @@ function normalize(it: any) {
   };
 }
 
-function isTaobaoLink(raw: string) {
+function itemIdFromLink(raw: string) {
   try {
-    return /(^|\.)(taobao|tmall)\.(com|hk)$/i.test(new URL(raw).hostname);
+    const u = new URL(raw);
+    if (!/(^|\.)(taobao|tmall)\.(com|hk)$/i.test(u.hostname)) return null;
+    return u.searchParams.get('id') || u.searchParams.get('itemId') || null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -63,8 +65,9 @@ Deno.serve(async (req) => {
     const { q, url } = await req.json();
 
     if (url) {
-      if (!isTaobaoLink(url)) return reply({ error: 'unsupported_link' }, 400);
-      const items = await runActor({ items: [url] });
+      const id = itemIdFromLink(url);
+      if (!id) return reply({ error: 'unsupported_link' }, 400);
+      const items = await runActor({ items: [id] });
       const detail = items.find((it: any) => it.type === 'productDetail' && it.title);
       if (!detail) return reply({ error: 'not_found', message: describe(items) }, 404);
       return reply({ items: [normalize(detail)] });
