@@ -204,7 +204,6 @@
       if (!L) return `<div class="empty">${mascot('fox-look')}<p>${t('add.empty')}</p></div>`;
       return `<h2>${t('add.title')}</h2>
       <div class="panel" style="max-width:560px">
-        <img id="addPreview" hidden style="width:100%;max-height:260px;object-fit:contain;border-radius:12px;margin-bottom:12px">
         <form id="addForm">
           <label for="aLink">${t('add.link')}</label><input id="aLink" type="text" value="${esc(L.url)}" readonly>
           <label for="aName">${t('add.name')}</label><input id="aName" type="text" required maxlength="140" placeholder="${esc(t('add.name.ph'))}">
@@ -345,13 +344,7 @@
     if (e.target.id === 'searchForm') {
       const v = $('#searchInput').value.trim();
       const link = parseLink(v);
-      if (link) {
-        state.pending = link;
-        $('#searchInput').value = '';
-        go('add');
-        fetchProductInfo(link);
-        return;
-      }
+      if (link) { state.pending = link; $('#searchInput').value = ''; return go('add'); }
       if (/^https?:\/\//i.test(v)) { toast(t('link.unsupported')); buddy.say(t('link.unsupported'), 'surprised', 4500); return; }
       state.q = v; state.cat = 'all'; go('products');
     }
@@ -362,24 +355,6 @@
       state.pending = null; go('cart');
     }
   });
-
-  async function fetchProductInfo(link) {
-    const aName = $('#aName'), aPrice = $('#aPrice'), aImg = $('#addPreview');
-    if (!aName) return;
-    if (aName) aName.placeholder = t('add.loading') || 'Loading…';
-    try {
-      const res = await fetch('https://mbewxqwdjyjqapxmcsxg.supabase.co/functions/v1/get-product', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': 'sb_publishable_EVf69i7P2I3JWpmeilR8Vg_l2cvdK7G' },
-        body: JSON.stringify({ url: link.url })
-      });
-      const data = await res.json();
-      if (data.name && $('#aName')) $('#aName').value = data.name;
-      if (data.price && $('#aPrice')) { $('#aPrice').value = data.price; $('#aPrice').dispatchEvent(new Event('input')); }
-      if (data.image && $('#addPreview')) { $('#addPreview').src = data.image; $('#addPreview').hidden = false; }
-    } catch {}
-    if ($('#aName')) $('#aName').placeholder = t('add.name.ph') || '';
-  }
 
   document.addEventListener('input', e => {
     if (!e.target.closest('#addForm')) return;
